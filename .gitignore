@@ -1,0 +1,12 @@
+.vs
+Debug
+packages
+x64
+Release
+Database0/Debug
+Database0/Release
+Database0/x64
+
+# data base file for testing
+Database0/*.db
+
