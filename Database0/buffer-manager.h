@@ -578,7 +578,7 @@ private:
 	int max_pages_ = 32;
 	int num_allocate_disk_page_ = 4;
 
-	Page* empty_page_;
+	Page* empty_page_ = nullptr;
 };
 
 template<typename T>

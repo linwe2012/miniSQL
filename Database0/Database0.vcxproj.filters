@@ -15,9 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="bplus-tree.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="attribute.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -27,16 +24,21 @@
     <ClInclude Include="buffer-manager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="index-manager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="test\bplus-tree.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="buffer-manager.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="test_buffm.cc">
       <Filter>Header Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="catalog-manager.h">
+      <Filter>Header Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -118,14 +118,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="attribute.h" />
-    <ClInclude Include="bplus-tree.h" />
     <ClInclude Include="buffer-manager.h" />
+    <ClInclude Include="index-manager.h" />
     <ClInclude Include="sqldata.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="buffer-manager.cc" />
-    <ClCompile Include="test\bplus-tree.cc" />
     <ClCompile Include="test_buffm.cc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="catalog-manager.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
