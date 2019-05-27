@@ -1,0 +1,48 @@
+{ 
+    "version": "2.0.0",
+    "configurations": [
+        {
+            "name": "(gdb) Bash on Windows Launch",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "/mnt/d/VCRepos/Database0/build/minisql", // diff
+            "args": [],
+            "stopAtEntry": false,
+            "miDebuggerArgs": "",
+            "cwd": "/mnt/d/VCRepos/Database0/build/", // diff
+            "environment": [],
+            "externalConsole": false,
+            "sourceFileMap": {
+                "/mnt/d/": "D:\\",
+                "/mnt/c/": "C:\\"
+            },
+            "pipeTransport": {
+                "debuggerPath": "/usr/bin/gdb",
+                "pipeProgram": "C:\\Windows\\System32\\bash.exe",
+                //"pipeProgram": "${env:windir}\\system32\\bash.exe",
+                "pipeArgs": [
+                    "-c"
+                ],
+                "pipeCwd": ""
+            },
+            "windows": {
+                "MIMode": "gdb",
+                // "miDebuggerPath": "/usr/bin/gdb",
+                "setupCommands": [
+                    {
+                        "description": "Enable pretty-printing for gdb",
+                        "text": "-enable-pretty-printing",
+                        "ignoreFailures": true
+                    }
+                ]
+            },
+            /*"setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]*/
+        },
+    ]
+}

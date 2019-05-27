@@ -1,5 +1,6 @@
 #pragma once
 #include <set>
+#include <map>
 #include <string>
 #include <vector>
 #include <memory>
@@ -50,7 +51,7 @@ struct MetaData {
 	std::string table_name;
 
 	FileId file;
-	std::vector<Attribute> attributes;
+	std::map<std::string, Attribute> attributes;
 	std::vector<int> primary_keys;
 
 	Authorization authorization;
@@ -141,14 +142,14 @@ struct Condition {
 
 
 
-ResultPtr Select(Table* table, const Condition& condition);
-ResultPtr Insert(Table* table, const RowData& row);
-ResultPtr Update(Table* table, const RowData& row, const Condition& condition);
-ResultPtr Delete(Table* table, const Condition& condition);
-ResultPtr BuildTable(const char* table_name);
-ResultPtr DropTable(Table* table);
-ResultPtr BuildIndex(Table* table, std::string column_name);
-ResultPtr DropIndex(Table* table, std::string column_name);
+// ResultPtr Select(Table* table, const Condition& condition);
+// ResultPtr Insert(Table* table, const RowData& row);
+// ResultPtr Update(Table* table, const RowData& row, const Condition& condition);
+// ResultPtr Delete(Table* table, const Condition& condition);
+// ResultPtr BuildTable(const char* table_name);
+// ResultPtr DropTable(Table* table);
+// ResultPtr BuildIndex(Table* table, std::string column_name);
+// ResultPtr DropIndex(Table* table, std::string column_name);
 
 
 // calls lexer and call appropriate functions incl. insert/ delete etc.

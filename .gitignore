@@ -7,6 +7,14 @@ Database0/Debug
 Database0/Release
 Database0/x64
 
+unit-test/x64
+unit-test/Release
+unit-test/Debug
+*/Debug
+*/Release
+
 # data base file for testing
 Database0/*.db
 
+build
+.vscode/ipch

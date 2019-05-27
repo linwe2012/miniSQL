@@ -1,0 +1,38 @@
+    
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "ReConfigureDebug",
+        "type": "shell",
+        "command": [
+          "rm -rf /mnt/d/VCRepos/Database0/build &&",
+          "mkdir /mnt/d/VCRepos/Database0/build &&",
+          "cd /mnt/d/VCRepos/Database0/build && cmake .. -DCMAKE_BUILD_TYPE=Debug"
+        ],
+        "problemMatcher": []
+      },
+      {
+        "label": "ReConfigureRelease",
+        "type": "shell",
+        "command": [
+          "rm -rf /mnt/d/VCRepos/Database0/build &&",
+          "mkdir /mnt/d/VCRepos/Database0/build &&",
+          "cd /mnt/d/VCRepos/Database0/build && cmake .. -DCMAKE_BUILD_TYPE=Release"
+        ],
+        "problemMatcher": []
+      },
+      {
+        "label": "Build",
+        "type": "shell",
+        "command":
+          "cmake --build /mnt/d/VCRepos/Database0/build",
+        "group": {
+          "kind": "build",
+          "isDefault": true
+        }
+      }
+    ]
+  }

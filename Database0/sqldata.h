@@ -104,13 +104,13 @@ struct SQLTimeStampStruct {
 		if (date < rhs.date) {
 			return true;
 		}
-		if (minute > rhs.minute) {
+		if (time > rhs.time) {
 			return false;
 		}
-		if (minute < rhs.minute) {
+		if (time < rhs.time) {
 			return true;
 		}
-		if (second >= rhs.second) {
+		if (fraction >= rhs.fraction) {
 			return false;
 		}
 		return true;
@@ -251,11 +251,7 @@ private:
 class SQLBigInt : public ISQLNumber {
 public:
 	SOLID_DATA(BigInt, int64_t)
-	int Compare(const ISQLData* rhs) const override {
-		CMP_HELPER(Double);
-		CMP_HELPER(BigInt);
-		return kFail;
-	}
+		int Compare(const ISQLData* rhs) const override;
 private:
 	int64_t val_;
 };
@@ -287,6 +283,11 @@ private:
 	double val_;
 };
 
+inline int SQLBigInt::Compare(const ISQLData* rhs) const {
+	CMP_HELPER(Double);
+	CMP_HELPER(BigInt);
+	return kFail;
+}
 /*
 class SQLNumeric : public ISQLNumber {
 public:
@@ -378,7 +379,7 @@ class SQLTimeStamp : public ISQLTimeOrDate {
 public:
 	SOLID_DATA(TimeStamp, SQLTimeStampStruct)
 	int Compare(const ISQLData* rhs) const override {
-		CMP_HELPER(SQLTimeStamp);
+		CMP_HELPER(TimeStamp);
 	}
 private:
 	SQLTimeStampStruct val_;
