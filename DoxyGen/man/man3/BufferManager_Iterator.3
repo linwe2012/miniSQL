@@ -144,7 +144,7 @@ use it only when it \fC\fBIsBegin()\fP = true\fP
 .PP
 
 .PP
-Definition at line 543 of file buffer\-manager\&.h\&.
+Definition at line 545 of file buffer\-manager\&.h\&.
 .SS "template<typename T > void \fBBufferManager::Iterator\fP< T >::DeletePage ()\fC [inline]\fP"
 Delete the page itr is pointing to 
 .PP
@@ -155,7 +155,7 @@ the iterator will be invalid after page is deleted
 .PP
 
 .PP
-Definition at line 1073 of file buffer\-manager\&.h\&.
+Definition at line 1075 of file buffer\-manager\&.h\&.
 .SS "template<typename T> bool \fBBufferManager::Iterator\fP< T >::EraseInPage (size_t n = \fC1\fP)\fC [inline]\fP"
 erase elemnts in current page, starting from position iterator is pointing to 
 .PP
@@ -249,11 +249,11 @@ false if insertion is failed, no data will be modified
 .PP
 
 .PP
-Definition at line 432 of file buffer\-manager\&.h\&.
+Definition at line 434 of file buffer\-manager\&.h\&.
 .SS "template<typename T> bool \fBBufferManager::Iterator\fP< T >::InsertNil (uint16_t n)\fC [inline]\fP"
 insert n nil into page 
 .PP
-Definition at line 522 of file buffer\-manager\&.h\&.
+Definition at line 524 of file buffer\-manager\&.h\&.
 .SS "template<typename T > \fBPageId\fP \fBBufferManager::Iterator\fP< T >::InsertPageAfter ()\fC [inline]\fP"
 insert page after the page iterator is pointing to, 
 .PP
@@ -269,7 +269,7 @@ iterator won't move it's postition
 .PP
 
 .PP
-Definition at line 881 of file buffer\-manager\&.h\&.
+Definition at line 883 of file buffer\-manager\&.h\&.
 .SS "template<typename T> bool \fBBufferManager::Iterator\fP< T >::IsBegin () const\fC [inline]\fP"
 check is beginning to linked page 
 .PP
@@ -279,7 +279,7 @@ Definition at line 282 of file buffer\-manager\&.h\&.
 .PP
 Definition at line 274 of file buffer\-manager\&.h\&.
 .SS "template<typename T> bool \fBBufferManager::Iterator\fP< T >::IsEndPage () const\fC [inline]\fP"
-\fCoperator *\fP returns invalid data when is end of page use \fCoperator++\fP to forward to next page 
+\fCoperator *\fP returns invalid data when is end of page, use \fCoperator++\fP to forward to next page 
 .PP
 Definition at line 267 of file buffer\-manager\&.h\&.
 .SS "template<typename T> bool \fBBufferManager::Iterator\fP< T >::IsNil () const\fC [inline]\fP"
@@ -289,9 +289,9 @@ Definition at line 259 of file buffer\-manager\&.h\&.
 .SS "template<typename T> void \fBBufferManager::Iterator\fP< T >::MoveToPageBegin ()\fC [inline]\fP"
 move cursor to the end of the page 
 .PP
-Definition at line 496 of file buffer\-manager\&.h\&.
+Definition at line 498 of file buffer\-manager\&.h\&.
 .SS "template<typename T> void \fBBufferManager::Iterator\fP< T >::MoveToPageCenter ()\fC [inline]\fP"
-move cursor to page center useful when trying to split a page in half, 
+move cursor to page center, useful when trying to split a page in half, 
 .PP
 .nf
 Iterator<int> itr;
@@ -302,31 +302,31 @@ auto new_page = itr\&.SplitPage();
 .PP
  
 .PP
-Definition at line 473 of file buffer\-manager\&.h\&.
+Definition at line 475 of file buffer\-manager\&.h\&.
 .SS "template<typename T> void \fBBufferManager::Iterator\fP< T >::MoveToPageEnd ()\fC [inline]\fP"
 move cursor to the end of the page 
 .PP
-Definition at line 488 of file buffer\-manager\&.h\&.
+Definition at line 490 of file buffer\-manager\&.h\&.
 .SS "template<typename T> T& \fBBufferManager::Iterator\fP< T >::operator * ()\fC [inline]\fP"
 Return data pointing to data is invalid when \fC\fBIsEndPage()\fP\fP or \fC\fBIsEnd()\fP\fP or \fC\fBIsNil()\fP\fP 
 .PP
 Definition at line 329 of file buffer\-manager\&.h\&.
 .SS "template<typename T > \fBBufferManager::Iterator\fP< T > & \fBBufferManager::Iterator\fP< T >::operator++ ()\fC [inline]\fP"
-forward iterator jump into next page if \fC\fBIsEndPage()\fP = true\fP won't move if \fC\fBIsEnd()\fP = true\fP 
+forward iterator, jump into next page if \fC\fBIsEndPage()\fP = true\fP won't move if \fC\fBIsEnd()\fP = true\fP 
 .PP
-Definition at line 886 of file buffer\-manager\&.h\&.
+Definition at line 888 of file buffer\-manager\&.h\&.
 .SS "template<typename T > const \fBBufferManager::Iterator\fP< T > & \fBBufferManager::Iterator\fP< T >::operator+= (int offset)\fC [inline]\fP"
-forward iterator by offset will walk through several pages if neccessary 
+forward iterator by offset, will walk through several pages if neccessary 
 .PP
-Definition at line 983 of file buffer\-manager\&.h\&.
+Definition at line 985 of file buffer\-manager\&.h\&.
 .SS "template<typename T > \fBBufferManager::Iterator\fP< T > & \fBBufferManager::Iterator\fP< T >::operator\-\- ()\fC [inline]\fP"
 move back iterator 
 .PP
-Definition at line 940 of file buffer\-manager\&.h\&.
+Definition at line 942 of file buffer\-manager\&.h\&.
 .SS "template<typename T > const \fBBufferManager::Iterator\fP< T > & \fBBufferManager::Iterator\fP< T >::operator\-= (int offset)\fC [inline]\fP"
-move back iterator by offset will walk through several pages if neccessary 
+move back iterator by offset, will walk through several pages if neccessary 
 .PP
-Definition at line 1023 of file buffer\-manager\&.h\&.
+Definition at line 1025 of file buffer\-manager\&.h\&.
 .SS "template<typename T> const \fBPage\fP& \fBBufferManager::Iterator\fP< T >::page () const\fC [inline]\fP"
 Get page the iterator is pointing to 
 .PP
@@ -334,9 +334,14 @@ Definition at line 340 of file buffer\-manager\&.h\&.
 .SS "template<typename T > \fBPageId\fP \fBBufferManager::Iterator\fP< T >::pageid () const\fC [inline]\fP"
 the page id iterator is pointing to 
 .PP
-Definition at line 1065 of file buffer\-manager\&.h\&.
+Definition at line 1067 of file buffer\-manager\&.h\&.
 .SS "template<typename T> \fBPageId\fP \fBBufferManager::Iterator\fP< T >::SplitPage ()\fC [inline]\fP"
-populate a new page and tranfer all data to next page @detail all data starting from curser will be copied to next page and the cursur pointing to end of page i\&.e\&. cursor is not moved 
+populate a new page and tranfer all data to next page 
+.PP
+\fBNote:\fP
+.RS 4
+all data starting from curser will be copied to next page and the cursur pointing to end of page i\&.e\&. cursor is not moved 
+.RE
 .PP
 \fBSee also:\fP
 .RS 4
@@ -345,7 +350,7 @@ populate a new page and tranfer all data to next page @detail all data starting 
 .PP
 
 .PP
-Definition at line 506 of file buffer\-manager\&.h\&.
+Definition at line 508 of file buffer\-manager\&.h\&.
 
 .SH "Author"
 .PP 

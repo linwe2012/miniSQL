@@ -115,7 +115,7 @@ use it only when it {\ttfamily \mbox{\hyperlink{class_buffer_manager_1_1_iterato
 \end{DoxyNote}
 
 
-Definition at line 543 of file buffer-\/manager.\+h.
+Definition at line 545 of file buffer-\/manager.\+h.
 
 \mbox{\Hypertarget{class_buffer_manager_1_1_iterator_a2e9a59db2ef1289b16469750e422edd5}\label{class_buffer_manager_1_1_iterator_a2e9a59db2ef1289b16469750e422edd5}} 
 \index{BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}!DeletePage@{DeletePage}}
@@ -129,7 +129,7 @@ the iterator will be invalid after page is deleted
 \end{DoxyNote}
 
 
-Definition at line 1073 of file buffer-\/manager.\+h.
+Definition at line 1075 of file buffer-\/manager.\+h.
 
 \mbox{\Hypertarget{class_buffer_manager_1_1_iterator_a2c627998f19999fe55b7452b840ce47b}\label{class_buffer_manager_1_1_iterator_a2c627998f19999fe55b7452b840ce47b}} 
 \index{BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}!EraseInPage@{EraseInPage}}
@@ -240,7 +240,7 @@ false if insertion is failed, no data will be modified
 \end{DoxySeeAlso}
 
 
-Definition at line 432 of file buffer-\/manager.\+h.
+Definition at line 434 of file buffer-\/manager.\+h.
 
 \mbox{\Hypertarget{class_buffer_manager_1_1_iterator_aee5637c96ddb7c5fef0f9a12d133c7c8}\label{class_buffer_manager_1_1_iterator_aee5637c96ddb7c5fef0f9a12d133c7c8}} 
 \index{BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}!InsertNil@{InsertNil}}
@@ -251,7 +251,7 @@ bool \mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Buffer\+Manager\+::\+It
 
 insert n nil into page 
 
-Definition at line 522 of file buffer-\/manager.\+h.
+Definition at line 524 of file buffer-\/manager.\+h.
 
 \mbox{\Hypertarget{class_buffer_manager_1_1_iterator_affb973bacb2deef1704e20221fb3c3fb}\label{class_buffer_manager_1_1_iterator_affb973bacb2deef1704e20221fb3c3fb}} 
 \index{BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}!InsertPageAfter@{InsertPageAfter}}
@@ -268,7 +268,7 @@ iterator won\textquotesingle{}t move it\textquotesingle{}s postition
 \end{DoxyNote}
 
 
-Definition at line 881 of file buffer-\/manager.\+h.
+Definition at line 883 of file buffer-\/manager.\+h.
 
 \mbox{\Hypertarget{class_buffer_manager_1_1_iterator_a7ce4145bd6263f8003c4c4dee01a9c31}\label{class_buffer_manager_1_1_iterator_a7ce4145bd6263f8003c4c4dee01a9c31}} 
 \index{BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}!IsBegin@{IsBegin}}
@@ -299,7 +299,7 @@ Definition at line 274 of file buffer-\/manager.\+h.
 {\footnotesize\ttfamily template$<$typename T$>$ \\
 bool \mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Buffer\+Manager\+::\+Iterator}}$<$ T $>$\+::Is\+End\+Page (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
 
-{\ttfamily operator $\ast$} returns invalid data when is end of page use {\ttfamily operator++} to forward to next page 
+{\ttfamily operator $\ast$} returns invalid data when is end of page, use {\ttfamily operator++} to forward to next page 
 
 Definition at line 267 of file buffer-\/manager.\+h.
 
@@ -323,7 +323,7 @@ void \mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Buffer\+Manager\+::\+It
 
 move cursor to the end of the page 
 
-Definition at line 496 of file buffer-\/manager.\+h.
+Definition at line 498 of file buffer-\/manager.\+h.
 
 \mbox{\Hypertarget{class_buffer_manager_1_1_iterator_a20b703d6135c5e3026eab944a32ca186}\label{class_buffer_manager_1_1_iterator_a20b703d6135c5e3026eab944a32ca186}} 
 \index{BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}!MoveToPageCenter@{MoveToPageCenter}}
@@ -332,7 +332,7 @@ Definition at line 496 of file buffer-\/manager.\+h.
 {\footnotesize\ttfamily template$<$typename T$>$ \\
 void \mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Buffer\+Manager\+::\+Iterator}}$<$ T $>$\+::Move\+To\+Page\+Center (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
 
-move cursor to page center useful when trying to split a page in half, 
+move cursor to page center, useful when trying to split a page in half, 
 \begin{DoxyCode}{0}
 \DoxyCodeLine{Iterator<int> itr;}
 \DoxyCodeLine{itr.MoveToPageCenter();}
@@ -340,7 +340,7 @@ move cursor to page center useful when trying to split a page in half,
 \end{DoxyCode}
  
 
-Definition at line 473 of file buffer-\/manager.\+h.
+Definition at line 475 of file buffer-\/manager.\+h.
 
 \mbox{\Hypertarget{class_buffer_manager_1_1_iterator_a88ae36356076d25c8959ecfbaa084d9f}\label{class_buffer_manager_1_1_iterator_a88ae36356076d25c8959ecfbaa084d9f}} 
 \index{BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}!MoveToPageEnd@{MoveToPageEnd}}
@@ -351,7 +351,7 @@ void \mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Buffer\+Manager\+::\+It
 
 move cursor to the end of the page 
 
-Definition at line 488 of file buffer-\/manager.\+h.
+Definition at line 490 of file buffer-\/manager.\+h.
 
 \mbox{\Hypertarget{class_buffer_manager_1_1_iterator_a633c54abf71a334ff179cc359e655d5d}\label{class_buffer_manager_1_1_iterator_a633c54abf71a334ff179cc359e655d5d}} 
 \index{BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}!operator $\ast$@{operator $\ast$}}
@@ -371,9 +371,9 @@ Definition at line 329 of file buffer-\/manager.\+h.
 {\footnotesize\ttfamily template$<$typename T $>$ \\
 \mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Buffer\+Manager\+::\+Iterator}}$<$ T $>$ \& \mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Buffer\+Manager\+::\+Iterator}}$<$ T $>$\+::operator++ (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
 
-forward iterator jump into next page if {\ttfamily \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a6afaceac9683f05d9e1ecfc9ff5f3a0f}{Is\+End\+Page()}} = true} won\textquotesingle{}t move if {\ttfamily \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a02a38a84fd54e45d06818d2807b172d8}{Is\+End()}} = true} 
+forward iterator, jump into next page if {\ttfamily \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a6afaceac9683f05d9e1ecfc9ff5f3a0f}{Is\+End\+Page()}} = true} won\textquotesingle{}t move if {\ttfamily \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a02a38a84fd54e45d06818d2807b172d8}{Is\+End()}} = true} 
 
-Definition at line 886 of file buffer-\/manager.\+h.
+Definition at line 888 of file buffer-\/manager.\+h.
 
 \mbox{\Hypertarget{class_buffer_manager_1_1_iterator_aced12f95569a91d98a83bf635d671e25}\label{class_buffer_manager_1_1_iterator_aced12f95569a91d98a83bf635d671e25}} 
 \index{BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}!operator+=@{operator+=}}
@@ -382,9 +382,9 @@ Definition at line 886 of file buffer-\/manager.\+h.
 {\footnotesize\ttfamily template$<$typename T $>$ \\
 const \mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Buffer\+Manager\+::\+Iterator}}$<$ T $>$ \& \mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Buffer\+Manager\+::\+Iterator}}$<$ T $>$\+::operator+= (\begin{DoxyParamCaption}\item[{int}]{offset }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
 
-forward iterator by offset will walk through several pages if neccessary 
+forward iterator by offset, will walk through several pages if neccessary 
 
-Definition at line 983 of file buffer-\/manager.\+h.
+Definition at line 985 of file buffer-\/manager.\+h.
 
 \mbox{\Hypertarget{class_buffer_manager_1_1_iterator_ab9959f549dcfa3f6daa47677552b673d}\label{class_buffer_manager_1_1_iterator_ab9959f549dcfa3f6daa47677552b673d}} 
 \index{BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}!operator-\/-\/@{operator-\/-\/}}
@@ -395,7 +395,7 @@ Definition at line 983 of file buffer-\/manager.\+h.
 
 move back iterator 
 
-Definition at line 940 of file buffer-\/manager.\+h.
+Definition at line 942 of file buffer-\/manager.\+h.
 
 \mbox{\Hypertarget{class_buffer_manager_1_1_iterator_a2a24e019d3a2934f3cd275b8a2436e59}\label{class_buffer_manager_1_1_iterator_a2a24e019d3a2934f3cd275b8a2436e59}} 
 \index{BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}!operator-\/=@{operator-\/=}}
@@ -404,9 +404,9 @@ Definition at line 940 of file buffer-\/manager.\+h.
 {\footnotesize\ttfamily template$<$typename T $>$ \\
 const \mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Buffer\+Manager\+::\+Iterator}}$<$ T $>$ \& \mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Buffer\+Manager\+::\+Iterator}}$<$ T $>$\+::operator-\/= (\begin{DoxyParamCaption}\item[{int}]{offset }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
 
-move back iterator by offset will walk through several pages if neccessary 
+move back iterator by offset, will walk through several pages if neccessary 
 
-Definition at line 1023 of file buffer-\/manager.\+h.
+Definition at line 1025 of file buffer-\/manager.\+h.
 
 \mbox{\Hypertarget{class_buffer_manager_1_1_iterator_a5a17d8377bc10f437e29b058c0376b15}\label{class_buffer_manager_1_1_iterator_a5a17d8377bc10f437e29b058c0376b15}} 
 \index{BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}!page@{page}}
@@ -428,7 +428,7 @@ Definition at line 340 of file buffer-\/manager.\+h.
 
 the page id iterator is pointing to 
 
-Definition at line 1065 of file buffer-\/manager.\+h.
+Definition at line 1067 of file buffer-\/manager.\+h.
 
 \mbox{\Hypertarget{class_buffer_manager_1_1_iterator_a18f31d37240c5a587a85042374c5272d}\label{class_buffer_manager_1_1_iterator_a18f31d37240c5a587a85042374c5272d}} 
 \index{BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}!SplitPage@{SplitPage}}
@@ -437,12 +437,15 @@ Definition at line 1065 of file buffer-\/manager.\+h.
 {\footnotesize\ttfamily template$<$typename T$>$ \\
 \mbox{\hyperlink{struct_generic_i_o_id}{Page\+Id}} \mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Buffer\+Manager\+::\+Iterator}}$<$ T $>$\+::Split\+Page (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
 
-populate a new page and tranfer all data to next page @detail all data starting from curser will be copied to next page and the cursur pointing to end of page i.\+e. cursor is not moved \begin{DoxySeeAlso}{See also}
+populate a new page and tranfer all data to next page \begin{DoxyNote}{Note}
+all data starting from curser will be copied to next page and the cursur pointing to end of page i.\+e. cursor is not moved 
+\end{DoxyNote}
+\begin{DoxySeeAlso}{See also}
 \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a20b703d6135c5e3026eab944a32ca186}{Move\+To\+Page\+Center()}} for example 
 \end{DoxySeeAlso}
 
 
-Definition at line 506 of file buffer-\/manager.\+h.
+Definition at line 508 of file buffer-\/manager.\+h.
 
 
 

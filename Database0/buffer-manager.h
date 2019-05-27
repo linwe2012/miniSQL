@@ -261,7 +261,7 @@ public:
 		}
 
 		/** 
-		* `operator *` returns invalid data when is end of page
+		* `operator *` returns invalid data when is end of page,
 		* use `operator++` to forward to next page
 		*/
 		bool IsEndPage() const {
@@ -292,7 +292,7 @@ public:
 		PageId InsertPageAfter();
 
 		/** 
-		* forward iterator
+		* forward iterator,
 		* jump into next page if `IsEndPage() = true`
 		* won't move if `IsEnd() = true`
 		*/
@@ -310,13 +310,13 @@ public:
 		Iterator operator--(int);
 
 		/** 
-		* forward iterator by offset
+		* forward iterator by offset,
 		* will walk through several pages if neccessary
 		*/
 		const Iterator& operator+=(int offset);
 
 		/** 
-		* move back iterator by offset
+		* move back iterator by offset,
 		* will walk through several pages if neccessary
 		*/
 		const Iterator& operator-=(int offset);
@@ -419,13 +419,15 @@ public:
 			return true;
 		}
 
-		/**Delete the page itr is pointing to
+		/**
+		* Delete the page itr is pointing to
 		* @note the iterator will be invalid after page is deleted
 		*/
 		void DeletePage();
 
 
-		/** Use iterator to insert data, data can span across multiple pages
+		/** 
+		* Use iterator to insert data, data can span across multiple pages
 		* @return false if insertion is failed, no data will be modified
 		* @see `bool Insert(const T* first, const T* last)`
 		*/
@@ -462,7 +464,7 @@ public:
 
 
 		/**
-		* move cursor to page center
+		* move cursor to page center,
 		* useful when trying to split a page in half,
 		* @code
 		* Iterator<int> itr;
@@ -499,7 +501,7 @@ public:
 		}
 
 		/** populate a new page and tranfer all data to next page
-		* @detail all data starting from curser will be copied to next page
+		* @note all data starting from curser will be copied to next page
 		* and the cursur pointing to end of page i.e. cursor is not moved
 		* @see MoveToPageCenter() for example
 		*/
