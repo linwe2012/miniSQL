@@ -1,0 +1,102 @@
+\hypertarget{struct_page}{}\section{Page Struct Reference}
+\label{struct_page}\index{Page@{Page}}
+\subsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{struct_page_1_1_data_pos}{Data\+Pos}}
+\item 
+struct \mbox{\hyperlink{struct_page_1_1_header}{Header}}
+\end{DoxyCompactItemize}
+\subsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{struct_page_a3c82eff9368ad66b61ce10e982decc4e}\label{struct_page_a3c82eff9368ad66b61ce10e982decc4e}} 
+enum \{ \newline
+{\bfseries k\+Page\+Size} = P\+A\+G\+E\+\_\+\+S\+I\+Z\+E\+\_\+\+B\+Y\+\_\+\+B\+Y\+T\+ES, 
+{\bfseries k\+Discretion\+Space} = k\+Page\+Size -\/ sizeof(Header), 
+{\bfseries k\+In\+Valid\+Offset} = U\+I\+N\+T16\+\_\+\+M\+AX, 
+{\bfseries k\+Begin\+Of\+Reversed} = k\+Discretion\+Space -\/ 1, 
+\newline
+{\bfseries kf\+Is\+Variadic} = 0, 
+{\bfseries kf\+Extend\+To\+Next} = 1, 
+{\bfseries kf\+Is\+Unused} = 2
+ \}
+\end{DoxyCompactItemize}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{struct_page_abbaec6349db3fab911f7469560b62924}\label{struct_page_abbaec6349db3fab911f7469560b62924}} 
+{\footnotesize template$<$typename T $>$ }\\void {\bfseries Write} (size\+\_\+t offset, T data)
+\item 
+\mbox{\Hypertarget{struct_page_abd4af8f423f3e6b5a384818311c747a9}\label{struct_page_abd4af8f423f3e6b5a384818311c747a9}} 
+{\footnotesize template$<$typename T $>$ }\\void {\bfseries Reverse\+InsertN} (size\+\_\+t src\+\_\+offet, size\+\_\+t num\+\_\+vals, size\+\_\+t move\+\_\+size, T val)
+\item 
+\mbox{\Hypertarget{struct_page_ac0ff24c1e52fc2048e3dfa49c44d0bde}\label{struct_page_ac0ff24c1e52fc2048e3dfa49c44d0bde}} 
+{\footnotesize template$<$typename T $>$ }\\void {\bfseries Reverse\+EraseN} (size\+\_\+t src\+\_\+offet, size\+\_\+t num\+\_\+vals, size\+\_\+t move\+\_\+size)
+\item 
+\mbox{\Hypertarget{struct_page_ab92d8b7e74b9dc5b2c83522218bce302}\label{struct_page_ab92d8b7e74b9dc5b2c83522218bce302}} 
+{\footnotesize template$<$typename T $>$ }\\T {\bfseries Read} (size\+\_\+t offset) const
+\item 
+\mbox{\Hypertarget{struct_page_a51c4c8f51e68aa8b7531fa135f9e6231}\label{struct_page_a51c4c8f51e68aa8b7531fa135f9e6231}} 
+{\footnotesize template$<$typename T $>$ }\\T \& {\bfseries Read} (size\+\_\+t offset)
+\item 
+\mbox{\Hypertarget{struct_page_ac659c4447685cf240004cecc7f9737e6}\label{struct_page_ac659c4447685cf240004cecc7f9737e6}} 
+{\footnotesize template$<$typename T $>$ }\\T \& {\bfseries Reverse\+Read} (size\+\_\+t offset)
+\item 
+\mbox{\Hypertarget{struct_page_a8c331f7f7d0dd6d39966a04ae76f14b9}\label{struct_page_a8c331f7f7d0dd6d39966a04ae76f14b9}} 
+{\footnotesize template$<$typename T $>$ }\\T {\bfseries Reverse\+Read} (size\+\_\+t offset) const
+\item 
+\mbox{\Hypertarget{struct_page_abee1e69bf983c893f9ce8c377f6eed08}\label{struct_page_abee1e69bf983c893f9ce8c377f6eed08}} 
+size\+\_\+t {\bfseries Space\+Left\+By\+Byte} ()
+\item 
+\mbox{\Hypertarget{struct_page_a9ff618dd17222aa6f6f8a07af8c1b815}\label{struct_page_a9ff618dd17222aa6f6f8a07af8c1b815}} 
+size\+\_\+t {\bfseries Space\+Left\+By\+Byte\+Fixed\+Size} () const
+\item 
+\mbox{\Hypertarget{struct_page_a00f362caf7743c67e7d57c3c73bc1f14}\label{struct_page_a00f362caf7743c67e7d57c3c73bc1f14}} 
+size\+\_\+t {\bfseries Space\+Left\+By\+Byte\+Variadic\+Size} () const
+\item 
+\mbox{\Hypertarget{struct_page_a2e3e9f8d6c822551dc763d4ba68a37db}\label{struct_page_a2e3e9f8d6c822551dc763d4ba68a37db}} 
+bool {\bfseries Has\+Prev} () const
+\item 
+\mbox{\Hypertarget{struct_page_a9f74a5064765540133e51847223e078a}\label{struct_page_a9f74a5064765540133e51847223e078a}} 
+bool {\bfseries Has\+Next} () const
+\item 
+\mbox{\Hypertarget{struct_page_a2cfaf268251e830949fb63ce3836b782}\label{struct_page_a2cfaf268251e830949fb63ce3836b782}} 
+char $\ast$ {\bfseries end} ()
+\item 
+\mbox{\Hypertarget{struct_page_a2ad023288ac6729ac714585c239721e3}\label{struct_page_a2ad023288ac6729ac714585c239721e3}} 
+const char $\ast$ {\bfseries end} () const
+\item 
+\mbox{\Hypertarget{struct_page_ac0ca8728579e1a71952a43db15c0424b}\label{struct_page_ac0ca8728579e1a71952a43db15c0424b}} 
+{\footnotesize template$<$$>$ }\\void {\bfseries Write} (size\+\_\+t offset, bool data)
+\item 
+\mbox{\Hypertarget{struct_page_a50df8072539b45519238271b62fe2b66}\label{struct_page_a50df8072539b45519238271b62fe2b66}} 
+{\footnotesize template$<$$>$ }\\bool {\bfseries Read} (size\+\_\+t offset) const
+\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{struct_page_a5a05bc31101b3d64fe207655a109ae8a}\label{struct_page_a5a05bc31101b3d64fe207655a109ae8a}} 
+\mbox{\hyperlink{struct_page_1_1_header}{Header}} {\bfseries header}
+\item 
+\mbox{\Hypertarget{struct_page_a032524d4ea5e807b71592358e318dcc8}\label{struct_page_a032524d4ea5e807b71592358e318dcc8}} 
+char {\bfseries space} \mbox{[}k\+Discretion\+Space\mbox{]}
+\item 
+\mbox{\Hypertarget{struct_page_ab3d8345d3c0ee1f541790866a907ec73}\label{struct_page_ab3d8345d3c0ee1f541790866a907ec73}} 
+bool {\bfseries is\+\_\+dirty} = false
+\item 
+\mbox{\Hypertarget{struct_page_aad6646b2953f56cf61a30232383e2ed2}\label{struct_page_aad6646b2953f56cf61a30232383e2ed2}} 
+void $\ast$ {\bfseries piggyback} = nullptr
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+
+
+Definition at line 63 of file buffer-\/manager.\+h.
+
+
+
+The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+D\+:/\+V\+C\+Repos/\+Database0/\+Database0/buffer-\/manager.\+h\end{DoxyCompactItemize}

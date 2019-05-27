@@ -1,0 +1,149 @@
+.TH "BufferManager::Iterator< char * >" 3 "Mon May 27 2019" "MiniSQL" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+BufferManager::Iterator< char * >
+.SH SYNOPSIS
+.br
+.PP
+.SS "Public Types"
+
+.in +1c
+.ti -1c
+.RI "using \fBpointer\fP = char *"
+.br
+.in -1c
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "\fBIterator\fP (char *current, \fBPage\fP *page, \fBBufferManager\fP *boss)"
+.br
+.ti -1c
+.RI "\fBIterator\fP (char *current, \fBPage\fP *page, \fBBufferManager\fP *boss, uint16_t record_in_page)"
+.br
+.ti -1c
+.RI "bool \fBIsNil\fP () const"
+.br
+.ti -1c
+.RI "bool \fBIsEnd\fP () const"
+.br
+.ti -1c
+.RI "bool \fBIsEndPage\fP () const"
+.br
+.ti -1c
+.RI "bool \fBIsBegin\fP () const"
+.br
+.ti -1c
+.RI "char * \fBoperator *\fP ()"
+.br
+.ti -1c
+.RI "const char * \fBoperator *\fP () const"
+.br
+.ti -1c
+.RI "\fBIterator\fP & \fBoperator++\fP ()"
+.br
+.ti -1c
+.RI "\fBIterator\fP \fBoperator++\fP (int)"
+.br
+.ti -1c
+.RI "\fBIterator\fP & \fBoperator\-\-\fP ()"
+.br
+.ti -1c
+.RI "\fBIterator\fP \fBoperator\-\-\fP (int)"
+.br
+.ti -1c
+.RI "const \fBIterator\fP & \fBoperator+=\fP (int offset)"
+.br
+.ti -1c
+.RI "const \fBIterator\fP & \fBoperator\-=\fP (int offset)"
+.br
+.ti -1c
+.RI "const \fBPage\fP & \fBpage\fP () const"
+.br
+.ti -1c
+.RI "std::string \fBAsString\fP ()"
+.br
+.ti -1c
+.RI "bool \fBInsert\fP (const char *first, const char *last)"
+.br
+.ti -1c
+.RI "bool \fBInsert\fP (const std::string &str)"
+.br
+.ti -1c
+.RI "bool \fBInsert\fP (const void *data, size_t length_by_bytes)"
+.br
+.ti -1c
+.RI "size_t \fBFreeBytes\fP () const"
+.br
+.ti -1c
+.RI "template<typename T > T \fBRoundUpByte\fP (T byte)"
+.br
+.ti -1c
+.RI "bool \fBInsertNil\fP (int n)"
+.br
+.ti -1c
+.RI "\fBPageId\fP \fBAutoInsert\fP (const char *first, const char *last)"
+.br
+.ti -1c
+.RI "\fBPageId\fP \fBAutoInsert\fP (const std::string &str)"
+.br
+.ti -1c
+.RI "bool \fBEraseInPage\fP (size_t n=1)"
+.br
+.ti -1c
+.RI "void \fBDeletePage\fP ()"
+.br
+.ti -1c
+.RI "\fBPageId\fP \fBAutoInsert\fP (const void *data, size_t length_by_bytes)"
+.br
+.ti -1c
+.RI "void \fBSkipEndPageNext\fP ()"
+.br
+.ti -1c
+.RI "template<typename T > T \fBRead\fP ()"
+.br
+.ti -1c
+.RI "template<> std::string \fBRead\fP ()"
+.br
+.in -1c
+.SS "Friends"
+
+.in +1c
+.ti -1c
+.RI "class \fBBufferManager\fP"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+
+.SS "template<>
+.br
+class BufferManager::Iterator< char * >"
+
+.PP
+Definition at line 658 of file buffer\-manager\&.h\&.
+.SH "Member Function Documentation"
+.PP 
+.SS "\fBPageId\fP \fBBufferManager::Iterator\fP< char * >::AutoInsert (const char * first, const char * last)\fC [inline]\fP"
+if data exceeds free space in current page, will allocate a new page and insert it the cursor will atomatically forward 
+.PP
+\fBExceptions:\fP
+.RS 4
+\fIwhen\fP data is larger than one page can hold 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+\fCPageId(0)\fP (nil) if no page is allocated 
+.PP
+\fCPageId(next_page)\fP if data is written to next page 
+.RE
+.PP
+
+.PP
+Definition at line 788 of file buffer\-manager\&.h\&.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MiniSQL from the source code\&.

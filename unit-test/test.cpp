@@ -56,6 +56,24 @@ TEST(BufferManger, IOFixed_NumberIsGood) {
 
 }
 
+TEST(BufferManger, IODeletePage) {
+	BufferManager bm;
+	const char* file = "io_deletepage.db";
+	FileId db;
+	if (!fs::exists(file)) {
+		db = bm.NewFile(file);
+
+		auto page1 = bm.AllocatePageAfter(db, 0);
+		auto page2 = bm.AllocatePageAfter(db, page1);
+		auto page3 = bm.AllocatePageAfter(db, page2);
+
+		auto itr = bm.GetPage<double>(db, page1);
+
+		while(itr.IsEnd())
+	}
+
+}
+
 int main(int argc, char** argv) {
 	::testing::InitGoogleTest(&argc, argv);
 	return RUN_ALL_TESTS();

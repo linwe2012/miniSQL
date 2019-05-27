@@ -1,0 +1,86 @@
+.TH "BufferManager" 3 "Mon May 27 2019" "MiniSQL" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+BufferManager
+.SH SYNOPSIS
+.br
+.PP
+.SS "Classes"
+
+.in +1c
+.ti -1c
+.RI "struct \fBFileHeader\fP"
+.br
+.ti -1c
+.RI "struct \fBFileInfo\fP"
+.br
+.ti -1c
+.RI "class \fBIterator\fP"
+.br
+.ti -1c
+.RI "class \fBIterator< char * >\fP"
+.br
+.ti -1c
+.RI "struct \fBPagePiggyback\fP"
+.br
+.ti -1c
+.RI "struct \fBUniquePage\fP"
+.br
+.in -1c
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "bool \fBIsOpened\fP (const char *path)"
+.br
+.ti -1c
+.RI "\fBFileId\fP \fBOpenFile\fP (const char *path)"
+.br
+.ti -1c
+.RI "\fBFileId\fP \fBNewFile\fP (const char *path)"
+.br
+.ti -1c
+.RI "template<typename T > \fBIterator\fP< T > \fBGetPage\fP (\fBFileId\fP file_id, \fBPageId\fP page_id)"
+.br
+.ti -1c
+.RI "\fBPageId\fP \fBAllocatePageAfter\fP (\fBFileId\fP fid, \fBPageId\fP prev)"
+.br
+.ti -1c
+.RI "template<typename T > void \fBIteratorNextPage\fP (\fBIterator\fP< T > *target)"
+.br
+.ti -1c
+.RI "template<typename T > void \fBIteratorPrevPage\fP (\fBIterator\fP< T > *target)"
+.br
+.ti -1c
+.RI "template<typename T > \fBPageId\fP \fBIteratorInsertPageAfter\fP (\fBIterator\fP< T > *target)"
+.br
+.ti -1c
+.RI "void \fBIteratorDeletePage\fP (\fBPage\fP *target)"
+.br
+.ti -1c
+.RI "\fBPage\fP * \fBAutoFetchPage\fP (\fBUniquePage\fP)"
+.br
+.ti -1c
+.RI "void \fBFlushPageToDisk\fP (\fBPage\fP *page, \fBPageId\fP pid)"
+.br
+.ti -1c
+.RI "void \fBFlushFileHeaderToDisk\fP (\fBFileId\fP fid)"
+.br
+.ti -1c
+.RI "void \fBUnloadPage\fP (\fBUniquePage\fP)"
+.br
+.ti -1c
+.RI "\fBPage\fP * \fBGetEmptyPage\fP (int prev, int next)"
+.br
+.ti -1c
+.RI "\fBPage::Header\fP \fBGetPageHeader\fP (\fBFileId\fP fid, \fBPageId\fP psid)"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+Definition at line 244 of file buffer\-manager\&.h\&.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MiniSQL from the source code\&.

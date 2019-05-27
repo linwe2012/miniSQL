@@ -1,0 +1,105 @@
+\hypertarget{class_i_s_q_l_data}{}\section{I\+S\+Q\+L\+Data Class Reference}
+\label{class_i_s_q_l_data}\index{ISQLData@{ISQLData}}
+Inheritance diagram for I\+S\+Q\+L\+Data\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.921739cm]{class_i_s_q_l_data}
+\end{center}
+\end{figure}
+\subsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+enum \mbox{\hyperlink{class_i_s_q_l_data_ac3f308048cf5362aba047c5c776c4f7b}{Compare\+Result}} \{ \newline
+{\bfseries k\+Less} = -\/1, 
+{\bfseries k\+Larger} = 1, 
+{\bfseries k\+Equal} = 0, 
+{\bfseries k\+Unkown} = -\/3, 
+\newline
+\mbox{\hyperlink{class_i_s_q_l_data_ac3f308048cf5362aba047c5c776c4f7ba46c1b2e071e8ff6a81eb9d0e600a8105}{k\+Fail}} = -\/2
+ \}
+\end{DoxyCompactItemize}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_i_s_q_l_data_a9be1248042f54bbd29f8ff80861f1184}\label{class_i_s_q_l_data_a9be1248042f54bbd29f8ff80861f1184}} 
+virtual bool {\bfseries Is\+Number} () const
+\item 
+\mbox{\Hypertarget{class_i_s_q_l_data_a58a4af11cf71a2abdea963de4c1860e0}\label{class_i_s_q_l_data_a58a4af11cf71a2abdea963de4c1860e0}} 
+virtual bool {\bfseries Is\+Int} () const
+\item 
+\mbox{\Hypertarget{class_i_s_q_l_data_ac0f8f32507adf196df6d58246a6b54cf}\label{class_i_s_q_l_data_ac0f8f32507adf196df6d58246a6b54cf}} 
+virtual bool {\bfseries Is\+Big\+Int} () const
+\item 
+\mbox{\Hypertarget{class_i_s_q_l_data_a8916b6115115b64de012d348cd320ffb}\label{class_i_s_q_l_data_a8916b6115115b64de012d348cd320ffb}} 
+virtual bool {\bfseries Is\+Float} () const
+\item 
+\mbox{\Hypertarget{class_i_s_q_l_data_a646affad2c4d9659fafa5fa1e5cf8c71}\label{class_i_s_q_l_data_a646affad2c4d9659fafa5fa1e5cf8c71}} 
+virtual bool {\bfseries Is\+Double} () const
+\item 
+\mbox{\Hypertarget{class_i_s_q_l_data_af3d9007e9e16eb67824f687c0bd6bf51}\label{class_i_s_q_l_data_af3d9007e9e16eb67824f687c0bd6bf51}} 
+virtual bool {\bfseries Is\+Numeric} () const
+\item 
+\mbox{\Hypertarget{class_i_s_q_l_data_a67b5d450d5adee75e6f0477ed539affb}\label{class_i_s_q_l_data_a67b5d450d5adee75e6f0477ed539affb}} 
+virtual bool {\bfseries Is\+String} () const
+\item 
+\mbox{\Hypertarget{class_i_s_q_l_data_a6de7cafc8a0ec71a60ab5517e7162380}\label{class_i_s_q_l_data_a6de7cafc8a0ec71a60ab5517e7162380}} 
+virtual bool {\bfseries Is\+Blob} () const
+\item 
+\mbox{\Hypertarget{class_i_s_q_l_data_a7decab88fd14fb80afa222f655f602cf}\label{class_i_s_q_l_data_a7decab88fd14fb80afa222f655f602cf}} 
+virtual bool {\bfseries Is\+Time\+Or\+Date} () const
+\item 
+\mbox{\Hypertarget{class_i_s_q_l_data_a7ec5c412e3d439ad432452e7b0104b00}\label{class_i_s_q_l_data_a7ec5c412e3d439ad432452e7b0104b00}} 
+virtual bool {\bfseries Is\+Date} () const
+\item 
+\mbox{\Hypertarget{class_i_s_q_l_data_a75108c3824ab3b77712df9607e938d74}\label{class_i_s_q_l_data_a75108c3824ab3b77712df9607e938d74}} 
+virtual bool {\bfseries Is\+Time} () const
+\item 
+\mbox{\Hypertarget{class_i_s_q_l_data_a3faf108e70f595160214021646f08173}\label{class_i_s_q_l_data_a3faf108e70f595160214021646f08173}} 
+virtual bool {\bfseries Is\+Time\+Stamp} () const
+\item 
+\mbox{\Hypertarget{class_i_s_q_l_data_a132c2df4a7a522e518203c03fa1040ee}\label{class_i_s_q_l_data_a132c2df4a7a522e518203c03fa1040ee}} 
+virtual bool {\bfseries Is\+Null} () const
+\item 
+\mbox{\Hypertarget{class_i_s_q_l_data_a0609b6b92d5ac3b32d7324470619ecb9}\label{class_i_s_q_l_data_a0609b6b92d5ac3b32d7324470619ecb9}} 
+{\bfseries S\+Q\+L\+\_\+\+D\+A\+T\+A\+\_\+\+T\+Y\+P\+E\+\_\+\+L\+I\+ST} (AS)
+\item 
+\mbox{\Hypertarget{class_i_s_q_l_data_a982e6f228a477bbc252191bf773ea452}\label{class_i_s_q_l_data_a982e6f228a477bbc252191bf773ea452}} 
+virtual int {\bfseries Compare} (const \mbox{\hyperlink{class_i_s_q_l_data}{I\+S\+Q\+L\+Data}} $\ast$rhs) const =0
+\item 
+\mbox{\Hypertarget{class_i_s_q_l_data_a735eb9bbb15d0106ba4ec63f4a67a684}\label{class_i_s_q_l_data_a735eb9bbb15d0106ba4ec63f4a67a684}} 
+virtual void {\bfseries Accept} (\mbox{\hyperlink{class_i_s_q_l_data_visitor}{I\+S\+Q\+L\+Data\+Visitor}} $\ast$)=0
+\item 
+\mbox{\Hypertarget{class_i_s_q_l_data_acfa85a6f2f14ff81b1dbe51cb698e6a6}\label{class_i_s_q_l_data_acfa85a6f2f14ff81b1dbe51cb698e6a6}} 
+virtual void {\bfseries Accept} (\mbox{\hyperlink{class_i_const_s_q_l_data_visitor}{I\+Const\+S\+Q\+L\+Data\+Visitor}} $\ast$) const =0
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+
+
+Definition at line 163 of file sqldata.\+h.
+
+
+
+\subsection{Member Enumeration Documentation}
+\mbox{\Hypertarget{class_i_s_q_l_data_ac3f308048cf5362aba047c5c776c4f7b}\label{class_i_s_q_l_data_ac3f308048cf5362aba047c5c776c4f7b}} 
+\index{ISQLData@{ISQLData}!CompareResult@{CompareResult}}
+\index{CompareResult@{CompareResult}!ISQLData@{ISQLData}}
+\subsubsection{\texorpdfstring{CompareResult}{CompareResult}}
+{\footnotesize\ttfamily enum \mbox{\hyperlink{class_i_s_q_l_data_ac3f308048cf5362aba047c5c776c4f7b}{I\+S\+Q\+L\+Data\+::\+Compare\+Result}}}
+
+\begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{kFail@{kFail}!ISQLData@{ISQLData}}\index{ISQLData@{ISQLData}!kFail@{kFail}}}\mbox{\Hypertarget{class_i_s_q_l_data_ac3f308048cf5362aba047c5c776c4f7ba46c1b2e071e8ff6a81eb9d0e600a8105}\label{class_i_s_q_l_data_ac3f308048cf5362aba047c5c776c4f7ba46c1b2e071e8ff6a81eb9d0e600a8105}} 
+k\+Fail&unable to compare \\
+\hline
+
+\end{DoxyEnumFields}
+
+
+Definition at line 185 of file sqldata.\+h.
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+D\+:/\+V\+C\+Repos/\+Database0/\+Database0/sqldata.\+h\end{DoxyCompactItemize}

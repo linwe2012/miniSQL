@@ -1,0 +1,144 @@
+\hypertarget{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4}{}\section{Buffer\+Manager\+::Iterator$<$ char $\ast$ $>$ Class Template Reference}
+\label{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4}\index{BufferManager::Iterator$<$ char $\ast$ $>$@{BufferManager::Iterator$<$ char $\ast$ $>$}}
+\subsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_a2241d01688c2d5b7e9e5d1d720b73b08}\label{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_a2241d01688c2d5b7e9e5d1d720b73b08}} 
+using {\bfseries pointer} = char $\ast$
+\end{DoxyCompactItemize}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_a79c86c77e7cfc623fdeb085081eb2789}\label{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_a79c86c77e7cfc623fdeb085081eb2789}} 
+{\bfseries Iterator} (char $\ast$current, \mbox{\hyperlink{struct_page}{Page}} $\ast$page, \mbox{\hyperlink{class_buffer_manager}{Buffer\+Manager}} $\ast$boss)
+\item 
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_a22a7d591dfa5e9146fd2c615a208ca55}\label{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_a22a7d591dfa5e9146fd2c615a208ca55}} 
+{\bfseries Iterator} (char $\ast$current, \mbox{\hyperlink{struct_page}{Page}} $\ast$page, \mbox{\hyperlink{class_buffer_manager}{Buffer\+Manager}} $\ast$boss, uint16\+\_\+t record\+\_\+in\+\_\+page)
+\item 
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_af00972cbcb21f0baec529be8c833574a}\label{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_af00972cbcb21f0baec529be8c833574a}} 
+bool {\bfseries Is\+Nil} () const
+\item 
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_a4cc6a78dc11f9f13664906425f49eb30}\label{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_a4cc6a78dc11f9f13664906425f49eb30}} 
+bool {\bfseries Is\+End} () const
+\item 
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_a2209e56f5733332f04ac19b6f1e7e8be}\label{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_a2209e56f5733332f04ac19b6f1e7e8be}} 
+bool {\bfseries Is\+End\+Page} () const
+\item 
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_a66af05f7a03d811df01f0e45f7fb770a}\label{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_a66af05f7a03d811df01f0e45f7fb770a}} 
+bool {\bfseries Is\+Begin} () const
+\item 
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_ac83da3470d1cbf62b050701463cff8c9}\label{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_ac83da3470d1cbf62b050701463cff8c9}} 
+char $\ast$ {\bfseries operator $\ast$} ()
+\item 
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_ae26bb823c8f9f494ce424099b493837e}\label{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_ae26bb823c8f9f494ce424099b493837e}} 
+const char $\ast$ {\bfseries operator $\ast$} () const
+\item 
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_a069ae804c88808b5a0097d45c980dd71}\label{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_a069ae804c88808b5a0097d45c980dd71}} 
+\mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Iterator}} \& {\bfseries operator++} ()
+\item 
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_ad199794579280788c749844d8b60427f}\label{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_ad199794579280788c749844d8b60427f}} 
+\mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Iterator}} {\bfseries operator++} (int)
+\item 
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_ad36ec9481ab235628f46555a20d2d467}\label{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_ad36ec9481ab235628f46555a20d2d467}} 
+\mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Iterator}} \& {\bfseries operator-\/-\/} ()
+\item 
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_aa4819ade76573e2e32353f392c0af48c}\label{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_aa4819ade76573e2e32353f392c0af48c}} 
+\mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Iterator}} {\bfseries operator-\/-\/} (int)
+\item 
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_a6d3bb50f594bafe557dc76b41fa569f4}\label{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_a6d3bb50f594bafe557dc76b41fa569f4}} 
+const \mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Iterator}} \& {\bfseries operator+=} (int offset)
+\item 
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_ab7e781a98a854d500a8f616ea4ffbf8f}\label{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_ab7e781a98a854d500a8f616ea4ffbf8f}} 
+const \mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Iterator}} \& {\bfseries operator-\/=} (int offset)
+\item 
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_ab41a7a7de7d1dd1902d1f076fa650b95}\label{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_ab41a7a7de7d1dd1902d1f076fa650b95}} 
+const \mbox{\hyperlink{struct_page}{Page}} \& {\bfseries page} () const
+\item 
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_a176358d2c8800b181a909fdc32e87ee2}\label{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_a176358d2c8800b181a909fdc32e87ee2}} 
+std\+::string {\bfseries As\+String} ()
+\item 
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_a29fcf3228972ff96c1780b98d617a64a}\label{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_a29fcf3228972ff96c1780b98d617a64a}} 
+bool {\bfseries Insert} (const char $\ast$first, const char $\ast$last)
+\item 
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_adc256e50a6d92c9253e0fb4f43f13d5a}\label{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_adc256e50a6d92c9253e0fb4f43f13d5a}} 
+bool {\bfseries Insert} (const std\+::string \&str)
+\item 
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_a63b8cda4e40deddd9ea5eca0cd4e55d4}\label{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_a63b8cda4e40deddd9ea5eca0cd4e55d4}} 
+bool {\bfseries Insert} (const void $\ast$data, size\+\_\+t length\+\_\+by\+\_\+bytes)
+\item 
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_ae55eb813cf46b0b59c1c208f3abfd62d}\label{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_ae55eb813cf46b0b59c1c208f3abfd62d}} 
+size\+\_\+t {\bfseries Free\+Bytes} () const
+\item 
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_a22a1c16acef171fb53c36a222195b759}\label{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_a22a1c16acef171fb53c36a222195b759}} 
+{\footnotesize template$<$typename T $>$ }\\T {\bfseries Round\+Up\+Byte} (T byte)
+\item 
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_ae6c88ed1f0388cceff1e67e6c13e3990}\label{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_ae6c88ed1f0388cceff1e67e6c13e3990}} 
+bool {\bfseries Insert\+Nil} (int n)
+\item 
+\mbox{\hyperlink{struct_generic_i_o_id}{Page\+Id}} \mbox{\hyperlink{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_a21992fa80761bab5fa8a32f000f2366a}{Auto\+Insert}} (const char $\ast$first, const char $\ast$last)
+\item 
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_af6e035406b74dc856ded1568fc540b3f}\label{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_af6e035406b74dc856ded1568fc540b3f}} 
+\mbox{\hyperlink{struct_generic_i_o_id}{Page\+Id}} {\bfseries Auto\+Insert} (const std\+::string \&str)
+\item 
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_a9beb324be70afa06e7b86e71dfdcdbf2}\label{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_a9beb324be70afa06e7b86e71dfdcdbf2}} 
+bool {\bfseries Erase\+In\+Page} (size\+\_\+t n=1)
+\item 
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_a6a0c407bacbaf9492d915beb836cd024}\label{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_a6a0c407bacbaf9492d915beb836cd024}} 
+void {\bfseries Delete\+Page} ()
+\item 
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_a431ebf70a4813c664a6c1e28f6c920f4}\label{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_a431ebf70a4813c664a6c1e28f6c920f4}} 
+\mbox{\hyperlink{struct_generic_i_o_id}{Page\+Id}} {\bfseries Auto\+Insert} (const void $\ast$data, size\+\_\+t length\+\_\+by\+\_\+bytes)
+\item 
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_a86b699194b2bf10f6ddfc15b7b90bb1e}\label{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_a86b699194b2bf10f6ddfc15b7b90bb1e}} 
+void {\bfseries Skip\+End\+Page\+Next} ()
+\item 
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_ac9f2bbc8b6fc8cb446c6e4128a7b3e3d}\label{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_ac9f2bbc8b6fc8cb446c6e4128a7b3e3d}} 
+{\footnotesize template$<$typename T $>$ }\\T {\bfseries Read} ()
+\item 
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_ae1f20844687c7256a70668eda7d77dcc}\label{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_ae1f20844687c7256a70668eda7d77dcc}} 
+{\footnotesize template$<$$>$ }\\std\+::string {\bfseries Read} ()
+\end{DoxyCompactItemize}
+\subsection*{Friends}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_a16155b1414091f690eefe4f5292199dc}\label{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_a16155b1414091f690eefe4f5292199dc}} 
+class {\bfseries Buffer\+Manager}
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+\subsubsection*{template$<$$>$\newline
+class Buffer\+Manager\+::\+Iterator$<$ char $\ast$ $>$}
+
+
+
+Definition at line 658 of file buffer-\/manager.\+h.
+
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_a21992fa80761bab5fa8a32f000f2366a}\label{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4_a21992fa80761bab5fa8a32f000f2366a}} 
+\index{BufferManager::Iterator$<$ char $\ast$ $>$@{BufferManager::Iterator$<$ char $\ast$ $>$}!AutoInsert@{AutoInsert}}
+\index{AutoInsert@{AutoInsert}!BufferManager::Iterator$<$ char $\ast$ $>$@{BufferManager::Iterator$<$ char $\ast$ $>$}}
+\subsubsection{\texorpdfstring{AutoInsert()}{AutoInsert()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{struct_generic_i_o_id}{Page\+Id}} \mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Buffer\+Manager\+::\+Iterator}}$<$ char $\ast$ $>$\+::Auto\+Insert (\begin{DoxyParamCaption}\item[{const char $\ast$}]{first,  }\item[{const char $\ast$}]{last }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+if data exceeds free space in current page, will allocate a new page and insert it the cursor will atomatically forward 
+\begin{DoxyExceptions}{Exceptions}
+{\em when} & data is larger than one page can hold \\
+\hline
+\end{DoxyExceptions}
+\begin{DoxyReturn}{Returns}
+{\ttfamily Page\+Id(0)} (nil) if no page is allocated 
+
+{\ttfamily Page\+Id(next\+\_\+page)} if data is written to next page 
+\end{DoxyReturn}
+
+
+Definition at line 788 of file buffer-\/manager.\+h.
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+D\+:/\+V\+C\+Repos/\+Database0/\+Database0/buffer-\/manager.\+h\end{DoxyCompactItemize}

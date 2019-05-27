@@ -1,0 +1,91 @@
+.TH "ISQLData" 3 "Mon May 27 2019" "MiniSQL" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+ISQLData
+.SH SYNOPSIS
+.br
+.PP
+.PP
+Inherited by \fBISQLNumber\fP, \fBISQLTimeOrDate\fP, \fBSQLNull\fP, and \fBSQLString\fP\&.
+.SS "Public Types"
+
+.in +1c
+.ti -1c
+.RI "enum \fBCompareResult\fP { \fBkLess\fP = -1, \fBkLarger\fP = 1, \fBkEqual\fP = 0, \fBkUnkown\fP = -3, \fBkFail\fP = -2 }"
+.br
+.in -1c
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "virtual bool \fBIsNumber\fP () const"
+.br
+.ti -1c
+.RI "virtual bool \fBIsInt\fP () const"
+.br
+.ti -1c
+.RI "virtual bool \fBIsBigInt\fP () const"
+.br
+.ti -1c
+.RI "virtual bool \fBIsFloat\fP () const"
+.br
+.ti -1c
+.RI "virtual bool \fBIsDouble\fP () const"
+.br
+.ti -1c
+.RI "virtual bool \fBIsNumeric\fP () const"
+.br
+.ti -1c
+.RI "virtual bool \fBIsString\fP () const"
+.br
+.ti -1c
+.RI "virtual bool \fBIsBlob\fP () const"
+.br
+.ti -1c
+.RI "virtual bool \fBIsTimeOrDate\fP () const"
+.br
+.ti -1c
+.RI "virtual bool \fBIsDate\fP () const"
+.br
+.ti -1c
+.RI "virtual bool \fBIsTime\fP () const"
+.br
+.ti -1c
+.RI "virtual bool \fBIsTimeStamp\fP () const"
+.br
+.ti -1c
+.RI "virtual bool \fBIsNull\fP () const"
+.br
+.ti -1c
+.RI "\fBSQL_DATA_TYPE_LIST\fP (AS)"
+.br
+.ti -1c
+.RI "virtual int \fBCompare\fP (const \fBISQLData\fP *rhs) const =0"
+.br
+.ti -1c
+.RI "virtual void \fBAccept\fP (\fBISQLDataVisitor\fP *)=0"
+.br
+.ti -1c
+.RI "virtual void \fBAccept\fP (\fBIConstSQLDataVisitor\fP *) const =0"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+Definition at line 163 of file sqldata\&.h\&.
+.SH "Member Enumeration Documentation"
+.PP 
+.SS "enum \fBISQLData::CompareResult\fP"
+
+.PP
+\fBEnumerator\fP
+.in +1c
+.TP
+\fB\fIkFail \fP\fP
+unable to compare 
+.PP
+Definition at line 185 of file sqldata\&.h\&.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MiniSQL from the source code\&.

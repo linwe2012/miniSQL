@@ -1,0 +1,1062 @@
+\hypertarget{_d_1_2_v_c_repos_2_database0_2_database0_2buffer-manager_8h-example}{}\section{D\+:/\+V\+C\+Repos/\+Database0/\+Database0/buffer-\/manager.\+h}
+insert data \begin{DoxyReturn}{Returns}
+false if space is not enough, no data will be inserted! 
+
+true if successful 
+\end{DoxyReturn}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em first} & the pointing to begining of data \\
+\hline
+\mbox{\texttt{ in}}  & {\em last} & last of data\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{ \{c++\}}
+\DoxyCodeLine{Iterator<int> itr; \textcolor{keywordtype}{int} data[10]}
+\DoxyCodeLine{itr.Insert(data, data + 10); \textcolor{comment}{// insert 10 element}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keywordtype}{int} a;}
+\DoxyCodeLine{itr.Insert(\&a, \&a + 1); \textcolor{comment}{// insert 1 element}}
+\end{DoxyCode}
+
+
+
+\begin{DoxyCodeInclude}{0}
+\DoxyCodeLine{\textcolor{preprocessor}{\#pragma once}}
+\DoxyCodeLine{\textcolor{comment}{// \#define \_HAS\_CXX17 1}}
+\DoxyCodeLine{\textcolor{preprocessor}{\#include <memory.h>}}
+\DoxyCodeLine{\textcolor{preprocessor}{\#include <map>}}
+\DoxyCodeLine{\textcolor{preprocessor}{\#include <string>}}
+\DoxyCodeLine{\textcolor{preprocessor}{\#include <queue>}}
+\DoxyCodeLine{\textcolor{preprocessor}{\#include <limits>}}
+\DoxyCodeLine{\textcolor{preprocessor}{\#include <exception>}}
+\DoxyCodeLine{\textcolor{preprocessor}{\#include <sstream>}}
+\DoxyCodeLine{\textcolor{preprocessor}{\#include <experimental/filesystem>}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keyword}{namespace }fs = std::experimental::filesystem;}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keyword}{template}<\textcolor{keyword}{typename} UnderlyingType, \textcolor{keywordtype}{int} StrongType>}
+\DoxyCodeLine{\textcolor{keyword}{struct }\mbox{\hyperlink{struct_generic_i_o_id}{GenericIOId}} \{}
+\DoxyCodeLine{    \textcolor{keyword}{using} IdType = UnderlyingType;}
+\DoxyCodeLine{    \mbox{\hyperlink{struct_generic_i_o_id}{GenericIOId}}(UnderlyingType t) : id(t) \{\}}
+\DoxyCodeLine{    \mbox{\hyperlink{struct_generic_i_o_id}{GenericIOId}}() : id(0) \{\}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    enum : UnderlyingType \{}
+\DoxyCodeLine{        kMax = std::numeric\_limits<UnderlyingType>::max()}
+\DoxyCodeLine{    \};}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keyword}{operator} UnderlyingType() \{}
+\DoxyCodeLine{        \textcolor{keywordflow}{return} id;}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    UnderlyingType id;}
+\DoxyCodeLine{    \textcolor{keywordtype}{bool} operator<(\textcolor{keyword}{const} \mbox{\hyperlink{struct_generic_i_o_id}{GenericIOId}}\& rhs)\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{        \textcolor{keywordflow}{return} \textcolor{keywordtype}{id} < rhs.id;}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keywordtype}{bool} operator==(\textcolor{keyword}{const} \mbox{\hyperlink{struct_generic_i_o_id}{GenericIOId}}\& rhs)\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{        \textcolor{keywordflow}{return} \textcolor{keywordtype}{id} == rhs.id;}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keywordtype}{bool} operator!=(\textcolor{keyword}{const} \mbox{\hyperlink{struct_generic_i_o_id}{GenericIOId}}\& rhs)\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{        \textcolor{keywordflow}{return} !operator==(rhs);}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keywordtype}{bool} operator>(\textcolor{keyword}{const} \mbox{\hyperlink{struct_generic_i_o_id}{GenericIOId}}\& rhs)\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{        \textcolor{keywordflow}{return}  \textcolor{keywordtype}{id} > rhs.id;}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keywordtype}{void} Inc() \{}
+\DoxyCodeLine{        ++id;}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keywordtype}{bool} IsNil() \{ \textcolor{keywordflow}{return} \textcolor{keywordtype}{id} == 0; \}}
+\DoxyCodeLine{\};}
+\DoxyCodeLine{}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keyword}{using} \mbox{\hyperlink{struct_generic_i_o_id}{PageId}} = \mbox{\hyperlink{struct_generic_i_o_id}{GenericIOId<uint32\_t, 1>}};}
+\DoxyCodeLine{\textcolor{keyword}{using} \mbox{\hyperlink{struct_generic_i_o_id}{FileId}} = \mbox{\hyperlink{struct_generic_i_o_id}{GenericIOId<uint16\_t, 0>}};}
+\DoxyCodeLine{}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{preprocessor}{\#define PAGE\_SIZE\_BY\_BYTES 16 * 1024}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keyword}{struct }\mbox{\hyperlink{struct_variadic}{Variadic}} \{}
+\DoxyCodeLine{    \textcolor{keywordtype}{char} placeholder;}
+\DoxyCodeLine{\};}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keyword}{struct }\mbox{\hyperlink{struct_page}{Page}} \{}
+\DoxyCodeLine{    \textcolor{keyword}{struct }Header \{}
+\DoxyCodeLine{        \textcolor{keywordtype}{int} prev = 0; \textcolor{comment}{// OFFSET of previous page}}
+\DoxyCodeLine{        \textcolor{keywordtype}{int} next = 0;}
+\DoxyCodeLine{        uint16\_t num\_records = 0;}
+\DoxyCodeLine{        uint16\_t flags = 0;}
+\DoxyCodeLine{        uint16\_t free\_offset = 0;}
+\DoxyCodeLine{        uint64\_t log\_sqn = 0;     \textcolor{comment}{// log sequence number}}
+\DoxyCodeLine{        \textcolor{keywordtype}{void} set\_flag(\textcolor{keywordtype}{int} i) \{}
+\DoxyCodeLine{            flags |= 1 << i;}
+\DoxyCodeLine{        \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{        \textcolor{keywordtype}{void} clear\_flag(\textcolor{keywordtype}{int} i) \{}
+\DoxyCodeLine{            flags \&= ~(1 << i);}
+\DoxyCodeLine{        \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{        \textcolor{keywordtype}{bool} flag(\textcolor{keywordtype}{int} i) \{}
+\DoxyCodeLine{            \textcolor{keywordflow}{return} flags \& (1 << i);}
+\DoxyCodeLine{        \}}
+\DoxyCodeLine{    \};}
+\DoxyCodeLine{}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keyword}{enum} \{}
+\DoxyCodeLine{        kPageSize = PAGE\_SIZE\_BY\_BYTES,}
+\DoxyCodeLine{        kDiscretionSpace = kPageSize - \textcolor{keyword}{sizeof}(Header),}
+\DoxyCodeLine{        kInValidOffset = UINT16\_MAX,}
+\DoxyCodeLine{        kBeginOfReversed = kDiscretionSpace - 1,}
+\DoxyCodeLine{}
+\DoxyCodeLine{        kfIsVariadic = 0, \textcolor{comment}{// denotes this page is variadic}}
+\DoxyCodeLine{        kfExtendToNext = 1, \textcolor{comment}{// whether the last data extend}}
+\DoxyCodeLine{        kfIsUnused = 2}
+\DoxyCodeLine{    \};}
+\DoxyCodeLine{}
+\DoxyCodeLine{    }
+\DoxyCodeLine{    \textcolor{keyword}{struct }DataPos \{}
+\DoxyCodeLine{        uint16\_t length;}
+\DoxyCodeLine{        uint16\_t offset;}
+\DoxyCodeLine{    \};}
+\DoxyCodeLine{}
+\DoxyCodeLine{    static\_assert(\textcolor{keyword}{alignof}(Header) == \textcolor{keyword}{alignof}(uint64\_t), \textcolor{stringliteral}{"Header Must be aligned to max so that it can match any data's align requirement"});}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keyword}{template}<\textcolor{keyword}{typename} T>}
+\DoxyCodeLine{    \textcolor{keywordtype}{void} Write(\textcolor{keywordtype}{size\_t} offset, T data) \{}
+\DoxyCodeLine{        *(static\_cast<T*>(space) + offset) = data;}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{comment}{/*}}
+\DoxyCodeLine{\textcolor{comment}{    void ReverseWriteBit(int offset, bool data) \{}}
+\DoxyCodeLine{\textcolor{comment}{        int char\_of\_bit = offset/ 8 + 1;}}
+\DoxyCodeLine{\textcolor{comment}{        int offset\_in\_char = 7 - offset \% 8;}}
+\DoxyCodeLine{\textcolor{comment}{        char\& target = end()[-char\_of\_bit];}}
+\DoxyCodeLine{\textcolor{comment}{        unsigned char mask = 1 << offset\_in\_char;}}
+\DoxyCodeLine{\textcolor{comment}{        if (data) \{}}
+\DoxyCodeLine{\textcolor{comment}{            target |= mask;}}
+\DoxyCodeLine{\textcolor{comment}{        \}}}
+\DoxyCodeLine{\textcolor{comment}{        else \{}}
+\DoxyCodeLine{\textcolor{comment}{            target \&= ~mask;}}
+\DoxyCodeLine{\textcolor{comment}{        \}}}
+\DoxyCodeLine{\textcolor{comment}{    \}}}
+\DoxyCodeLine{\textcolor{comment}{}}
+\DoxyCodeLine{\textcolor{comment}{    bool ReverseReadBit(int offset) \{}}
+\DoxyCodeLine{\textcolor{comment}{        int char\_of\_bit = offset / 8 + 1;}}
+\DoxyCodeLine{\textcolor{comment}{        int offset\_in\_char = 7 - offset \% 8;}}
+\DoxyCodeLine{\textcolor{comment}{        char target = end()[-char\_of\_bit];}}
+\DoxyCodeLine{\textcolor{comment}{        unsigned char mask = 1 << offset\_in\_char;}}
+\DoxyCodeLine{\textcolor{comment}{        return target \& ~mask;}}
+\DoxyCodeLine{\textcolor{comment}{    \}*/}}
+\DoxyCodeLine{    }
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keyword}{template}<\textcolor{keyword}{typename} T>}
+\DoxyCodeLine{    \textcolor{keywordtype}{void} ReverseInsertN(\textcolor{keywordtype}{size\_t} src\_offet, \textcolor{keywordtype}{size\_t} num\_vals, \textcolor{keywordtype}{size\_t} move\_size, T val) \{}
+\DoxyCodeLine{        \textcolor{keyword}{auto} t = reinterpret\_cast<T*>(end());}
+\DoxyCodeLine{        \textcolor{keywordtype}{size\_t} dst\_offset = num\_vals + src\_offet;}
+\DoxyCodeLine{        \textcolor{comment}{// memmove(t - src\_offet - move\_size, t - dst\_offset - move\_size, move\_size * sizeof(T));}}
+\DoxyCodeLine{        memmove(t - dst\_offset - move\_size, t - src\_offet - move\_size, move\_size * \textcolor{keyword}{sizeof}(T));}
+\DoxyCodeLine{        std::fill\_n(t - dst\_offset, num\_vals, val);}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keyword}{template}<\textcolor{keyword}{typename} T>}
+\DoxyCodeLine{    \textcolor{keywordtype}{void} ReverseEraseN(\textcolor{keywordtype}{size\_t} src\_offet, \textcolor{keywordtype}{size\_t} num\_vals, \textcolor{keywordtype}{size\_t} move\_size) \{}
+\DoxyCodeLine{        \textcolor{keyword}{auto} t = reinterpret\_cast<T*>(end());}
+\DoxyCodeLine{        \textcolor{keywordtype}{size\_t} dst\_offset = src\_offet - num\_vals;}
+\DoxyCodeLine{        memmove(t - src\_offet - move\_size, t - dst\_offset - move\_size, move\_size * \textcolor{keyword}{sizeof}(T));}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keyword}{template}<\textcolor{keyword}{typename} T>}
+\DoxyCodeLine{    T Read(\textcolor{keywordtype}{size\_t} offset)\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{        \textcolor{keywordflow}{return} *(reinterpret\_cast<T*>(space) + offset);}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keyword}{template}<\textcolor{keyword}{typename} T>}
+\DoxyCodeLine{    T\& Read(\textcolor{keywordtype}{size\_t} offset) \{}
+\DoxyCodeLine{        \textcolor{keywordflow}{return} *(reinterpret\_cast<T*>(space) + offset);}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keyword}{template}<\textcolor{keyword}{typename} T>}
+\DoxyCodeLine{    T\& ReverseRead(\textcolor{keywordtype}{size\_t} offset) \{}
+\DoxyCodeLine{        \textcolor{keywordflow}{return} *(reinterpret\_cast<T*>(end()) - offset - 1);}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keyword}{template}<\textcolor{keyword}{typename} T>}
+\DoxyCodeLine{    T ReverseRead(\textcolor{keywordtype}{size\_t} offset)\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{        \textcolor{keywordflow}{return} *(reinterpret\_cast<T*>(end()) - offset - 1);}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    }
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keywordtype}{size\_t} SpaceLeftByByte() \{}
+\DoxyCodeLine{        \textcolor{keywordtype}{char}* begin\_of\_free = space + kBeginOfReversed - header.free\_offset;}
+\DoxyCodeLine{        \textcolor{keywordflow}{if} (header.flag(kfIsVariadic)) \{}
+\DoxyCodeLine{            \textcolor{keywordtype}{char}* end\_of\_free = space + header.num\_records * \textcolor{keyword}{sizeof}(DataPos);}
+\DoxyCodeLine{            \textcolor{keywordflow}{return} begin\_of\_free - end\_of\_free;}
+\DoxyCodeLine{        \}}
+\DoxyCodeLine{        \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{            \textcolor{keywordtype}{char}* end\_of\_free = space + (header.num\_records + 7) / 8;}
+\DoxyCodeLine{            \textcolor{keywordflow}{return} begin\_of\_free - end\_of\_free;}
+\DoxyCodeLine{        \}}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keywordtype}{size\_t} SpaceLeftByByteFixedSize()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{        \textcolor{keyword}{const} \textcolor{keywordtype}{char}* begin\_of\_free = space + header.free\_offset;}
+\DoxyCodeLine{        \textcolor{comment}{// num\_records bits of null table, we round it up to char}}
+\DoxyCodeLine{        \textcolor{keyword}{const} \textcolor{keywordtype}{char}* end\_of\_free = end() -  (header.num\_records + 7) / 8 * 8;}
+\DoxyCodeLine{        \textcolor{keywordflow}{return} begin\_of\_free - end\_of\_free;}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keywordtype}{size\_t} SpaceLeftByByteVariadicSize()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{        \textcolor{keyword}{const} \textcolor{keywordtype}{char}* begin\_of\_free = space + kDiscretionSpace - header.free\_offset;}
+\DoxyCodeLine{        \textcolor{comment}{// num\_records bits of null table, we round it up to char}}
+\DoxyCodeLine{        \textcolor{keyword}{const} \textcolor{keywordtype}{char}* end\_of\_free = space + header.num\_records  * \textcolor{keyword}{sizeof}(DataPos);}
+\DoxyCodeLine{        \textcolor{keywordflow}{return} begin\_of\_free - end\_of\_free;}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keywordtype}{bool} HasPrev()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{        \textcolor{keywordflow}{return} header.prev != 0;}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keywordtype}{bool} HasNext()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{        \textcolor{keywordflow}{return} header.next != 0;}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keywordtype}{char}* end() \{}
+\DoxyCodeLine{        \textcolor{keywordflow}{return} space + kDiscretionSpace;}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keyword}{const} \textcolor{keywordtype}{char}* end()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{        \textcolor{keywordflow}{return} space + kDiscretionSpace;}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    Header header;}
+\DoxyCodeLine{    \textcolor{keywordtype}{char} space[kDiscretionSpace];}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{comment}{// extra info not written to disk}}
+\DoxyCodeLine{    \textcolor{keywordtype}{bool} is\_dirty = \textcolor{keyword}{false};}
+\DoxyCodeLine{    \textcolor{keywordtype}{void}* piggyback = \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{\};}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keyword}{template}<>}
+\DoxyCodeLine{\textcolor{keyword}{inline} \textcolor{keywordtype}{void} Page::Write<bool>(\textcolor{keywordtype}{size\_t} offset, \textcolor{keywordtype}{bool} data) \{}
+\DoxyCodeLine{    \textcolor{keywordtype}{size\_t} char\_of\_bit = offset / 8;}
+\DoxyCodeLine{    \textcolor{keywordtype}{size\_t} offset\_in\_char = offset \% 8;}
+\DoxyCodeLine{    \textcolor{keywordtype}{char}\& target = space[char\_of\_bit];}
+\DoxyCodeLine{    \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{char} mask = 1 << offset\_in\_char;}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keywordflow}{if} (data) \{}
+\DoxyCodeLine{        target |= mask;}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{    \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{        target \&= ~mask;}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{\}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keyword}{template}<>}
+\DoxyCodeLine{\textcolor{keyword}{inline} \textcolor{keywordtype}{bool} Page::Read<bool>(\textcolor{keywordtype}{size\_t} offset)\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{    \textcolor{keywordtype}{size\_t} char\_of\_bit = offset / 8;}
+\DoxyCodeLine{    \textcolor{keywordtype}{size\_t} offset\_in\_char = offset \% 8;}
+\DoxyCodeLine{    \textcolor{keywordtype}{char} target = space[char\_of\_bit];}
+\DoxyCodeLine{    \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{char} mask = 1 << offset\_in\_char;}
+\DoxyCodeLine{    \textcolor{keywordflow}{return} target \& ~mask;}
+\DoxyCodeLine{\}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keyword}{class }\mbox{\hyperlink{class_buffer_manager}{BufferManager}} \{}
+\DoxyCodeLine{\textcolor{keyword}{public}:}
+\DoxyCodeLine{    \textcolor{keyword}{template}<\textcolor{keyword}{typename} T>}
+\DoxyCodeLine{    \textcolor{keyword}{class }Iterator \{}
+\DoxyCodeLine{    \textcolor{keyword}{public}:}
+\DoxyCodeLine{        \textcolor{keyword}{using} pointer = T *;}
+\DoxyCodeLine{        Iterator(T* current, \mbox{\hyperlink{struct_page}{Page}}* \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a5a17d8377bc10f437e29b058c0376b15}{page}}, \mbox{\hyperlink{class_buffer_manager}{BufferManager}}* boss)}
+\DoxyCodeLine{            :current\_(current), page\_(\mbox{\hyperlink{class_buffer_manager_1_1_iterator_a5a17d8377bc10f437e29b058c0376b15}{page}}), boss\_(boss), record\_in\_page\_(0) \{\}}
+\DoxyCodeLine{}
+\DoxyCodeLine{        Iterator(T* current, \mbox{\hyperlink{struct_page}{Page}}* \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a5a17d8377bc10f437e29b058c0376b15}{page}}, \mbox{\hyperlink{class_buffer_manager}{BufferManager}}* boss, uint16\_t record\_in\_page)}
+\DoxyCodeLine{            :current\_(current), page\_(\mbox{\hyperlink{class_buffer_manager_1_1_iterator_a5a17d8377bc10f437e29b058c0376b15}{page}}), boss\_(boss), record\_in\_page\_(record\_in\_page) \{\}}
+\DoxyCodeLine{}
+\DoxyCodeLine{        \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_buffer_manager_1_1_iterator_ad19030c51bf30e6d6e9e2e560cc511c4}{IsNil}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{            \textcolor{keywordflow}{return} page\_->ReverseRead<\textcolor{keywordtype}{char}>(record\_in\_page\_);}
+\DoxyCodeLine{        \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{        \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a6afaceac9683f05d9e1ecfc9ff5f3a0f}{IsEndPage}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{            \textcolor{keywordflow}{return} (record\_in\_page\_ == page\_->header.num\_records);}
+\DoxyCodeLine{        \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{        \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a02a38a84fd54e45d06818d2807b172d8}{IsEnd}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{            \textcolor{keywordflow}{return} \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a6afaceac9683f05d9e1ecfc9ff5f3a0f}{IsEndPage}}()  \textcolor{comment}{// we reach end of the page}}
+\DoxyCodeLine{                \&\& !page\_->HasNext(); \textcolor{comment}{// and page does not have any nexts}}
+\DoxyCodeLine{        \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{        \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a7ce4145bd6263f8003c4c4dee01a9c31}{IsBegin}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{            \textcolor{keywordflow}{return} (record\_in\_page\_ == 0)  \textcolor{comment}{// we reach end of the page}}
+\DoxyCodeLine{                \&\& !page\_->HasPrev(); \textcolor{comment}{// and page does not have any prevs}}
+\DoxyCodeLine{        \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{        \mbox{\hyperlink{struct_generic_i_o_id}{PageId}} \mbox{\hyperlink{class_buffer_manager_1_1_iterator_affb973bacb2deef1704e20221fb3c3fb}{InsertPageAfter}}();}
+\DoxyCodeLine{}
+\DoxyCodeLine{        Iterator\& \mbox{\hyperlink{class_buffer_manager_1_1_iterator_aabf5af4d55b46c14bddff0e7caab3665}{operator++}}(); \textcolor{comment}{// prefix}}
+\DoxyCodeLine{}
+\DoxyCodeLine{        [[deprecated(\textcolor{stringliteral}{"Please use prefix version as this is less efficient"})]]}
+\DoxyCodeLine{        Iterator \mbox{\hyperlink{class_buffer_manager_1_1_iterator_aabf5af4d55b46c14bddff0e7caab3665}{operator++}}(\textcolor{keywordtype}{int}); \textcolor{comment}{// postfix}}
+\DoxyCodeLine{}
+\DoxyCodeLine{        Iterator\& \mbox{\hyperlink{class_buffer_manager_1_1_iterator_ab9959f549dcfa3f6daa47677552b673d}{operator--}}();}
+\DoxyCodeLine{}
+\DoxyCodeLine{        [[deprecated(\textcolor{stringliteral}{"Please use prefix version as this is less efficient"})]]}
+\DoxyCodeLine{        Iterator \mbox{\hyperlink{class_buffer_manager_1_1_iterator_ab9959f549dcfa3f6daa47677552b673d}{operator--}}(\textcolor{keywordtype}{int});}
+\DoxyCodeLine{}
+\DoxyCodeLine{        \textcolor{keyword}{const} Iterator\& \mbox{\hyperlink{class_buffer_manager_1_1_iterator_aced12f95569a91d98a83bf635d671e25}{operator+=}}(\textcolor{keywordtype}{int} offset);}
+\DoxyCodeLine{}
+\DoxyCodeLine{        \textcolor{keyword}{const} Iterator\& \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a2a24e019d3a2934f3cd275b8a2436e59}{operator-=}}(\textcolor{keywordtype}{int} offset);}
+\DoxyCodeLine{}
+\DoxyCodeLine{        \textcolor{comment}{//TODO(L) Assert}}
+\DoxyCodeLine{\textcolor{comment}{}        T\& \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a633c54abf71a334ff179cc359e655d5d}{operator*}}() \{ \textcolor{comment}{/*if (IsEndPage()) \{ ++* this; \}*/}  \textcolor{keywordflow}{return} *current\_; \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{        T* operator->() \{ \textcolor{keywordflow}{return} current\_; \}}
+\DoxyCodeLine{        }
+\DoxyCodeLine{        \textcolor{keyword}{const} T\& \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a633c54abf71a334ff179cc359e655d5d}{operator*}}()\textcolor{keyword}{ const }\{ \textcolor{keywordflow}{return} *current\_; \}}
+\DoxyCodeLine{        }
+\DoxyCodeLine{        \textcolor{keyword}{const} T* operator->()\textcolor{keyword}{ const }\{ \textcolor{keywordflow}{return} current\_; \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{        \textcolor{keyword}{const} \mbox{\hyperlink{struct_page}{Page}}\& \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a5a17d8377bc10f437e29b058c0376b15}{page}}()\textcolor{keyword}{ const }\{ \textcolor{keywordflow}{return} *page\_; \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{        \textcolor{keywordtype}{size\_t} \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a436c0bafa40d441a59c0fb0e3aeb62cc}{FreeSlots}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{            \textcolor{keywordflow}{return} page\_->SpaceLeftByByteFixedSize() / (\textcolor{keyword}{sizeof}(T) * step\_ + \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{char}));}
+\DoxyCodeLine{        \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{        \textcolor{keywordtype}{size\_t} \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a3a53f35f35074aa2079dead6cc606a5b}{FreeBytes}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{            \textcolor{keywordflow}{return} page\_->SpaceLeftByByteFixedSize();}
+\DoxyCodeLine{        \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{        \mbox{\hyperlink{struct_generic_i_o_id}{PageId}} \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a7a57002c7f8daa714cf9e19e34874fca}{pageid}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{}
+\DoxyCodeLine{        \textcolor{keywordtype}{bool} Insert(\textcolor{keyword}{const} T* first, \textcolor{keyword}{const} T* last) \{}
+\DoxyCodeLine{            uint16\_t num\_elem = static\_cast<uint16\_t>(last - first);}
+\DoxyCodeLine{            \textcolor{keywordflow}{if} (num\_elem > \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a436c0bafa40d441a59c0fb0e3aeb62cc}{FreeSlots}}()) \{}
+\DoxyCodeLine{                \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{            \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{            uint16\_t defacto\_num\_elem = num\_elem / step\_;}
+\DoxyCodeLine{}
+\DoxyCodeLine{            \textcolor{keywordtype}{size\_t} n\_moved = page\_->header.num\_records - record\_in\_page\_;}
+\DoxyCodeLine{            page\_->header.free\_offset += static\_cast<uint16\_t>(num\_elem * \textcolor{keyword}{sizeof}(T));}
+\DoxyCodeLine{            memmove(current\_ + num\_elem, current\_, n\_moved * step\_ * \textcolor{keyword}{sizeof}(T));}
+\DoxyCodeLine{            memmove(current\_, first, num\_elem * \textcolor{keyword}{sizeof}(T));}
+\DoxyCodeLine{}
+\DoxyCodeLine{            page\_->ReverseInsertN<\textcolor{keywordtype}{char}>(record\_in\_page\_, defacto\_num\_elem, n\_moved, (char)0);}
+\DoxyCodeLine{            page\_->header.num\_records += defacto\_num\_elem;}
+\DoxyCodeLine{}
+\DoxyCodeLine{            page\_->is\_dirty = \textcolor{keyword}{true};}
+\DoxyCodeLine{            \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{        \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{        \textcolor{keywordtype}{bool} Insert(T val) \{}
+\DoxyCodeLine{            \textcolor{keywordflow}{return} Insert(\&val, \&val + 1);}
+\DoxyCodeLine{        \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{        \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a2c627998f19999fe55b7452b840ce47b}{EraseInPage}}(\textcolor{keywordtype}{size\_t} n = 1) \{}
+\DoxyCodeLine{            uint16\_t num\_elem = n * step\_;}
+\DoxyCodeLine{            int32\_t n\_moved = page\_->header.num\_records - record\_in\_page\_ - num\_elem;}
+\DoxyCodeLine{            \textcolor{keywordflow}{if} (n\_moved <= 0) \{}
+\DoxyCodeLine{                \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{            \}}
+\DoxyCodeLine{            page\_->header.free\_offset -= num\_elem * \textcolor{keyword}{sizeof}(T);}
+\DoxyCodeLine{            memmove(current\_, current\_ + num\_elem, n\_moved * step\_ * \textcolor{keyword}{sizeof}(T));}
+\DoxyCodeLine{            }
+\DoxyCodeLine{            page\_->ReverseEraseN<T>(record\_in\_page\_, n, n\_moved);}
+\DoxyCodeLine{            page\_->header.num\_records -= n;}
+\DoxyCodeLine{            \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{        \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{        \textcolor{keywordtype}{void} \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a2e9a59db2ef1289b16469750e422edd5}{DeletePage}}();}
+\DoxyCodeLine{}
+\DoxyCodeLine{}
+\DoxyCodeLine{        \textcolor{keywordtype}{bool} Insert(Iterator first, Iterator last) \{}
+\DoxyCodeLine{            Iterator old\_first = first;}
+\DoxyCodeLine{            \textcolor{keyword}{auto} slots = \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a436c0bafa40d441a59c0fb0e3aeb62cc}{FreeSlots}}();}
+\DoxyCodeLine{            uint16\_t count = 0;}
+\DoxyCodeLine{            \textcolor{keywordflow}{while} (first.pageid() != last.pageid()) \{}
+\DoxyCodeLine{                Iterator first\_endpage = first;}
+\DoxyCodeLine{                first\_endpage.MoveToPageEnd();}
+\DoxyCodeLine{                count += first\_endpage.current\_ - first.current\_;}
+\DoxyCodeLine{                \textcolor{keywordflow}{if} (count > slots) \{}
+\DoxyCodeLine{                    \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{                \}}
+\DoxyCodeLine{                first = ++first\_endpage;}
+\DoxyCodeLine{            \}}
+\DoxyCodeLine{            count += last.current\_ - first.current\_;}
+\DoxyCodeLine{            \textcolor{keywordflow}{if} (count > slots) \{}
+\DoxyCodeLine{                \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{            \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{            first = old\_first;}
+\DoxyCodeLine{            \textcolor{keywordflow}{while} (first.pageid() != last.pageid()) \{}
+\DoxyCodeLine{                Iterator first\_endpage = first;}
+\DoxyCodeLine{                first\_endpage.MoveToPageEnd();}
+\DoxyCodeLine{                \textcolor{keyword}{auto} res = Insert(first.current\_, first\_endpage.current\_);}
+\DoxyCodeLine{                \textcolor{keywordflow}{if} (!res) \{}
+\DoxyCodeLine{                    \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{                \}}
+\DoxyCodeLine{                first = ++first\_endpage;}
+\DoxyCodeLine{            \}}
+\DoxyCodeLine{            \textcolor{keywordflow}{return} Insert(first.current\_, last.current\_);}
+\DoxyCodeLine{        \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{}
+\DoxyCodeLine{        \textcolor{keywordtype}{void} \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a20b703d6135c5e3026eab944a32ca186}{MoveToPageCenter}}() \{}
+\DoxyCodeLine{            \textcolor{keywordtype}{int} target = record\_in\_page\_ - page\_->header.num\_records / 2;}
+\DoxyCodeLine{            \textcolor{keywordflow}{while} (target > 0) \{}
+\DoxyCodeLine{                --* \textcolor{keyword}{this};}
+\DoxyCodeLine{                --target;}
+\DoxyCodeLine{            \}}
+\DoxyCodeLine{            \textcolor{keywordflow}{while} (target < 0) \{}
+\DoxyCodeLine{                ++* \textcolor{keyword}{this};}
+\DoxyCodeLine{                ++target;}
+\DoxyCodeLine{            \}}
+\DoxyCodeLine{        \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{        \textcolor{keywordtype}{void} \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a88ae36356076d25c8959ecfbaa084d9f}{MoveToPageEnd}}() \{}
+\DoxyCodeLine{            record\_in\_page\_ = page\_->header.num\_records;}
+\DoxyCodeLine{            current\_ = reinterpret\_cast<T*>(page\_->space + page\_->header.free\_offset);}
+\DoxyCodeLine{        \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{        \textcolor{keywordtype}{void} \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a5fcb5fb10746e3d58736959a12610dd0}{MoveToPageBegin}}() \{}
+\DoxyCodeLine{            record\_in\_page\_ = 0;}
+\DoxyCodeLine{            current\_ = reinterpret\_cast<T*>(page\_->space);}
+\DoxyCodeLine{        \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{        \mbox{\hyperlink{struct_generic_i_o_id}{PageId}} \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a18f31d37240c5a587a85042374c5272d}{SplitPage}}() \{}
+\DoxyCodeLine{            \textcolor{keyword}{auto} piggy = reinterpret\_cast<PagePiggyback*>(page\_->piggyback);}
+\DoxyCodeLine{            }
+\DoxyCodeLine{            \mbox{\hyperlink{struct_generic_i_o_id}{PageId}} pid = boss\_->AllocatePageAfter(piggy->finfo->id, piggy->page\_id);}
+\DoxyCodeLine{            Iterator next = boss\_->GetPage<T>(piggy->finfo->id, pid);}
+\DoxyCodeLine{            next.step\_ = step\_;}
+\DoxyCodeLine{            int16\_t moved\_size = static\_cast<uint16\_t>((page\_->header.num\_records - record\_in\_page\_) * step\_);}
+\DoxyCodeLine{            next.Insert(current\_, current\_ + moved\_size);}
+\DoxyCodeLine{            page\_->header.num\_records = record\_in\_page\_;}
+\DoxyCodeLine{            page\_->header.free\_offset -= moved\_size;}
+\DoxyCodeLine{            \textcolor{keywordflow}{return} pid;}
+\DoxyCodeLine{        \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{        \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_buffer_manager_1_1_iterator_aee5637c96ddb7c5fef0f9a12d133c7c8}{InsertNil}}(uint16\_t n) \{}
+\DoxyCodeLine{            \textcolor{keywordflow}{if} (\mbox{\hyperlink{class_buffer_manager_1_1_iterator_a3a53f35f35074aa2079dead6cc606a5b}{FreeBytes}}() < n) \{}
+\DoxyCodeLine{                \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{            \}}
+\DoxyCodeLine{            \textcolor{keywordtype}{size\_t} n\_moved = page\_->header.num\_records - record\_in\_page\_;}
+\DoxyCodeLine{            page\_->ReverseInsertN<\textcolor{keywordtype}{char}>(record\_in\_page\_, n, n\_moved, (char)1);}
+\DoxyCodeLine{            page\_->header.num\_records += n;}
+\DoxyCodeLine{            page\_->is\_dirty = \textcolor{keyword}{true};}
+\DoxyCodeLine{            \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{        \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{        \textcolor{keywordtype}{void} SetStep(uint16\_t step) \{}
+\DoxyCodeLine{            step\_ = step;}
+\DoxyCodeLine{        \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{        \textcolor{comment}{//TODO(L): assert if uncastable (i.e. misaligned data)}}
+\DoxyCodeLine{\textcolor{comment}{}        \textcolor{keyword}{template}<\textcolor{keyword}{typename} U>}
+\DoxyCodeLine{        Iterator<U> \mbox{\hyperlink{class_buffer_manager_1_1_iterator_aac3b1b6e41babe5e82814e69e040fd20}{Cast}}(Iterator t) \{}
+\DoxyCodeLine{            \textcolor{keywordflow}{return} Iterator<U>(reinterpret\_cast<U*>(current\_), page\_, boss\_, record\_in\_page\_);}
+\DoxyCodeLine{        \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keyword}{private}:}
+\DoxyCodeLine{        \textcolor{keyword}{friend} \textcolor{keyword}{class }\mbox{\hyperlink{class_buffer_manager}{BufferManager}};}
+\DoxyCodeLine{        T* current\_;}
+\DoxyCodeLine{        \mbox{\hyperlink{struct_page}{Page}}* page\_;}
+\DoxyCodeLine{        \mbox{\hyperlink{class_buffer_manager}{BufferManager}}* boss\_;}
+\DoxyCodeLine{        uint16\_t record\_in\_page\_;}
+\DoxyCodeLine{        uint16\_t step\_ = 1;}
+\DoxyCodeLine{    \};}
+\DoxyCodeLine{}
+\DoxyCodeLine{    }
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keyword}{struct }UniquePage \{}
+\DoxyCodeLine{        \mbox{\hyperlink{struct_generic_i_o_id}{PageId}} page;}
+\DoxyCodeLine{        \mbox{\hyperlink{struct_generic_i_o_id}{FileId}} file;}
+\DoxyCodeLine{        \textcolor{keyword}{mutable} uint16\_t use\_count;}
+\DoxyCodeLine{        \textcolor{keywordtype}{bool} operator<(\textcolor{keyword}{const} UniquePage\& rhs)\textcolor{keyword}{ const }\{ }
+\DoxyCodeLine{            \textcolor{keywordflow}{if} (file < rhs.file) \{}
+\DoxyCodeLine{                \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{            \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{            \textcolor{keywordflow}{if} (file > rhs.file) \{}
+\DoxyCodeLine{                \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{            \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{            \textcolor{keywordflow}{return} page < rhs.page;}
+\DoxyCodeLine{        \}}
+\DoxyCodeLine{    \};}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keyword}{struct }FileHeader \{}
+\DoxyCodeLine{        \textcolor{keywordtype}{char} magic[4] = \textcolor{stringliteral}{"HMG"};}
+\DoxyCodeLine{        uint64\_t num\_pages = 0;}
+\DoxyCodeLine{        \mbox{\hyperlink{struct_generic_i_o_id}{PageId}} first\_free = 0;}
+\DoxyCodeLine{    \};}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keyword}{struct }FileInfo \{}
+\DoxyCodeLine{        \textcolor{keywordtype}{void}* fd; \textcolor{comment}{//< file descriptor}}
+\DoxyCodeLine{        \mbox{\hyperlink{struct_generic_i_o_id}{FileId}} id;}
+\DoxyCodeLine{        std::string abs\_path;}
+\DoxyCodeLine{        FileHeader header;}
+\DoxyCodeLine{    \};}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keyword}{struct }PagePiggyback \{}
+\DoxyCodeLine{        FileInfo *finfo;}
+\DoxyCodeLine{        \mbox{\hyperlink{struct_generic_i_o_id}{PageId}} page\_id;}
+\DoxyCodeLine{    \};}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keywordtype}{bool} IsOpened(\textcolor{keyword}{const} \textcolor{keywordtype}{char}* path);}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{comment}{// @throws std::ios\_base::failure if path not exits}}
+\DoxyCodeLine{    \mbox{\hyperlink{struct_generic_i_o_id}{FileId}} OpenFile(\textcolor{keyword}{const} \textcolor{keywordtype}{char}* path);}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{comment}{// create a formatted file on dist, throws error when already exits}}
+\DoxyCodeLine{    \textcolor{comment}{// @throws std::ios\_base::failure}}
+\DoxyCodeLine{    \mbox{\hyperlink{struct_generic_i_o_id}{FileId}} NewFile(\textcolor{keyword}{const} \textcolor{keywordtype}{char}* path);}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{comment}{// Get page from iterator}}
+\DoxyCodeLine{    \textcolor{keyword}{template}<\textcolor{keyword}{typename} T>}
+\DoxyCodeLine{    Iterator<T> GetPage(\mbox{\hyperlink{struct_generic_i_o_id}{FileId}} file\_id, \mbox{\hyperlink{struct_generic_i_o_id}{PageId}} page\_id);}
+\DoxyCodeLine{}
+\DoxyCodeLine{}
+\DoxyCodeLine{}
+\DoxyCodeLine{}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{comment}{// allocate a new page on file}}
+\DoxyCodeLine{    \mbox{\hyperlink{struct_generic_i_o_id}{PageId}} AllocatePageAfter(\mbox{\hyperlink{struct_generic_i_o_id}{FileId}} fid, \mbox{\hyperlink{struct_generic_i_o_id}{PageId}} prev);}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keyword}{template}<\textcolor{keyword}{typename} T>}
+\DoxyCodeLine{    \textcolor{keywordtype}{void} IteratorNextPage(Iterator<T> * target);}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keyword}{template}<\textcolor{keyword}{typename} T>}
+\DoxyCodeLine{    \textcolor{keywordtype}{void} IteratorPrevPage(Iterator<T> * target);}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keyword}{template}<\textcolor{keyword}{typename} T>}
+\DoxyCodeLine{    \mbox{\hyperlink{struct_generic_i_o_id}{PageId}} IteratorInsertPageAfter(Iterator<T>* target);}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keywordtype}{void} IteratorDeletePage(\mbox{\hyperlink{struct_page}{Page}}* target);}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{comment}{// first loop it up in memory, if failed, find in disk}}
+\DoxyCodeLine{    \mbox{\hyperlink{struct_page}{Page}}* AutoFetchPage(UniquePage);}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keywordtype}{void} FlushPageToDisk(\mbox{\hyperlink{struct_page}{Page}}* page, \mbox{\hyperlink{struct_generic_i_o_id}{PageId}} pid);}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keywordtype}{void} FlushFileHeaderToDisk(\mbox{\hyperlink{struct_generic_i_o_id}{FileId}} fid);}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keywordtype}{void} UnloadPage(UniquePage);}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \mbox{\hyperlink{struct_page}{Page}}* GetEmptyPage(\textcolor{keywordtype}{int} prev, \textcolor{keywordtype}{int} next);}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \mbox{\hyperlink{struct_page_1_1_header}{Page::Header}} GetPageHeader(\mbox{\hyperlink{struct_generic_i_o_id}{FileId}} fid, \mbox{\hyperlink{struct_generic_i_o_id}{PageId}} psid);}
+\DoxyCodeLine{}
+\DoxyCodeLine{    ~\mbox{\hyperlink{class_buffer_manager}{BufferManager}}();}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keyword}{private}:}
+\DoxyCodeLine{    \textcolor{keywordtype}{void} DeletePage(\mbox{\hyperlink{struct_page}{Page}}*);}
+\DoxyCodeLine{}
+\DoxyCodeLine{    std::map<fs::path, FileId> loaded\_files\_;}
+\DoxyCodeLine{    std::vector<FileInfo> file\_infos\_;}
+\DoxyCodeLine{}
+\DoxyCodeLine{    std::map<UniquePage, Page*> pages\_;}
+\DoxyCodeLine{    }
+\DoxyCodeLine{    \textcolor{keywordtype}{int} max\_pages\_ = 32;}
+\DoxyCodeLine{    \textcolor{keywordtype}{int} num\_allocate\_disk\_page\_ = 4;}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \mbox{\hyperlink{struct_page}{Page}}* empty\_page\_ = \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{\};}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{// variadic parameter}}
+\DoxyCodeLine{\textcolor{keyword}{template}<>}
+\DoxyCodeLine{\textcolor{keyword}{class }\mbox{\hyperlink{class_buffer_manager_1_1_iterator}{BufferManager::Iterator}}<char*> \{}
+\DoxyCodeLine{\textcolor{keyword}{public}:}
+\DoxyCodeLine{    \textcolor{keyword}{using} pointer = \textcolor{keywordtype}{char}*;}
+\DoxyCodeLine{    Iterator(\textcolor{keywordtype}{char}* current, \mbox{\hyperlink{struct_page}{Page}}* \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a5a17d8377bc10f437e29b058c0376b15}{page}}, \mbox{\hyperlink{class_buffer_manager}{BufferManager}}* boss)}
+\DoxyCodeLine{        :current\_(current), page\_(\mbox{\hyperlink{class_buffer_manager_1_1_iterator_a5a17d8377bc10f437e29b058c0376b15}{page}}), boss\_(boss), record\_in\_page\_(0) \{\}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    Iterator(\textcolor{keywordtype}{char}* current, \mbox{\hyperlink{struct_page}{Page}}* \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a5a17d8377bc10f437e29b058c0376b15}{page}}, \mbox{\hyperlink{class_buffer_manager}{BufferManager}}* boss, uint16\_t record\_in\_page)}
+\DoxyCodeLine{        :current\_(current), page\_(\mbox{\hyperlink{class_buffer_manager_1_1_iterator_a5a17d8377bc10f437e29b058c0376b15}{page}}), boss\_(boss), record\_in\_page\_(record\_in\_page) \{\}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_buffer_manager_1_1_iterator_ad19030c51bf30e6d6e9e2e560cc511c4}{IsNil}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{        \textcolor{keywordflow}{return} GetDataPos().offset == Page::kInValidOffset;}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a02a38a84fd54e45d06818d2807b172d8}{IsEnd}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{        \textcolor{keywordflow}{return} \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a6afaceac9683f05d9e1ecfc9ff5f3a0f}{IsEndPage}}()  \textcolor{comment}{// we reach end of the page}}
+\DoxyCodeLine{            \&\& !page\_->HasNext(); \textcolor{comment}{// and page does not have any nexts}}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a6afaceac9683f05d9e1ecfc9ff5f3a0f}{IsEndPage}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{        \textcolor{keywordflow}{return} (record\_in\_page\_ == page\_->header.num\_records);}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a7ce4145bd6263f8003c4c4dee01a9c31}{IsBegin}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{        \textcolor{keywordflow}{return} (record\_in\_page\_ == 0)  \textcolor{comment}{// we reach end of the page}}
+\DoxyCodeLine{            \&\& !page\_->HasPrev(); \textcolor{comment}{// and page does not have any prevs}}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{comment}{//TODO(L) Assert}}
+\DoxyCodeLine{    \textcolor{keywordtype}{char}* \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a633c54abf71a334ff179cc359e655d5d}{operator*}}() \{ \textcolor{keywordflow}{return} current\_; \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keyword}{const} \textcolor{keywordtype}{char}* \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a633c54abf71a334ff179cc359e655d5d}{operator*}}()\textcolor{keyword}{ const }\{ \textcolor{keywordflow}{return} current\_; \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    Iterator\& \mbox{\hyperlink{class_buffer_manager_1_1_iterator_aabf5af4d55b46c14bddff0e7caab3665}{operator++}}(); \textcolor{comment}{// prefix}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    [[deprecated(\textcolor{stringliteral}{"Please use prefix version as this is less efficient"})]]}
+\DoxyCodeLine{    Iterator \mbox{\hyperlink{class_buffer_manager_1_1_iterator_aabf5af4d55b46c14bddff0e7caab3665}{operator++}}(\textcolor{keywordtype}{int}); \textcolor{comment}{// postfix}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    Iterator\& \mbox{\hyperlink{class_buffer_manager_1_1_iterator_ab9959f549dcfa3f6daa47677552b673d}{operator--}}();}
+\DoxyCodeLine{}
+\DoxyCodeLine{    [[deprecated(\textcolor{stringliteral}{"Please use prefix version as this is less efficient"})]]}
+\DoxyCodeLine{    Iterator \mbox{\hyperlink{class_buffer_manager_1_1_iterator_ab9959f549dcfa3f6daa47677552b673d}{operator--}}(\textcolor{keywordtype}{int});}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{comment}{// use template version}}
+\DoxyCodeLine{    \textcolor{keyword}{const} Iterator\& \mbox{\hyperlink{class_buffer_manager_1_1_iterator_aced12f95569a91d98a83bf635d671e25}{operator+=}}(\textcolor{keywordtype}{int} offset);}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{comment}{// use template version}}
+\DoxyCodeLine{    \textcolor{keyword}{const} Iterator\& \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a2a24e019d3a2934f3cd275b8a2436e59}{operator-=}}(\textcolor{keywordtype}{int} offset);}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keyword}{const} \mbox{\hyperlink{struct_page}{Page}}\& \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a5a17d8377bc10f437e29b058c0376b15}{page}}()\textcolor{keyword}{ const }\{ \textcolor{keywordflow}{return} *page\_; \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    std::string AsString() \{}
+\DoxyCodeLine{        \textcolor{keywordflow}{return} std::string(current\_, GetDataPos().length);}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{comment}{// actually this insert one data}}
+\DoxyCodeLine{    \textcolor{keywordtype}{bool} Insert(\textcolor{keyword}{const} \textcolor{keywordtype}{char}* first, \textcolor{keyword}{const} \textcolor{keywordtype}{char}* last) \{}
+\DoxyCodeLine{        uint16\_t num\_elem = static\_cast<uint16\_t>(last - first);}
+\DoxyCodeLine{        uint16\_t rounded = RoundUpByte(num\_elem);}
+\DoxyCodeLine{        \textcolor{keywordflow}{if} (num\_elem > \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a3a53f35f35074aa2079dead6cc606a5b}{FreeBytes}}()) \{}
+\DoxyCodeLine{            \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{        \}}
+\DoxyCodeLine{        \textcolor{keywordtype}{size\_t} size\_moved = page\_->header.free\_offset - (current\_ - page\_->space);}
+\DoxyCodeLine{}
+\DoxyCodeLine{        page\_->header.free\_offset += rounded;}
+\DoxyCodeLine{        memmove(current\_ + rounded, current\_, size\_moved);}
+\DoxyCodeLine{        memmove(current\_, first, num\_elem);}
+\DoxyCodeLine{        }
+\DoxyCodeLine{}
+\DoxyCodeLine{        \mbox{\hyperlink{struct_page_1_1_data_pos}{Page::DataPos}} pos;}
+\DoxyCodeLine{}
+\DoxyCodeLine{        pos.offset = static\_cast<uint16\_t>(current\_ - page\_->space);}
+\DoxyCodeLine{        pos.length = num\_elem;}
+\DoxyCodeLine{        page\_->ReverseInsertN<\mbox{\hyperlink{struct_page_1_1_data_pos}{Page::DataPos}}>(record\_in\_page\_, 1, page\_->header.num\_records - record\_in\_page\_, pos);}
+\DoxyCodeLine{}
+\DoxyCodeLine{        \mbox{\hyperlink{struct_page_1_1_data_pos}{Page::DataPos}} last\_pos;}
+\DoxyCodeLine{        Iterator \textcolor{keyword}{self}(*this);}
+\DoxyCodeLine{        ++page\_->header.num\_records;}
+\DoxyCodeLine{        \textcolor{keywordflow}{for} (++\textcolor{keyword}{self}; !\textcolor{keyword}{self}.IsEndPage(); ++\textcolor{keyword}{self}) \{}
+\DoxyCodeLine{            last\_pos = \textcolor{keyword}{self}.GetDataPos();}
+\DoxyCodeLine{            last\_pos.offset += rounded;}
+\DoxyCodeLine{}
+\DoxyCodeLine{            \textcolor{keyword}{self}.GetDataPos() = pos;}
+\DoxyCodeLine{}
+\DoxyCodeLine{            pos = last\_pos;}
+\DoxyCodeLine{        \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{        page\_->is\_dirty = \textcolor{keyword}{true};}
+\DoxyCodeLine{        \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keywordtype}{bool} Insert(\textcolor{keyword}{const} std::string\& str) \{}
+\DoxyCodeLine{        \textcolor{keywordflow}{return} Insert(str.c\_str(), str.c\_str() + str.size());}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keywordtype}{bool} Insert(\textcolor{keyword}{const} \textcolor{keywordtype}{void}* data, \textcolor{keywordtype}{size\_t} length\_by\_bytes) \{}
+\DoxyCodeLine{        \textcolor{keyword}{const} \textcolor{keywordtype}{char}* cdata = reinterpret\_cast<const char*>(data);}
+\DoxyCodeLine{        \textcolor{keywordflow}{return} Insert(cdata, cdata + length\_by\_bytes);}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keywordtype}{size\_t} \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a3a53f35f35074aa2079dead6cc606a5b}{FreeBytes}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{        \textcolor{keywordflow}{return} page\_->SpaceLeftByByteVariadicSize();}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keyword}{template}<\textcolor{keyword}{typename} T>}
+\DoxyCodeLine{    T RoundUpByte(T \textcolor{keywordtype}{byte}) \{}
+\DoxyCodeLine{        \textcolor{keywordflow}{return} (\textcolor{keywordtype}{byte} + 7) / 8 * 8;}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_buffer_manager_1_1_iterator_aee5637c96ddb7c5fef0f9a12d133c7c8}{InsertNil}}(\textcolor{keywordtype}{int} n) \{}
+\DoxyCodeLine{        \textcolor{keywordflow}{if} (\mbox{\hyperlink{class_buffer_manager_1_1_iterator_a3a53f35f35074aa2079dead6cc606a5b}{FreeBytes}}() / \textcolor{keyword}{sizeof}(\mbox{\hyperlink{struct_page_1_1_data_pos}{Page::DataPos}}) < n) \{}
+\DoxyCodeLine{            \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{        \}}
+\DoxyCodeLine{        \textcolor{keywordtype}{size\_t} n\_moved = page\_->header.num\_records - record\_in\_page\_;}
+\DoxyCodeLine{        \mbox{\hyperlink{struct_page_1_1_data_pos}{Page::DataPos}} pos;}
+\DoxyCodeLine{        pos.offset = Page::kInValidOffset;}
+\DoxyCodeLine{        pos.length = 0;}
+\DoxyCodeLine{        page\_->ReverseInsertN<\mbox{\hyperlink{struct_page_1_1_data_pos}{Page::DataPos}}>(record\_in\_page\_, n, n\_moved, pos);}
+\DoxyCodeLine{        page\_->header.num\_records += n;}
+\DoxyCodeLine{        page\_->is\_dirty = \textcolor{keyword}{true};}
+\DoxyCodeLine{        \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \mbox{\hyperlink{struct_generic_i_o_id}{PageId}} AutoInsert(\textcolor{keyword}{const} \textcolor{keywordtype}{char}* first, \textcolor{keyword}{const} \textcolor{keywordtype}{char}* last) \{}
+\DoxyCodeLine{        \textcolor{keywordflow}{if} (!Insert(first, last)) \{}
+\DoxyCodeLine{            \textcolor{keyword}{auto} piggy = reinterpret\_cast<PagePiggyback*>(page\_->piggyback);}
+\DoxyCodeLine{            \mbox{\hyperlink{struct_generic_i_o_id}{PageId}} next = boss\_->AllocatePageAfter(piggy->finfo->id, piggy->page\_id);}
+\DoxyCodeLine{            *\textcolor{keyword}{this} = boss\_->GetPage<\textcolor{keywordtype}{char}*>(piggy->finfo->id, next);}
+\DoxyCodeLine{            \textcolor{keywordflow}{if} (!Insert(first, last)) \{}
+\DoxyCodeLine{                \textcolor{keywordflow}{throw} std::overflow\_error(\textcolor{stringliteral}{"The string is too long"});}
+\DoxyCodeLine{            \}}
+\DoxyCodeLine{            \textcolor{comment}{// page\_->is\_dirty = true;}}
+\DoxyCodeLine{            ++* \textcolor{keyword}{this};}
+\DoxyCodeLine{            \textcolor{keywordflow}{return} next;}
+\DoxyCodeLine{        \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{        ++* \textcolor{keyword}{this};}
+\DoxyCodeLine{        \textcolor{comment}{// page\_->is\_dirty = true;}}
+\DoxyCodeLine{        \textcolor{keywordflow}{return} \mbox{\hyperlink{struct_generic_i_o_id}{PageId}}();}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{    }
+\DoxyCodeLine{    \mbox{\hyperlink{struct_generic_i_o_id}{PageId}} AutoInsert(\textcolor{keyword}{const} std::string\& str) \{}
+\DoxyCodeLine{        \textcolor{keywordflow}{return} AutoInsert(str.c\_str(), str.c\_str() + str.size() + 1);}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a2c627998f19999fe55b7452b840ce47b}{EraseInPage}}(\textcolor{keywordtype}{size\_t} n = 1) \{}
+\DoxyCodeLine{        Iterator \textcolor{keyword}{self} = *\textcolor{keyword}{this};}
+\DoxyCodeLine{        \textcolor{keywordflow}{if} (page\_->header.num\_records - record\_in\_page\_ < n) \{}
+\DoxyCodeLine{            \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{        \}}
+\DoxyCodeLine{        uint16\_t length = GetDataPos(record\_in\_page\_ + n).offset + GetDataPos(record\_in\_page\_ + n).length - GetDataPos().offset;}
+\DoxyCodeLine{        int32\_t n\_moved = page\_->header.free\_offset - length;}
+\DoxyCodeLine{        \textcolor{keywordflow}{if} (n\_moved <= 0) \{}
+\DoxyCodeLine{            \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{        \}}
+\DoxyCodeLine{        page\_->header.free\_offset -= length;}
+\DoxyCodeLine{        memmove(current\_, current\_ + length, n\_moved);}
+\DoxyCodeLine{            }
+\DoxyCodeLine{        page\_->ReverseEraseN<\mbox{\hyperlink{struct_page_1_1_data_pos}{Page::DataPos}}>(record\_in\_page\_, n, n\_moved);}
+\DoxyCodeLine{        page\_->header.num\_records -= n;}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keywordtype}{void} \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a2e9a59db2ef1289b16469750e422edd5}{DeletePage}}();}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \mbox{\hyperlink{struct_generic_i_o_id}{PageId}} AutoInsert(\textcolor{keyword}{const} \textcolor{keywordtype}{void}* data, \textcolor{keywordtype}{size\_t} length\_by\_bytes) \{}
+\DoxyCodeLine{        \textcolor{keyword}{const} \textcolor{keywordtype}{char}* cdata = reinterpret\_cast<const char*>(data);}
+\DoxyCodeLine{        \textcolor{keywordflow}{return} AutoInsert(cdata, cdata + length\_by\_bytes);}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keywordtype}{void} SkipEndPageNext() \{}
+\DoxyCodeLine{        ++* \textcolor{keyword}{this};}
+\DoxyCodeLine{        \textcolor{keywordflow}{if} (\mbox{\hyperlink{class_buffer_manager_1_1_iterator_a6afaceac9683f05d9e1ecfc9ff5f3a0f}{IsEndPage}}()) \{}
+\DoxyCodeLine{            ++* \textcolor{keyword}{this};}
+\DoxyCodeLine{        \}}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keyword}{template}<\textcolor{keyword}{typename} T>}
+\DoxyCodeLine{    T Read() \{}
+\DoxyCodeLine{        \textcolor{keywordflow}{if} (GetDataPos().length != \textcolor{keyword}{sizeof}(T)) \{}
+\DoxyCodeLine{            \textcolor{keywordtype}{size\_t} len = GetDataPos().length;}
+\DoxyCodeLine{            \textcolor{keywordtype}{size\_t} sizeT = \textcolor{keyword}{sizeof}(T);}
+\DoxyCodeLine{            \textcolor{keywordflow}{throw} std::invalid\_argument(\textcolor{stringliteral}{"size of the data mismatch what is written in"});}
+\DoxyCodeLine{        \}}
+\DoxyCodeLine{        T res =  *reinterpret\_cast<T*>(current\_);}
+\DoxyCodeLine{        SkipEndPageNext();}
+\DoxyCodeLine{        \textcolor{keywordflow}{return} res;}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keyword}{template}<>}
+\DoxyCodeLine{    std::string Read() \{}
+\DoxyCodeLine{        std::string str(current\_, GetDataPos().length);}
+\DoxyCodeLine{        SkipEndPageNext();}
+\DoxyCodeLine{        \textcolor{keywordflow}{return} str;}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keyword}{private}:}
+\DoxyCodeLine{    \textcolor{comment}{// these are used for others}}
+\DoxyCodeLine{    \textcolor{comment}{/*Iterator(Variadic* current, Page* page, BufferManager* boss)}}
+\DoxyCodeLine{\textcolor{comment}{        :current\_((char*)current), page\_(page), boss\_(boss), record\_in\_page\_(0) \{\}}}
+\DoxyCodeLine{\textcolor{comment}{}}
+\DoxyCodeLine{\textcolor{comment}{    Iterator(Variadic* current, Page* page, BufferManager* boss, uint16\_t record\_in\_page)}}
+\DoxyCodeLine{\textcolor{comment}{        :current\_((char*)current), page\_(page), boss\_(boss), record\_in\_page\_(record\_in\_page) \{\}*/}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keyword}{const} \mbox{\hyperlink{struct_page_1_1_data_pos}{Page::DataPos}}\& GetDataPos()\textcolor{keyword}{ const }\{ \textcolor{keywordflow}{return} page\_->ReverseRead<\mbox{\hyperlink{struct_page_1_1_data_pos}{Page::DataPos}}>(record\_in\_page\_); \}}
+\DoxyCodeLine{    \mbox{\hyperlink{struct_page_1_1_data_pos}{Page::DataPos}}\& GetDataPos() \{ \textcolor{keywordflow}{return} page\_->ReverseRead<\mbox{\hyperlink{struct_page_1_1_data_pos}{Page::DataPos}}>(record\_in\_page\_); \}}
+\DoxyCodeLine{    \mbox{\hyperlink{struct_page_1_1_data_pos}{Page::DataPos}}\& GetDataPos(\textcolor{keywordtype}{size\_t} num) \{ \textcolor{keywordflow}{return} page\_->ReverseRead<\mbox{\hyperlink{struct_page_1_1_data_pos}{Page::DataPos}}>(num); \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keyword}{friend} \textcolor{keyword}{class }\mbox{\hyperlink{class_buffer_manager}{BufferManager}};}
+\DoxyCodeLine{    \textcolor{keywordtype}{char}* current\_;}
+\DoxyCodeLine{    \mbox{\hyperlink{struct_page}{Page}}* page\_;}
+\DoxyCodeLine{    \mbox{\hyperlink{class_buffer_manager}{BufferManager}}* boss\_;}
+\DoxyCodeLine{    uint16\_t record\_in\_page\_;}
+\DoxyCodeLine{\};}
+\DoxyCodeLine{}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keyword}{template}<\textcolor{keyword}{typename} T>}
+\DoxyCodeLine{\textcolor{keyword}{inline} \mbox{\hyperlink{struct_generic_i_o_id}{PageId}} \mbox{\hyperlink{class_buffer_manager_1_1_iterator_affb973bacb2deef1704e20221fb3c3fb}{BufferManager::Iterator<T>::InsertPageAfter}}() \{}
+\DoxyCodeLine{    \textcolor{keywordflow}{return} boss\_->IteratorInsertPageAfter<T>(\textcolor{keyword}{this});}
+\DoxyCodeLine{\}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keyword}{template}<\textcolor{keyword}{typename} T>}
+\DoxyCodeLine{\textcolor{keyword}{inline} \mbox{\hyperlink{class_buffer_manager_1_1_iterator}{BufferManager::Iterator<T>}}\& \mbox{\hyperlink{class_buffer_manager_1_1_iterator_aabf5af4d55b46c14bddff0e7caab3665}{BufferManager::Iterator<T>::operator++}}() \{}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keywordflow}{if} (record\_in\_page\_ < page\_->header.num\_records) \{}
+\DoxyCodeLine{        \textcolor{keywordflow}{if} (!IsNil()) \{}
+\DoxyCodeLine{            ++current\_;}
+\DoxyCodeLine{        \}}
+\DoxyCodeLine{        ++record\_in\_page\_;}
+\DoxyCodeLine{        \textcolor{keywordflow}{return} *\textcolor{keyword}{this};}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{comment}{// reach the end of linked list}}
+\DoxyCodeLine{    \textcolor{keywordflow}{if} (!page\_->HasNext()) \{}
+\DoxyCodeLine{        \textcolor{keywordflow}{return} *\textcolor{keyword}{this};}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    boss\_->IteratorNextPage(\textcolor{keyword}{this});}
+\DoxyCodeLine{    \textcolor{keywordflow}{return} *\textcolor{keyword}{this};}
+\DoxyCodeLine{\}}
+\DoxyCodeLine{}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keyword}{inline} \mbox{\hyperlink{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4}{BufferManager::Iterator<char*>}}\& \mbox{\hyperlink{class_buffer_manager_1_1_iterator_aabf5af4d55b46c14bddff0e7caab3665}{BufferManager::Iterator<char*>::operator++}}() \{}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keywordflow}{if} (record\_in\_page\_ < page\_->header.num\_records) \{}
+\DoxyCodeLine{        ++record\_in\_page\_;}
+\DoxyCodeLine{        \textcolor{keywordflow}{if} (\mbox{\hyperlink{class_buffer_manager_1_1_iterator_a6afaceac9683f05d9e1ecfc9ff5f3a0f}{IsEndPage}}()) \{}
+\DoxyCodeLine{            \textcolor{keyword}{auto} length = page\_->ReverseRead<\mbox{\hyperlink{struct_page_1_1_data_pos}{Page::DataPos}}>(record\_in\_page\_ - 1).length;}
+\DoxyCodeLine{            current\_ += RoundUpByte(length);}
+\DoxyCodeLine{            \textcolor{keywordflow}{return} *\textcolor{keyword}{this};}
+\DoxyCodeLine{        \}}
+\DoxyCodeLine{        \textcolor{keywordflow}{if} (!\mbox{\hyperlink{class_buffer_manager_1_1_iterator_ad19030c51bf30e6d6e9e2e560cc511c4}{IsNil}}()) \{}
+\DoxyCodeLine{            current\_ = page\_->space + page\_->ReverseRead<\mbox{\hyperlink{struct_page_1_1_data_pos}{Page::DataPos}}>(record\_in\_page\_).offset;}
+\DoxyCodeLine{        \}}
+\DoxyCodeLine{        }
+\DoxyCodeLine{        \textcolor{keywordflow}{return} *\textcolor{keyword}{this};}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{comment}{// reach the end of linked list}}
+\DoxyCodeLine{    \textcolor{keywordflow}{if} (!page\_->HasNext()) \{}
+\DoxyCodeLine{        \textcolor{keywordflow}{return} *\textcolor{keyword}{this};}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    boss\_->IteratorNextPage(\textcolor{keyword}{this});}
+\DoxyCodeLine{    \textcolor{keywordflow}{return} *\textcolor{keyword}{this};}
+\DoxyCodeLine{\}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keyword}{template}<\textcolor{keyword}{typename} T>}
+\DoxyCodeLine{\textcolor{keyword}{inline} \mbox{\hyperlink{class_buffer_manager_1_1_iterator}{BufferManager::Iterator<T>}} \mbox{\hyperlink{class_buffer_manager_1_1_iterator_aabf5af4d55b46c14bddff0e7caab3665}{BufferManager::Iterator<T>::operator++}}(\textcolor{keywordtype}{int})}
+\DoxyCodeLine{\{}
+\DoxyCodeLine{    Iterator \textcolor{keyword}{self} = *\textcolor{keyword}{this};}
+\DoxyCodeLine{    ++* \textcolor{keyword}{this};}
+\DoxyCodeLine{    \textcolor{keywordflow}{return} \textcolor{keyword}{self};}
+\DoxyCodeLine{\}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keyword}{template}<\textcolor{keyword}{typename} T>}
+\DoxyCodeLine{\textcolor{keyword}{inline} \mbox{\hyperlink{class_buffer_manager_1_1_iterator}{BufferManager::Iterator<T>}}\& \mbox{\hyperlink{class_buffer_manager_1_1_iterator_ab9959f549dcfa3f6daa47677552b673d}{BufferManager::Iterator<T>::operator--}}()}
+\DoxyCodeLine{\{}
+\DoxyCodeLine{    \textcolor{keywordflow}{if} (record\_in\_page\_ == 0) \{}
+\DoxyCodeLine{        \textcolor{comment}{// reach the end of linked list}}
+\DoxyCodeLine{        \textcolor{keywordflow}{if} (!page\_->HasPrev()) \{}
+\DoxyCodeLine{            \textcolor{keywordflow}{return} *\textcolor{keyword}{this};}
+\DoxyCodeLine{        \}}
+\DoxyCodeLine{        boss\_->IteratorPrevPage(\textcolor{keyword}{this});}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    --record\_in\_page\_;}
+\DoxyCodeLine{    \textcolor{keywordflow}{if} (!IsNil()) \{}
+\DoxyCodeLine{        --current\_;}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{\}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keyword}{inline} \mbox{\hyperlink{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4}{BufferManager::Iterator<char*>}}\& \mbox{\hyperlink{class_buffer_manager_1_1_iterator_ab9959f549dcfa3f6daa47677552b673d}{BufferManager::Iterator<char*>::operator--}}()}
+\DoxyCodeLine{\{}
+\DoxyCodeLine{    \textcolor{keywordflow}{if} (record\_in\_page\_ == 0) \{}
+\DoxyCodeLine{        \textcolor{comment}{// reach the end of linked list}}
+\DoxyCodeLine{        \textcolor{keywordflow}{if} (!page\_->HasPrev()) \{}
+\DoxyCodeLine{            \textcolor{keywordflow}{return} *\textcolor{keyword}{this};}
+\DoxyCodeLine{        \}}
+\DoxyCodeLine{        boss\_->IteratorPrevPage(\textcolor{keyword}{this});}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    --record\_in\_page\_;}
+\DoxyCodeLine{    \textcolor{keywordflow}{if} (!IsNil()) \{}
+\DoxyCodeLine{        current\_ = page\_->space + page\_->ReverseRead<\mbox{\hyperlink{struct_page_1_1_data_pos}{Page::DataPos}}>(record\_in\_page\_).offset;}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{\}}
+\DoxyCodeLine{}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keyword}{template}<\textcolor{keyword}{typename} T>}
+\DoxyCodeLine{\textcolor{keyword}{inline} \mbox{\hyperlink{class_buffer_manager_1_1_iterator}{BufferManager::Iterator<T>}} \mbox{\hyperlink{class_buffer_manager_1_1_iterator_ab9959f549dcfa3f6daa47677552b673d}{BufferManager::Iterator<T>::operator--}}(\textcolor{keywordtype}{int})}
+\DoxyCodeLine{\{}
+\DoxyCodeLine{    Iterator \textcolor{keyword}{self} = *\textcolor{keyword}{this};}
+\DoxyCodeLine{    --* \textcolor{keyword}{this};}
+\DoxyCodeLine{    \textcolor{keywordflow}{return} \textcolor{keyword}{self};}
+\DoxyCodeLine{\}}
+\DoxyCodeLine{}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keyword}{template}<\textcolor{keyword}{typename} T>}
+\DoxyCodeLine{\textcolor{keyword}{inline} \textcolor{keyword}{const} \mbox{\hyperlink{class_buffer_manager_1_1_iterator}{BufferManager::Iterator<T>}}\& \mbox{\hyperlink{class_buffer_manager_1_1_iterator_aced12f95569a91d98a83bf635d671e25}{BufferManager::Iterator<T>::operator+=}}(\textcolor{keywordtype}{int} offset)}
+\DoxyCodeLine{\{}
+\DoxyCodeLine{    \textcolor{keywordflow}{if} (offset < 0) \{}
+\DoxyCodeLine{        \textcolor{keywordflow}{return} operator-=(-offset);}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keywordtype}{size\_t} num\_left = page\_->header.num\_records - record\_in\_page\_;}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keywordflow}{if} (offset <= num\_left) \{}
+\DoxyCodeLine{        \textcolor{keywordflow}{for} (; offset > 0; --offset) \{}
+\DoxyCodeLine{            ++* \textcolor{keyword}{this};}
+\DoxyCodeLine{        \}}
+\DoxyCodeLine{        \textcolor{keywordflow}{return} *\textcolor{keyword}{this};}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{    }
+\DoxyCodeLine{    offset -= num\_left;}
+\DoxyCodeLine{    \textcolor{keywordtype}{int} last\_offset = offset;}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keywordflow}{while} (offset > 0) \{}
+\DoxyCodeLine{        \textcolor{keyword}{auto} piggy = reinterpret\_cast<PagePiggyback*>(page\_->piggyback);}
+\DoxyCodeLine{        \mbox{\hyperlink{struct_generic_i_o_id}{PageId}} cpage = piggy->page\_id + page\_->header.next;}
+\DoxyCodeLine{}
+\DoxyCodeLine{        \textcolor{keywordflow}{if} (!page\_->HasNext()) \{}
+\DoxyCodeLine{            current\_ = reinterpret\_cast<pointer>(page\_->header.free\_offset + page\_->space);}
+\DoxyCodeLine{            record\_in\_page\_ = page\_->header.num\_records;}
+\DoxyCodeLine{            \textcolor{keywordflow}{return} *\textcolor{keyword}{this};}
+\DoxyCodeLine{        \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{        cpage.id += page\_->header.next;}
+\DoxyCodeLine{        *\textcolor{keyword}{this} = boss\_->GetPage<T>(piggy->finfo->id, cpage);}
+\DoxyCodeLine{}
+\DoxyCodeLine{        last\_offset = offset;}
+\DoxyCodeLine{        }
+\DoxyCodeLine{        offset -= page\_->header.num\_records;}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{    }
+\DoxyCodeLine{    \textcolor{keywordflow}{return} operator+=(last\_offset);}
+\DoxyCodeLine{\}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keyword}{template}<\textcolor{keyword}{typename} T>}
+\DoxyCodeLine{\textcolor{keyword}{inline} \textcolor{keyword}{const} \mbox{\hyperlink{class_buffer_manager_1_1_iterator}{BufferManager::Iterator<T>}}\& \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a2a24e019d3a2934f3cd275b8a2436e59}{BufferManager::Iterator<T>::operator-=}}(\textcolor{keywordtype}{int} offset)}
+\DoxyCodeLine{\{}
+\DoxyCodeLine{    \textcolor{keywordflow}{if} (offset < 0) \{}
+\DoxyCodeLine{        \textcolor{keywordflow}{return} operator+=(-offset);}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keywordtype}{size\_t} num\_left = record\_in\_page\_;}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keywordflow}{if} (offset < record\_in\_page\_) \{}
+\DoxyCodeLine{        \textcolor{keywordflow}{for} (; offset > 0; --offset) \{}
+\DoxyCodeLine{            --* \textcolor{keyword}{this};}
+\DoxyCodeLine{        \}}
+\DoxyCodeLine{        \textcolor{keywordflow}{return} *\textcolor{keyword}{this};}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    offset -= num\_left;}
+\DoxyCodeLine{    \textcolor{keywordtype}{int} last\_offset = offset;}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keywordflow}{while} (offset > 0)}
+\DoxyCodeLine{    \{}
+\DoxyCodeLine{        \textcolor{keyword}{auto} piggy = reinterpret\_cast<PagePiggyback*>(page\_->piggyback);}
+\DoxyCodeLine{        \mbox{\hyperlink{struct_generic_i_o_id}{PageId}} cpage = piggy->page\_id;}
+\DoxyCodeLine{}
+\DoxyCodeLine{        \textcolor{keywordflow}{if} (!page\_->HasPrev()) \{}
+\DoxyCodeLine{            current\_ = reinterpret\_cast<pointer>(page\_->space);}
+\DoxyCodeLine{            record\_in\_page\_ = 0;}
+\DoxyCodeLine{            \textcolor{keywordflow}{return} *\textcolor{keyword}{this};}
+\DoxyCodeLine{        \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{        cpage.id += page\_->header.prev;}
+\DoxyCodeLine{        *\textcolor{keyword}{this} = boss\_->GetPage<T>(piggy->finfo->id, cpage);}
+\DoxyCodeLine{}
+\DoxyCodeLine{        last\_offset = offset;}
+\DoxyCodeLine{        offset -= num\_left;}
+\DoxyCodeLine{}
+\DoxyCodeLine{        num\_left = page\_->header.num\_records;}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{    \textcolor{keywordflow}{return} operator-=(last\_offset);}
+\DoxyCodeLine{\}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keyword}{template}<\textcolor{keyword}{typename} T>}
+\DoxyCodeLine{\textcolor{keyword}{inline} \mbox{\hyperlink{struct_generic_i_o_id}{PageId}} \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a7a57002c7f8daa714cf9e19e34874fca}{BufferManager::Iterator<T>::pageid}}()\textcolor{keyword}{ const}}
+\DoxyCodeLine{\textcolor{keyword}{}\{}
+\DoxyCodeLine{    \textcolor{keyword}{auto} piggy = reinterpret\_cast<PagePiggyback*>(page\_->piggyback);}
+\DoxyCodeLine{    \textcolor{keywordflow}{return} piggy->page\_id;}
+\DoxyCodeLine{\}}
+\DoxyCodeLine{}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keyword}{template}<\textcolor{keyword}{typename} T>}
+\DoxyCodeLine{\textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a2e9a59db2ef1289b16469750e422edd5}{BufferManager::Iterator<T>::DeletePage}}() \{}
+\DoxyCodeLine{    boss\_->IteratorDeletePage(page\_);}
+\DoxyCodeLine{    page\_ = \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{    record\_in\_page\_ = 0;}
+\DoxyCodeLine{    current\_ = \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{\}}
+\DoxyCodeLine{}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keyword}{template}<\textcolor{keyword}{typename} T>}
+\DoxyCodeLine{\textcolor{keyword}{inline} \mbox{\hyperlink{class_buffer_manager_1_1_iterator}{BufferManager::Iterator<T>}} BufferManager::GetPage(\mbox{\hyperlink{struct_generic_i_o_id}{FileId}} file\_id, \mbox{\hyperlink{struct_generic_i_o_id}{PageId}} page\_id)}
+\DoxyCodeLine{\{}
+\DoxyCodeLine{    UniquePage unipage\{ page\_id, file\_id \};}
+\DoxyCodeLine{    \mbox{\hyperlink{struct_page}{Page}}* page = AutoFetchPage(unipage);}
+\DoxyCodeLine{    }
+\DoxyCodeLine{    \textcolor{keywordflow}{return} Iterator<T>(\textcolor{keyword}{reinterpret\_cast<}typename Iterator<T>::pointer\textcolor{keyword}{>}(page->space), page, \textcolor{keyword}{this});}
+\DoxyCodeLine{\}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keyword}{template}<\textcolor{keyword}{typename} T>}
+\DoxyCodeLine{\textcolor{keyword}{inline} \textcolor{keywordtype}{void} BufferManager::IteratorNextPage(Iterator<T>* target)}
+\DoxyCodeLine{\{}
+\DoxyCodeLine{    \textcolor{keyword}{auto}\& page = target->page();}
+\DoxyCodeLine{    \textcolor{keyword}{auto} piggy = static\_cast<const PagePiggyback*>(page.piggyback);}
+\DoxyCodeLine{    \mbox{\hyperlink{struct_generic_i_o_id}{PageId}} target\_page = piggy->page\_id;}
+\DoxyCodeLine{}
+\DoxyCodeLine{    target\_page.id += page.header.next;}
+\DoxyCodeLine{}
+\DoxyCodeLine{    (*target) = GetPage<T>(piggy->finfo->id, target\_page);}
+\DoxyCodeLine{\}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keyword}{template}<\textcolor{keyword}{typename} T>}
+\DoxyCodeLine{\textcolor{keyword}{inline} \textcolor{keywordtype}{void} BufferManager::IteratorPrevPage(Iterator<T>* target)}
+\DoxyCodeLine{\{}
+\DoxyCodeLine{    \textcolor{keyword}{auto}\& page = target->page();}
+\DoxyCodeLine{    \textcolor{keyword}{auto} piggy = static\_cast<const PagePiggyback*>(page.piggyback);}
+\DoxyCodeLine{    \mbox{\hyperlink{struct_generic_i_o_id}{PageId}} target\_page = piggy->page\_id;}
+\DoxyCodeLine{}
+\DoxyCodeLine{    target\_page.id += page.header.prev;}
+\DoxyCodeLine{    (*target) = GetPage<T>(piggy->finfo->id, target\_page);}
+\DoxyCodeLine{\}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keyword}{template}<\textcolor{keyword}{typename} T>}
+\DoxyCodeLine{\textcolor{keyword}{inline} \mbox{\hyperlink{struct_generic_i_o_id}{PageId}} BufferManager::IteratorInsertPageAfter(Iterator<T>* target)}
+\DoxyCodeLine{\{}
+\DoxyCodeLine{    \textcolor{keyword}{auto} piggy = static\_cast<PagePiggyback*>(target->page().piggyback);}
+\DoxyCodeLine{    \mbox{\hyperlink{struct_generic_i_o_id}{FileId}} fid = piggy->finfo->id;}
+\DoxyCodeLine{    \textcolor{keywordflow}{return} AllocatePageAfter(fid, piggy->page\_id);}
+\DoxyCodeLine{\}}
+\DoxyCodeLine{}
+\DoxyCodeLine{}
+\DoxyCodeLine{}
+\DoxyCodeLine{}
+\DoxyCodeLine{}
+\DoxyCodeLine{}
+\DoxyCodeLine{}
+\DoxyCodeLine{}
+\DoxyCodeLine{}
+\DoxyCodeLine{}
+\DoxyCodeLine{}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{preprocessor}{\#if 0}}
+\DoxyCodeLine{\textcolor{comment}{// obsolete code, may come useful some time}}
+\DoxyCodeLine{    \textcolor{keywordtype}{void} ReverseShiftBits(\textcolor{keywordtype}{int} dst, \textcolor{keywordtype}{int} src, \textcolor{keywordtype}{size\_t} num\_bits) \{}
+\DoxyCodeLine{        \textcolor{keywordtype}{int} shift = ;}
+\DoxyCodeLine{        \textcolor{keywordtype}{int} end\_dst = (dst + num\_bits) / 8 + 1;}
+\DoxyCodeLine{        \textcolor{keywordtype}{int} end\_src = (src + num\_bits) / 8 + 1;}
+\DoxyCodeLine{        \textcolor{keywordtype}{int} beg\_src = src / 8 + 1;}
+\DoxyCodeLine{        \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{char} carry = 0;}
+\DoxyCodeLine{        \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{char}* tail = ((\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{char}*)end());}
+\DoxyCodeLine{        \textcolor{keywordflow}{for} (; end\_src != beg\_src;) \{}
+\DoxyCodeLine{            \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{char} \_byte = tail[-end\_src];}
+\DoxyCodeLine{            \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{char} old\_carry = carry;}
+\DoxyCodeLine{            carry = \_byte << shift;}
+\DoxyCodeLine{            \_byte >> (8 - shift);}
+\DoxyCodeLine{            tail[-end\_dst] = \_byte | old\_carry;}
+\DoxyCodeLine{}
+\DoxyCodeLine{            --end\_src;}
+\DoxyCodeLine{            --end\_dst;}
+\DoxyCodeLine{        \}}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{\textcolor{preprocessor}{\#endif}}
+\end{DoxyCodeInclude}
+ 

@@ -1,0 +1,451 @@
+\hypertarget{class_buffer_manager_1_1_iterator}{}\section{Buffer\+Manager\+::Iterator$<$ T $>$ Class Template Reference}
+\label{class_buffer_manager_1_1_iterator}\index{BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}}
+\subsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_a16c61a4f27a3ed11fd058bd2aaf30399}\label{class_buffer_manager_1_1_iterator_a16c61a4f27a3ed11fd058bd2aaf30399}} 
+using {\bfseries pointer} = T $\ast$
+\end{DoxyCompactItemize}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_a0d5aacb00677dbdb1aa067adc558989d}\label{class_buffer_manager_1_1_iterator_a0d5aacb00677dbdb1aa067adc558989d}} 
+{\bfseries Iterator} (T $\ast$current, \mbox{\hyperlink{struct_page}{Page}} $\ast$\mbox{\hyperlink{class_buffer_manager_1_1_iterator_a5a17d8377bc10f437e29b058c0376b15}{page}}, \mbox{\hyperlink{class_buffer_manager}{Buffer\+Manager}} $\ast$boss)
+\item 
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_a6414a46039bea055f379c58ec48a8f21}\label{class_buffer_manager_1_1_iterator_a6414a46039bea055f379c58ec48a8f21}} 
+{\bfseries Iterator} (T $\ast$current, \mbox{\hyperlink{struct_page}{Page}} $\ast$\mbox{\hyperlink{class_buffer_manager_1_1_iterator_a5a17d8377bc10f437e29b058c0376b15}{page}}, \mbox{\hyperlink{class_buffer_manager}{Buffer\+Manager}} $\ast$boss, uint16\+\_\+t record\+\_\+in\+\_\+page)
+\item 
+bool \mbox{\hyperlink{class_buffer_manager_1_1_iterator_ad19030c51bf30e6d6e9e2e560cc511c4}{Is\+Nil}} () const
+\item 
+bool \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a6afaceac9683f05d9e1ecfc9ff5f3a0f}{Is\+End\+Page}} () const
+\item 
+bool \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a02a38a84fd54e45d06818d2807b172d8}{Is\+End}} () const
+\item 
+bool \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a7ce4145bd6263f8003c4c4dee01a9c31}{Is\+Begin}} () const
+\item 
+\mbox{\hyperlink{struct_generic_i_o_id}{Page\+Id}} \mbox{\hyperlink{class_buffer_manager_1_1_iterator_affb973bacb2deef1704e20221fb3c3fb}{Insert\+Page\+After}} ()
+\item 
+\mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Iterator}} \& \mbox{\hyperlink{class_buffer_manager_1_1_iterator_aabf5af4d55b46c14bddff0e7caab3665}{operator++}} ()
+\item 
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_a8d6866a6f0c406e15dc1b71737e1f3d2}\label{class_buffer_manager_1_1_iterator_a8d6866a6f0c406e15dc1b71737e1f3d2}} 
+\mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Iterator}} {\bfseries operator++} (int)
+\item 
+\mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Iterator}} \& \mbox{\hyperlink{class_buffer_manager_1_1_iterator_ab9959f549dcfa3f6daa47677552b673d}{operator-\/-\/}} ()
+\item 
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_a3e4dd078bdb98410c660e0db8b04e6fc}\label{class_buffer_manager_1_1_iterator_a3e4dd078bdb98410c660e0db8b04e6fc}} 
+\mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Iterator}} {\bfseries operator-\/-\/} (int)
+\item 
+const \mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Iterator}} \& \mbox{\hyperlink{class_buffer_manager_1_1_iterator_aced12f95569a91d98a83bf635d671e25}{operator+=}} (int offset)
+\item 
+const \mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Iterator}} \& \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a2a24e019d3a2934f3cd275b8a2436e59}{operator-\/=}} (int offset)
+\item 
+T \& \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a633c54abf71a334ff179cc359e655d5d}{operator $\ast$}} ()
+\item 
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_a20bdfb7f62a888b895bdc47e86d35d13}\label{class_buffer_manager_1_1_iterator_a20bdfb7f62a888b895bdc47e86d35d13}} 
+T $\ast$ {\bfseries operator-\/$>$} ()
+\item 
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_a41bdc119f5fefb4651be23cb85c18ae2}\label{class_buffer_manager_1_1_iterator_a41bdc119f5fefb4651be23cb85c18ae2}} 
+const T \& {\bfseries operator $\ast$} () const
+\item 
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_adebf0c44caecfa0274167cdd084a26a4}\label{class_buffer_manager_1_1_iterator_adebf0c44caecfa0274167cdd084a26a4}} 
+const T $\ast$ {\bfseries operator-\/$>$} () const
+\item 
+const \mbox{\hyperlink{struct_page}{Page}} \& \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a5a17d8377bc10f437e29b058c0376b15}{page}} () const
+\item 
+size\+\_\+t \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a436c0bafa40d441a59c0fb0e3aeb62cc}{Free\+Slots}} () const
+\item 
+size\+\_\+t \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a3a53f35f35074aa2079dead6cc606a5b}{Free\+Bytes}} () const
+\item 
+\mbox{\hyperlink{struct_generic_i_o_id}{Page\+Id}} \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a7a57002c7f8daa714cf9e19e34874fca}{pageid}} () const
+\item 
+bool \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a7a42be8229dace561a4e71f80ab406f2}{Insert}} (const T $\ast$first, const T $\ast$last)
+\item 
+bool \mbox{\hyperlink{class_buffer_manager_1_1_iterator_ae24c9a89811caf17cc6d6970c2953038}{Insert}} (T val)
+\item 
+bool \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a2c627998f19999fe55b7452b840ce47b}{Erase\+In\+Page}} (size\+\_\+t n=1)
+\item 
+void \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a2e9a59db2ef1289b16469750e422edd5}{Delete\+Page}} ()
+\item 
+bool \mbox{\hyperlink{class_buffer_manager_1_1_iterator_ad977beaab2295e8d8e3cedd7ff555a4d}{Insert}} (\mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Iterator}} first, \mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Iterator}} last)
+\item 
+void \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a20b703d6135c5e3026eab944a32ca186}{Move\+To\+Page\+Center}} ()
+\item 
+void \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a88ae36356076d25c8959ecfbaa084d9f}{Move\+To\+Page\+End}} ()
+\item 
+void \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a5fcb5fb10746e3d58736959a12610dd0}{Move\+To\+Page\+Begin}} ()
+\item 
+\mbox{\hyperlink{struct_generic_i_o_id}{Page\+Id}} \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a18f31d37240c5a587a85042374c5272d}{Split\+Page}} ()
+\item 
+bool \mbox{\hyperlink{class_buffer_manager_1_1_iterator_aee5637c96ddb7c5fef0f9a12d133c7c8}{Insert\+Nil}} (uint16\+\_\+t n)
+\item 
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_a1591dc4282b5129d722ea483b1f44f34}\label{class_buffer_manager_1_1_iterator_a1591dc4282b5129d722ea483b1f44f34}} 
+void {\bfseries Set\+Step} (uint16\+\_\+t step)
+\item 
+{\footnotesize template$<$typename U $>$ }\\\mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Iterator}}$<$ U $>$ \mbox{\hyperlink{class_buffer_manager_1_1_iterator_aac3b1b6e41babe5e82814e69e040fd20}{Cast}} (\mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Iterator}} t)
+\end{DoxyCompactItemize}
+\subsection*{Friends}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_a16155b1414091f690eefe4f5292199dc}\label{class_buffer_manager_1_1_iterator_a16155b1414091f690eefe4f5292199dc}} 
+class {\bfseries Buffer\+Manager}
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+\subsubsection*{template$<$typename T$>$\newline
+class Buffer\+Manager\+::\+Iterator$<$ T $>$}
+
+
+
+Definition at line 247 of file buffer-\/manager.\+h.
+
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_aac3b1b6e41babe5e82814e69e040fd20}\label{class_buffer_manager_1_1_iterator_aac3b1b6e41babe5e82814e69e040fd20}} 
+\index{BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}!Cast@{Cast}}
+\index{Cast@{Cast}!BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}}
+\subsubsection{\texorpdfstring{Cast()}{Cast()}}
+{\footnotesize\ttfamily template$<$typename T$>$ \\
+template$<$typename U $>$ \\
+\mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Iterator}}$<$U$>$ \mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Buffer\+Manager\+::\+Iterator}}$<$ T $>$\+::Cast (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Iterator}}$<$ T $>$}]{t }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+enforce cast into another type of pointer, \begin{DoxyNote}{Note}
+use it only when it {\ttfamily \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a7ce4145bd6263f8003c4c4dee01a9c31}{Is\+Begin()}} = true} 
+\end{DoxyNote}
+
+
+Definition at line 543 of file buffer-\/manager.\+h.
+
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_a2e9a59db2ef1289b16469750e422edd5}\label{class_buffer_manager_1_1_iterator_a2e9a59db2ef1289b16469750e422edd5}} 
+\index{BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}!DeletePage@{DeletePage}}
+\index{DeletePage@{DeletePage}!BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}}
+\subsubsection{\texorpdfstring{DeletePage()}{DeletePage()}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+void \mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Buffer\+Manager\+::\+Iterator}}$<$ T $>$\+::Delete\+Page (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Delete the page itr is pointing to \begin{DoxyNote}{Note}
+the iterator will be invalid after page is deleted 
+\end{DoxyNote}
+
+
+Definition at line 1073 of file buffer-\/manager.\+h.
+
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_a2c627998f19999fe55b7452b840ce47b}\label{class_buffer_manager_1_1_iterator_a2c627998f19999fe55b7452b840ce47b}} 
+\index{BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}!EraseInPage@{EraseInPage}}
+\index{EraseInPage@{EraseInPage}!BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}}
+\subsubsection{\texorpdfstring{EraseInPage()}{EraseInPage()}}
+{\footnotesize\ttfamily template$<$typename T$>$ \\
+bool \mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Buffer\+Manager\+::\+Iterator}}$<$ T $>$\+::Erase\+In\+Page (\begin{DoxyParamCaption}\item[{size\+\_\+t}]{n = {\ttfamily 1} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+erase elemnts in current page, starting from position iterator is pointing to 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em n} & number of elements wish to be erased \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+false if {\ttfamily n} exceeds the rest number of records in page 
+\end{DoxyReturn}
+
+
+Definition at line 408 of file buffer-\/manager.\+h.
+
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_a3a53f35f35074aa2079dead6cc606a5b}\label{class_buffer_manager_1_1_iterator_a3a53f35f35074aa2079dead6cc606a5b}} 
+\index{BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}!FreeBytes@{FreeBytes}}
+\index{FreeBytes@{FreeBytes}!BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}}
+\subsubsection{\texorpdfstring{FreeBytes()}{FreeBytes()}}
+{\footnotesize\ttfamily template$<$typename T$>$ \\
+size\+\_\+t \mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Buffer\+Manager\+::\+Iterator}}$<$ T $>$\+::Free\+Bytes (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+free bytes of current page 
+
+Definition at line 353 of file buffer-\/manager.\+h.
+
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_a436c0bafa40d441a59c0fb0e3aeb62cc}\label{class_buffer_manager_1_1_iterator_a436c0bafa40d441a59c0fb0e3aeb62cc}} 
+\index{BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}!FreeSlots@{FreeSlots}}
+\index{FreeSlots@{FreeSlots}!BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}}
+\subsubsection{\texorpdfstring{FreeSlots()}{FreeSlots()}}
+{\footnotesize\ttfamily template$<$typename T$>$ \\
+size\+\_\+t \mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Buffer\+Manager\+::\+Iterator}}$<$ T $>$\+::Free\+Slots (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+free slots on current page, i.\+e. how many more element can be put into current page 
+
+Definition at line 346 of file buffer-\/manager.\+h.
+
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_a7a42be8229dace561a4e71f80ab406f2}\label{class_buffer_manager_1_1_iterator_a7a42be8229dace561a4e71f80ab406f2}} 
+\index{BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}!Insert@{Insert}}
+\index{Insert@{Insert}!BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}}
+\subsubsection{\texorpdfstring{Insert()}{Insert()}\hspace{0.1cm}{\footnotesize\ttfamily [1/3]}}
+{\footnotesize\ttfamily template$<$typename T$>$ \\
+bool \mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Buffer\+Manager\+::\+Iterator}}$<$ T $>$\+::Insert (\begin{DoxyParamCaption}\item[{const T $\ast$}]{first,  }\item[{const T $\ast$}]{last }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+insert data \begin{DoxyReturn}{Returns}
+false if space is not enough, no data will be inserted! 
+
+true if successful 
+\end{DoxyReturn}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em first} & the pointing to begining of data \\
+\hline
+\mbox{\texttt{ in}}  & {\em last} & last of data 
+\begin{DoxyCode}{1}
+\DoxyCodeLine{Iterator<int> itr; \textcolor{keywordtype}{int} data[10]}
+\DoxyCodeLine{itr.Insert(data, data + 10); \textcolor{comment}{// insert 10 element}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keywordtype}{int} a;}
+\DoxyCodeLine{itr.Insert(\&a, \&a + 1); \textcolor{comment}{// insert 1 element}}
+\end{DoxyCode}
+ \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 375 of file buffer-\/manager.\+h.
+
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_ae24c9a89811caf17cc6d6970c2953038}\label{class_buffer_manager_1_1_iterator_ae24c9a89811caf17cc6d6970c2953038}} 
+\index{BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}!Insert@{Insert}}
+\index{Insert@{Insert}!BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}}
+\subsubsection{\texorpdfstring{Insert()}{Insert()}\hspace{0.1cm}{\footnotesize\ttfamily [2/3]}}
+{\footnotesize\ttfamily template$<$typename T$>$ \\
+bool \mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Buffer\+Manager\+::\+Iterator}}$<$ T $>$\+::Insert (\begin{DoxyParamCaption}\item[{T}]{val }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\begin{DoxyReturn}{Returns}
+false if space is not enough, no data will be inserted! 
+
+true if successful 
+\end{DoxyReturn}
+\begin{DoxyNote}{Note}
+calls {\ttfamily Insert(\&val, \&val + 1)} 
+\end{DoxyNote}
+\begin{DoxySeeAlso}{See also}
+{\ttfamily bool \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a7a42be8229dace561a4e71f80ab406f2}{Insert(const T$\ast$ first, const T$\ast$ last)}}} 
+\end{DoxySeeAlso}
+
+
+Definition at line 400 of file buffer-\/manager.\+h.
+
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_ad977beaab2295e8d8e3cedd7ff555a4d}\label{class_buffer_manager_1_1_iterator_ad977beaab2295e8d8e3cedd7ff555a4d}} 
+\index{BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}!Insert@{Insert}}
+\index{Insert@{Insert}!BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}}
+\subsubsection{\texorpdfstring{Insert()}{Insert()}\hspace{0.1cm}{\footnotesize\ttfamily [3/3]}}
+{\footnotesize\ttfamily template$<$typename T$>$ \\
+bool \mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Buffer\+Manager\+::\+Iterator}}$<$ T $>$\+::Insert (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Iterator}}$<$ T $>$}]{first,  }\item[{\mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Iterator}}$<$ T $>$}]{last }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Use iterator to insert data, data can span across multiple pages \begin{DoxyReturn}{Returns}
+false if insertion is failed, no data will be modified 
+\end{DoxyReturn}
+\begin{DoxySeeAlso}{See also}
+{\ttfamily bool \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a7a42be8229dace561a4e71f80ab406f2}{Insert(const T$\ast$ first, const T$\ast$ last)}}} 
+\end{DoxySeeAlso}
+
+
+Definition at line 432 of file buffer-\/manager.\+h.
+
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_aee5637c96ddb7c5fef0f9a12d133c7c8}\label{class_buffer_manager_1_1_iterator_aee5637c96ddb7c5fef0f9a12d133c7c8}} 
+\index{BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}!InsertNil@{InsertNil}}
+\index{InsertNil@{InsertNil}!BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}}
+\subsubsection{\texorpdfstring{InsertNil()}{InsertNil()}}
+{\footnotesize\ttfamily template$<$typename T$>$ \\
+bool \mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Buffer\+Manager\+::\+Iterator}}$<$ T $>$\+::Insert\+Nil (\begin{DoxyParamCaption}\item[{uint16\+\_\+t}]{n }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+insert n nil into page 
+
+Definition at line 522 of file buffer-\/manager.\+h.
+
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_affb973bacb2deef1704e20221fb3c3fb}\label{class_buffer_manager_1_1_iterator_affb973bacb2deef1704e20221fb3c3fb}} 
+\index{BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}!InsertPageAfter@{InsertPageAfter}}
+\index{InsertPageAfter@{InsertPageAfter}!BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}}
+\subsubsection{\texorpdfstring{InsertPageAfter()}{InsertPageAfter()}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+\mbox{\hyperlink{struct_generic_i_o_id}{Page\+Id}} \mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Buffer\+Manager\+::\+Iterator}}$<$ T $>$\+::Insert\+Page\+After (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+insert page after the page iterator is pointing to, \begin{DoxyReturn}{Returns}
+new page id just inserted 
+\end{DoxyReturn}
+\begin{DoxyNote}{Note}
+iterator won\textquotesingle{}t move it\textquotesingle{}s postition 
+\end{DoxyNote}
+
+
+Definition at line 881 of file buffer-\/manager.\+h.
+
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_a7ce4145bd6263f8003c4c4dee01a9c31}\label{class_buffer_manager_1_1_iterator_a7ce4145bd6263f8003c4c4dee01a9c31}} 
+\index{BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}!IsBegin@{IsBegin}}
+\index{IsBegin@{IsBegin}!BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}}
+\subsubsection{\texorpdfstring{IsBegin()}{IsBegin()}}
+{\footnotesize\ttfamily template$<$typename T$>$ \\
+bool \mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Buffer\+Manager\+::\+Iterator}}$<$ T $>$\+::Is\+Begin (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+check is beginning to linked page 
+
+Definition at line 282 of file buffer-\/manager.\+h.
+
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_a02a38a84fd54e45d06818d2807b172d8}\label{class_buffer_manager_1_1_iterator_a02a38a84fd54e45d06818d2807b172d8}} 
+\index{BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}!IsEnd@{IsEnd}}
+\index{IsEnd@{IsEnd}!BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}}
+\subsubsection{\texorpdfstring{IsEnd()}{IsEnd()}}
+{\footnotesize\ttfamily template$<$typename T$>$ \\
+bool \mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Buffer\+Manager\+::\+Iterator}}$<$ T $>$\+::Is\+End (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+{\ttfamily operator $\ast$} returns invalid data when is end of page 
+
+Definition at line 274 of file buffer-\/manager.\+h.
+
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_a6afaceac9683f05d9e1ecfc9ff5f3a0f}\label{class_buffer_manager_1_1_iterator_a6afaceac9683f05d9e1ecfc9ff5f3a0f}} 
+\index{BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}!IsEndPage@{IsEndPage}}
+\index{IsEndPage@{IsEndPage}!BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}}
+\subsubsection{\texorpdfstring{IsEndPage()}{IsEndPage()}}
+{\footnotesize\ttfamily template$<$typename T$>$ \\
+bool \mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Buffer\+Manager\+::\+Iterator}}$<$ T $>$\+::Is\+End\+Page (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+{\ttfamily operator $\ast$} returns invalid data when is end of page use {\ttfamily operator++} to forward to next page 
+
+Definition at line 267 of file buffer-\/manager.\+h.
+
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_ad19030c51bf30e6d6e9e2e560cc511c4}\label{class_buffer_manager_1_1_iterator_ad19030c51bf30e6d6e9e2e560cc511c4}} 
+\index{BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}!IsNil@{IsNil}}
+\index{IsNil@{IsNil}!BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}}
+\subsubsection{\texorpdfstring{IsNil()}{IsNil()}}
+{\footnotesize\ttfamily template$<$typename T$>$ \\
+bool \mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Buffer\+Manager\+::\+Iterator}}$<$ T $>$\+::Is\+Nil (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+check current position is nil, {\ttfamily operator $\ast$} returns invalid data when is nil 
+
+Definition at line 259 of file buffer-\/manager.\+h.
+
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_a5fcb5fb10746e3d58736959a12610dd0}\label{class_buffer_manager_1_1_iterator_a5fcb5fb10746e3d58736959a12610dd0}} 
+\index{BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}!MoveToPageBegin@{MoveToPageBegin}}
+\index{MoveToPageBegin@{MoveToPageBegin}!BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}}
+\subsubsection{\texorpdfstring{MoveToPageBegin()}{MoveToPageBegin()}}
+{\footnotesize\ttfamily template$<$typename T$>$ \\
+void \mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Buffer\+Manager\+::\+Iterator}}$<$ T $>$\+::Move\+To\+Page\+Begin (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+move cursor to the end of the page 
+
+Definition at line 496 of file buffer-\/manager.\+h.
+
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_a20b703d6135c5e3026eab944a32ca186}\label{class_buffer_manager_1_1_iterator_a20b703d6135c5e3026eab944a32ca186}} 
+\index{BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}!MoveToPageCenter@{MoveToPageCenter}}
+\index{MoveToPageCenter@{MoveToPageCenter}!BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}}
+\subsubsection{\texorpdfstring{MoveToPageCenter()}{MoveToPageCenter()}}
+{\footnotesize\ttfamily template$<$typename T$>$ \\
+void \mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Buffer\+Manager\+::\+Iterator}}$<$ T $>$\+::Move\+To\+Page\+Center (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+move cursor to page center useful when trying to split a page in half, 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{Iterator<int> itr;}
+\DoxyCodeLine{itr.MoveToPageCenter();}
+\DoxyCodeLine{\textcolor{keyword}{auto} new\_page = itr.SplitPage();}
+\end{DoxyCode}
+ 
+
+Definition at line 473 of file buffer-\/manager.\+h.
+
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_a88ae36356076d25c8959ecfbaa084d9f}\label{class_buffer_manager_1_1_iterator_a88ae36356076d25c8959ecfbaa084d9f}} 
+\index{BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}!MoveToPageEnd@{MoveToPageEnd}}
+\index{MoveToPageEnd@{MoveToPageEnd}!BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}}
+\subsubsection{\texorpdfstring{MoveToPageEnd()}{MoveToPageEnd()}}
+{\footnotesize\ttfamily template$<$typename T$>$ \\
+void \mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Buffer\+Manager\+::\+Iterator}}$<$ T $>$\+::Move\+To\+Page\+End (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+move cursor to the end of the page 
+
+Definition at line 488 of file buffer-\/manager.\+h.
+
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_a633c54abf71a334ff179cc359e655d5d}\label{class_buffer_manager_1_1_iterator_a633c54abf71a334ff179cc359e655d5d}} 
+\index{BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}!operator $\ast$@{operator $\ast$}}
+\index{operator $\ast$@{operator $\ast$}!BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}}
+\subsubsection{\texorpdfstring{operator $\ast$()}{operator *()}}
+{\footnotesize\ttfamily template$<$typename T$>$ \\
+T\& \mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Buffer\+Manager\+::\+Iterator}}$<$ T $>$\+::operator $\ast$ (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Return data pointing to data is invalid when {\ttfamily \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a6afaceac9683f05d9e1ecfc9ff5f3a0f}{Is\+End\+Page()}}} or {\ttfamily \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a02a38a84fd54e45d06818d2807b172d8}{Is\+End()}}} or {\ttfamily \mbox{\hyperlink{class_buffer_manager_1_1_iterator_ad19030c51bf30e6d6e9e2e560cc511c4}{Is\+Nil()}}} 
+
+Definition at line 329 of file buffer-\/manager.\+h.
+
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_aabf5af4d55b46c14bddff0e7caab3665}\label{class_buffer_manager_1_1_iterator_aabf5af4d55b46c14bddff0e7caab3665}} 
+\index{BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}!operator++@{operator++}}
+\index{operator++@{operator++}!BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}}
+\subsubsection{\texorpdfstring{operator++()}{operator++()}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+\mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Buffer\+Manager\+::\+Iterator}}$<$ T $>$ \& \mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Buffer\+Manager\+::\+Iterator}}$<$ T $>$\+::operator++ (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+forward iterator jump into next page if {\ttfamily \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a6afaceac9683f05d9e1ecfc9ff5f3a0f}{Is\+End\+Page()}} = true} won\textquotesingle{}t move if {\ttfamily \mbox{\hyperlink{class_buffer_manager_1_1_iterator_a02a38a84fd54e45d06818d2807b172d8}{Is\+End()}} = true} 
+
+Definition at line 886 of file buffer-\/manager.\+h.
+
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_aced12f95569a91d98a83bf635d671e25}\label{class_buffer_manager_1_1_iterator_aced12f95569a91d98a83bf635d671e25}} 
+\index{BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}!operator+=@{operator+=}}
+\index{operator+=@{operator+=}!BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}}
+\subsubsection{\texorpdfstring{operator+=()}{operator+=()}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+const \mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Buffer\+Manager\+::\+Iterator}}$<$ T $>$ \& \mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Buffer\+Manager\+::\+Iterator}}$<$ T $>$\+::operator+= (\begin{DoxyParamCaption}\item[{int}]{offset }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+forward iterator by offset will walk through several pages if neccessary 
+
+Definition at line 983 of file buffer-\/manager.\+h.
+
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_ab9959f549dcfa3f6daa47677552b673d}\label{class_buffer_manager_1_1_iterator_ab9959f549dcfa3f6daa47677552b673d}} 
+\index{BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}!operator-\/-\/@{operator-\/-\/}}
+\index{operator-\/-\/@{operator-\/-\/}!BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}}
+\subsubsection{\texorpdfstring{operator-\/-\/()}{operator--()}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+\mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Buffer\+Manager\+::\+Iterator}}$<$ T $>$ \& \mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Buffer\+Manager\+::\+Iterator}}$<$ T $>$\+::operator-\/-\/ (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+move back iterator 
+
+Definition at line 940 of file buffer-\/manager.\+h.
+
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_a2a24e019d3a2934f3cd275b8a2436e59}\label{class_buffer_manager_1_1_iterator_a2a24e019d3a2934f3cd275b8a2436e59}} 
+\index{BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}!operator-\/=@{operator-\/=}}
+\index{operator-\/=@{operator-\/=}!BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}}
+\subsubsection{\texorpdfstring{operator-\/=()}{operator-=()}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+const \mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Buffer\+Manager\+::\+Iterator}}$<$ T $>$ \& \mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Buffer\+Manager\+::\+Iterator}}$<$ T $>$\+::operator-\/= (\begin{DoxyParamCaption}\item[{int}]{offset }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+move back iterator by offset will walk through several pages if neccessary 
+
+Definition at line 1023 of file buffer-\/manager.\+h.
+
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_a5a17d8377bc10f437e29b058c0376b15}\label{class_buffer_manager_1_1_iterator_a5a17d8377bc10f437e29b058c0376b15}} 
+\index{BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}!page@{page}}
+\index{page@{page}!BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}}
+\subsubsection{\texorpdfstring{page()}{page()}}
+{\footnotesize\ttfamily template$<$typename T$>$ \\
+const \mbox{\hyperlink{struct_page}{Page}}\& \mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Buffer\+Manager\+::\+Iterator}}$<$ T $>$\+::page (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+Get page the iterator is pointing to 
+
+Definition at line 340 of file buffer-\/manager.\+h.
+
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_a7a57002c7f8daa714cf9e19e34874fca}\label{class_buffer_manager_1_1_iterator_a7a57002c7f8daa714cf9e19e34874fca}} 
+\index{BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}!pageid@{pageid}}
+\index{pageid@{pageid}!BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}}
+\subsubsection{\texorpdfstring{pageid()}{pageid()}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+\mbox{\hyperlink{struct_generic_i_o_id}{Page\+Id}} \mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Buffer\+Manager\+::\+Iterator}}$<$ T $>$\+::pageid (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+the page id iterator is pointing to 
+
+Definition at line 1065 of file buffer-\/manager.\+h.
+
+\mbox{\Hypertarget{class_buffer_manager_1_1_iterator_a18f31d37240c5a587a85042374c5272d}\label{class_buffer_manager_1_1_iterator_a18f31d37240c5a587a85042374c5272d}} 
+\index{BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}!SplitPage@{SplitPage}}
+\index{SplitPage@{SplitPage}!BufferManager::Iterator$<$ T $>$@{BufferManager::Iterator$<$ T $>$}}
+\subsubsection{\texorpdfstring{SplitPage()}{SplitPage()}}
+{\footnotesize\ttfamily template$<$typename T$>$ \\
+\mbox{\hyperlink{struct_generic_i_o_id}{Page\+Id}} \mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Buffer\+Manager\+::\+Iterator}}$<$ T $>$\+::Split\+Page (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+populate a new page and tranfer all data to next page @detail all data starting from curser will be copied to next page and the cursur pointing to end of page i.\+e. cursor is not moved \begin{DoxySeeAlso}{See also}
+\mbox{\hyperlink{class_buffer_manager_1_1_iterator_a20b703d6135c5e3026eab944a32ca186}{Move\+To\+Page\+Center()}} for example 
+\end{DoxySeeAlso}
+
+
+Definition at line 506 of file buffer-\/manager.\+h.
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+D\+:/\+V\+C\+Repos/\+Database0/\+Database0/buffer-\/manager.\+h\end{DoxyCompactItemize}

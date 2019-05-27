@@ -9,7 +9,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <io.h>
-/*
+#ifdef  BUFFER_MANAGER_USE_STD_STREAM
 class FStream {
 public:
 	FStream(fs::path p) {
@@ -17,6 +17,7 @@ public:
 	}
 
 	FStream() {}
+
 	FStream(const FStream&) = delete;
 
 	const FStream& operator=(const FStream&) = delete;
@@ -45,7 +46,7 @@ public:
 		ios.seekg(pos, way);
 	}
 
-	
+
 	void Read(void* buf, size_t size) {
 		ios.read(reinterpret_cast<char*>(buf), size);
 	}
@@ -64,8 +65,9 @@ public:
 
 private:
 	std::fstream ios;
-};*/
+};
 
+#else // use unix style stream
 class FStream {
 public:
 	FStream(fs::path p) {
@@ -73,6 +75,7 @@ public:
 	}
 
 	FStream() {}
+
 	FStream(const FStream&) = delete;
 
 	const FStream& operator=(const FStream&) = delete;
@@ -147,8 +150,13 @@ public:
 	}
 private:
 	int fd = -1;
-	size_t pos;
+	size_t pos = 0;
 };
+#endif //  BUFFER_MANAGER_USE_STD_STREAM
+
+
+
+
 
 bool BufferManager::IsOpened(const char* path)
 {
@@ -258,11 +266,10 @@ Page* BufferManager::AutoFetchPage(UniquePage unipage)
 		++(itr->first.use_count);
 		return itr->second;
 	}
-
 	
 	FileInfo& finfo = file_infos_[unipage.file];
 	PagePiggyback* ppb = new PagePiggyback;
-	ppb->finfo = finfo;
+	ppb->finfo = &finfo;
 	ppb->page_id = unipage.page;
 
 	Page* page = new Page;
@@ -272,31 +279,13 @@ Page* BufferManager::AutoFetchPage(UniquePage unipage)
 	ios.SeekGet(unipage.page * Page::kPageSize, std::ios::beg);
 	ios.Read(page, Page::kPageSize);
 	
-	// auto seel_res = fseek(finfo.fd, unipage.page * Page::kPageSize, SEEK_SET);
-	// lseek(finfo.fd, unipage.page * Page::kPageSize, SEEK_SET);
-	/*
-	auto res = fread(page, Page::kPageSize, 1, finfo.fd);
-	if (res != 1) {
-		std::ostringstream ss;
-		ss << "Fail to read page " << unipage.page << " in file: " << finfo.abs_path;
-		if (ferror(finfo.fd)) {
-			ss << ". error code(" << errno << ").";
-		}
-		else {
-			ss << ". Unexpected end of file.";
-		}
-		
-		clearerr(finfo.fd);
-		throw std::ios_base::failure(ss.str());
-	}*/
-
 	pages_[unipage] = page;
 	return page;
 }
 
 void BufferManager::FlushPageToDisk(Page* page, PageId pid) {
 	auto piggy = static_cast<PagePiggyback*>(page->piggyback);
-	auto& ios = GetStream(piggy->finfo);
+	auto& ios = GetStream(*(piggy->finfo));
 	ios.SeekPut(pid * Page::kPageSize, std::ios::beg);
 	ios.Write(page, Page::kPageSize);
 	ios.Flush();
@@ -398,11 +387,6 @@ PageId BufferManager::AllocatePageAfter(FileId fid, PageId prev)
 		ios.SeekPut(end_of_file, std::ios::beg);
 		ios.Write(page, Page::kPageSize);
 		
-		// auto after_write_size = ios.TellPut();
-		// if (after_write_size != (current.id + 1) * Page::kPageSize) {
-		// 	throw std::ios_base::failure("Something went wrong when writing to file");
-		// }
-		
 		return current;
 	}
 
@@ -471,6 +455,16 @@ void BufferManager::DeletePage(Page* page)
 	delete page;
 }
 
+
+void BufferManager::IteratorDeletePage(Page* page) {
+	auto piggy = static_cast<PagePiggyback*>(page->piggyback);
+	auto& header = file_infos_[piggy->finfo->id].header;
+	page->is_dirty = true;
+	page->header.next = header.first_free - piggy->page_id;
+	page->header.set_flag(Page::kfIsUnused);
+	header.first_free = piggy->page_id;
+	UnloadPage(UniquePage{ piggy->page_id, piggy->finfo->id });
+}
 
 
 

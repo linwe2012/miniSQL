@@ -1,0 +1,49 @@
+.TH "CatalogManager" 3 "Mon May 27 2019" "MiniSQL" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+CatalogManager
+.SH SYNOPSIS
+.br
+.PP
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "const \fBMetaData\fP & \fBFetchTable\fP (const std::string &db_name, const std::string &table_name)"
+.br
+.ti -1c
+.RI "const \fBAttribute\fP & \fBFetchColumn\fP (\fBColumnName\fP col_name)"
+.br
+.ti -1c
+.RI "void \fBNewTable\fP (const \fBMetaData\fP &meta)"
+.br
+.ti -1c
+.RI "void \fBDropTable\fP (const std::string &db_name, const std::string &table_name)"
+.br
+.ti -1c
+.RI "void \fBNewColumn\fP (\fBColumnName\fP col_name)"
+.br
+.ti -1c
+.RI "void \fBDropColumn\fP (\fBColumnName\fP col_name)"
+.br
+.ti -1c
+.RI "void \fBSerializeOneTable\fP (\fBBufferManager::Iterator\fP< char * > &itr, const \fBMetaData\fP &meta)"
+.br
+.ti -1c
+.RI "void \fBSerializeOneAttrib\fP (\fBBufferManager::Iterator\fP< char * > &itr, const \fBAttribute\fP &attrib)"
+.br
+.ti -1c
+.RI "void \fBDeserializeMeta\fP (\fBBufferManager::Iterator\fP< char * > &itr, \fBMetaData\fP &meta)"
+.br
+.ti -1c
+.RI "void \fBDeserializeOneAttribute\fP (\fBBufferManager::Iterator\fP< char * > &itr, \fBAttribute\fP &attrib, const std::string &column_name)"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+Definition at line 11 of file catalog\-manager\&.h\&.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MiniSQL from the source code\&.

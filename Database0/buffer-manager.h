@@ -133,9 +133,16 @@ struct Page {
 	void ReverseInsertN(size_t src_offet, size_t num_vals, size_t move_size, T val) {
 		auto t = reinterpret_cast<T*>(end());
 		size_t dst_offset = num_vals + src_offet;
-		memmove(t - src_offet - move_size, t - dst_offset - move_size, move_size * sizeof(T));
-		
+		// memmove(t - src_offet - move_size, t - dst_offset - move_size, move_size * sizeof(T));
+		memmove(t - dst_offset - move_size, t - src_offet - move_size, move_size * sizeof(T));
 		std::fill_n(t - dst_offset, num_vals, val);
+	}
+
+	template<typename T>
+	void ReverseEraseN(size_t src_offet, size_t num_vals, size_t move_size) {
+		auto t = reinterpret_cast<T*>(end());
+		size_t dst_offset = src_offet - num_vals;
+		memmove(t - src_offet - move_size, t - dst_offset - move_size, move_size * sizeof(T));
 	}
 
 	template<typename T>
@@ -246,63 +253,125 @@ public:
 		Iterator(T* current, Page* page, BufferManager* boss, uint16_t record_in_page)
 			:current_(current), page_(page), boss_(boss), record_in_page_(record_in_page) {}
 
+		/** 
+		* check current position is nil, `operator *` returns invalid data when is nil
+		*/
 		bool IsNil() const {
 			return page_->ReverseRead<char>(record_in_page_);
 		}
 
+		/** 
+		* `operator *` returns invalid data when is end of page
+		* use `operator++` to forward to next page
+		*/
 		bool IsEndPage() const {
 			return (record_in_page_ == page_->header.num_records);
 		}
 
+		/** 
+		* `operator *` returns invalid data when is end of page
+		*/
 		bool IsEnd() const {
 			return IsEndPage()  // we reach end of the page
 				&& !page_->HasNext(); // and page does not have any nexts
 		}
 
+		/** 
+		* check is beginning to linked page
+		*/
 		bool IsBegin() const {
 			return (record_in_page_ == 0)  // we reach end of the page
 				&& !page_->HasPrev(); // and page does not have any prevs
 		}
 
-		PageId InsertPageAfter() {
-			return boss_->IteratorInsertPageAfter<T>(this);
-		}
+		/** 
+		* insert page after the page iterator is pointing to,
+		* @return new page id just inserted
+		* @note iterator won't move it's postition
+		*/
+		PageId InsertPageAfter();
 
+		/** 
+		* forward iterator
+		* jump into next page if `IsEndPage() = true`
+		* won't move if `IsEnd() = true`
+		*/
 		Iterator& operator++(); // prefix
 
 		[[deprecated("Please use prefix version as this is less efficient")]]
 		Iterator operator++(int); // postfix
 
+		/** 
+		* move back iterator
+		*/
 		Iterator& operator--();
 
 		[[deprecated("Please use prefix version as this is less efficient")]]
 		Iterator operator--(int);
 
+		/** 
+		* forward iterator by offset
+		* will walk through several pages if neccessary
+		*/
 		const Iterator& operator+=(int offset);
 
+		/** 
+		* move back iterator by offset
+		* will walk through several pages if neccessary
+		*/
 		const Iterator& operator-=(int offset);
 
 		//TODO(L) Assert
+		/** 
+		* Return data pointing to
+		* data is invalid when `IsEndPage()` or `IsEnd()` or `IsNil()`
+		*/
 		T& operator*() { /*if (IsEndPage()) { ++* this; }*/  return *current_; }
 
-		// T* operator->() { return current_; }
-		// 
-		// const T& operator*() const { return *current_; }
-		// 
-		// const T* operator->() const { return current_; }
+		T* operator->() { return current_; }
+		
+		const T& operator*() const { return *current_; }
+		
+		const T* operator->() const { return current_; }
 
+		/** 
+		* Get page the iterator is pointing to
+		*/
 		const Page& page() const { return *page_; }
 
-		// free slots on current page, i.e. how many more T can be put into page
+		/** 
+		* free slots on current page, 
+		* i.e. how many more element can be put into current page
+		*/
 		size_t FreeSlots() const {
 			return page_->SpaceLeftByByteFixedSize() / (sizeof(T) * step_ + sizeof(char));
 		}
 
+		/** 
+		* free bytes of current page
+		*/
 		size_t FreeBytes() const {
 			return page_->SpaceLeftByByteFixedSize();
 		}
 
-		// returns false if space is not enough
+		/** the page id iterator is pointing to
+		*/
+		PageId pageid() const;
+
+		/** 
+		* insert data
+		* @return false if space is not enough, no data will be inserted!
+		* @return true if successful
+		* @param[in] first the pointing to begining of data
+		* @param[in] last last of data
+		* @code
+		* Iterator<int> itr; int data[10]
+		* itr.Insert(data, data + 10); // insert 10 element
+		* 
+		* int a;
+		* itr.Insert(&a, &a + 1); // insert 1 element
+		* @endcode
+		*/
 		bool Insert(const T* first, const T* last) {
 			uint16_t num_elem = static_cast<uint16_t>(last - first);
 			if (num_elem > FreeSlots()) {
@@ -313,7 +382,7 @@ public:
 
 			size_t n_moved = page_->header.num_records - record_in_page_;
 			page_->header.free_offset += static_cast<uint16_t>(num_elem * sizeof(T));
-			memmove(current_ + num_elem, current_, n_moved * sizeof(T));
+			memmove(current_ + num_elem, current_, n_moved * step_ * sizeof(T));
 			memmove(current_, first, num_elem * sizeof(T));
 
 			page_->ReverseInsertN<char>(record_in_page_, defacto_num_elem, n_moved, (char)0);
@@ -323,11 +392,84 @@ public:
 			return true;
 		}
 
+		/** @return false if space is not enough, no data will be inserted!
+		* @return true if successful
+		* @note calls `Insert(&val, &val + 1)`
+		* @see `bool Insert(const T* first, const T* last)`
+		*/
 		bool Insert(T val) {
 			return Insert(&val, &val + 1);
 		}
 
-		// move cursor to page center
+		/** erase elemnts in current page, starting from position iterator is pointing to
+		* @param[in] n number of elements wish to be erased
+		* @return false if `n` exceeds the rest number of records in page
+		*/
+		bool EraseInPage(size_t n = 1) {
+			uint16_t num_elem = n * step_;
+			int32_t n_moved = page_->header.num_records - record_in_page_ - num_elem;
+			if (n_moved <= 0) {
+				return false;
+			}
+			page_->header.free_offset -= num_elem * sizeof(T);
+			memmove(current_, current_ + num_elem, n_moved * step_ * sizeof(T));
+			
+			page_->ReverseEraseN<T>(record_in_page_, n, n_moved);
+			page_->header.num_records -= n;
+			return true;
+		}
+
+		/**Delete the page itr is pointing to
+		* @note the iterator will be invalid after page is deleted
+		*/
+		void DeletePage();
+
+
+		/** Use iterator to insert data, data can span across multiple pages
+		* @return false if insertion is failed, no data will be modified
+		* @see `bool Insert(const T* first, const T* last)`
+		*/
+		bool Insert(Iterator first, Iterator last) {
+			Iterator old_first = first;
+			auto slots = FreeSlots();
+			uint16_t count = 0;
+			while (first.pageid() != last.pageid()) {
+				Iterator first_endpage = first;
+				first_endpage.MoveToPageEnd();
+				count += first_endpage.current_ - first.current_;
+				if (count > slots) {
+					return false;
+				}
+				first = ++first_endpage;
+			}
+			count += last.current_ - first.current_;
+			if (count > slots) {
+				return false;
+			}
+
+			first = old_first;
+			while (first.pageid() != last.pageid()) {
+				Iterator first_endpage = first;
+				first_endpage.MoveToPageEnd();
+				auto res = Insert(first.current_, first_endpage.current_);
+				if (!res) {
+					return false;
+				}
+				first = ++first_endpage;
+			}
+			return Insert(first.current_, last.current_);
+		}
+
+
+		/**
+		* move cursor to page center
+		* useful when trying to split a page in half,
+		* @code
+		* Iterator<int> itr;
+		* itr.MoveToPageCenter();
+		* auto new_page = itr.SplitPage();
+		* @endcode
+		*/
 		void MoveToPageCenter() {
 			int target = record_in_page_ - page_->header.num_records / 2;
 			while (target > 0) {
@@ -340,12 +482,32 @@ public:
 			}
 		}
 
-		// populate a new page and tranfer all data to next page
+		/**
+		* move cursor to the end of the page
+		*/
+		void MoveToPageEnd() {
+			record_in_page_ = page_->header.num_records;
+			current_ = reinterpret_cast<T*>(page_->space + page_->header.free_offset);
+		}
+
+		/**
+		* move cursor to the end of the page
+		*/
+		void MoveToPageBegin() {
+			record_in_page_ = 0;
+			current_ = reinterpret_cast<T*>(page_->space);
+		}
+
+		/** populate a new page and tranfer all data to next page
+		* @detail all data starting from curser will be copied to next page
+		* and the cursur pointing to end of page i.e. cursor is not moved
+		* @see MoveToPageCenter() for example
+		*/
 		PageId SplitPage() {
 			auto piggy = reinterpret_cast<PagePiggyback*>(page_->piggyback);
 			
-			PageId pid = boss_->AllocatePageAfter(piggy->finfo.id, piggy->page_id);
-			Iterator next = boss_->GetPage<T>(piggy->finfo.id, pid);
+			PageId pid = boss_->AllocatePageAfter(piggy->finfo->id, piggy->page_id);
+			Iterator next = boss_->GetPage<T>(piggy->finfo->id, pid);
 			next.step_ = step_;
 			int16_t moved_size = static_cast<uint16_t>((page_->header.num_records - record_in_page_) * step_);
 			next.Insert(current_, current_ + moved_size);
@@ -354,6 +516,9 @@ public:
 			return pid;
 		}
 
+		/**
+		* insert n nil into page
+		*/
 		bool InsertNil(uint16_t n) {
 			if (FreeBytes() < n) {
 				return false;
@@ -370,6 +535,10 @@ public:
 		}
 
 		//TODO(L): assert if uncastable (i.e. misaligned data)
+		/**
+		* enforce cast into another type of pointer, 
+		* @note use it only when it `IsBegin() = true`
+		*/
 		template<typename U>
 		Iterator<U> Cast(Iterator t) {
 			return Iterator<U>(reinterpret_cast<U*>(current_), page_, boss_, record_in_page_);
@@ -417,7 +586,7 @@ public:
 	};
 
 	struct PagePiggyback {
-		FileInfo finfo;
+		FileInfo *finfo;
 		PageId page_id;
 	};
 
@@ -453,6 +622,8 @@ public:
 	template<typename T>
 	PageId IteratorInsertPageAfter(Iterator<T>* target);
 
+	void IteratorDeletePage(Page* target);
+
 	// first loop it up in memory, if failed, find in disk
 	Page* AutoFetchPage(UniquePage);
 
@@ -466,16 +637,11 @@ public:
 
 	Page::Header GetPageHeader(FileId fid, PageId psid);
 
-	
-
 	~BufferManager();
 
 private:
 	void DeletePage(Page*);
 
-	void SeekFile(FileId fid, size_t bytes, int origin);
-	void SeekFileEnd(FileId fid);
-	void WritePageDirectChecked(FileId fid, PageId current, Page* page);
 	std::map<fs::path, FileId> loaded_files_;
 	std::vector<FileInfo> file_infos_;
 
@@ -611,11 +777,19 @@ public:
 		return true;
 	}
 
+	/**
+	* if data exceeds free space in current page,
+	* will allocate a new page and insert it
+	* the cursor will atomatically forward
+	* @exception when data is larger than one page can hold
+	* @return `PageId(0)` (nil) if no page is allocated
+	* @return `PageId(next_page)` if data is written to next page
+	*/
 	PageId AutoInsert(const char* first, const char* last) {
 		if (!Insert(first, last)) {
 			auto piggy = reinterpret_cast<PagePiggyback*>(page_->piggyback);
-			PageId next = boss_->AllocatePageAfter(piggy->finfo.id, piggy->page_id);
-			*this = boss_->GetPage<char*>(piggy->finfo.id, next);
+			PageId next = boss_->AllocatePageAfter(piggy->finfo->id, piggy->page_id);
+			*this = boss_->GetPage<char*>(piggy->finfo->id, next);
 			if (!Insert(first, last)) {
 				throw std::overflow_error("The string is too long");
 			}
@@ -632,6 +806,25 @@ public:
 	PageId AutoInsert(const std::string& str) {
 		return AutoInsert(str.c_str(), str.c_str() + str.size() + 1);
 	}
+
+	bool EraseInPage(size_t n = 1) {
+		Iterator self = *this;
+		if (page_->header.num_records - record_in_page_ < n) {
+			return false;
+		}
+		uint16_t length = GetDataPos(record_in_page_ + n).offset + GetDataPos(record_in_page_ + n).length - GetDataPos().offset;
+		int32_t n_moved = page_->header.free_offset - length;
+		if (n_moved <= 0) {
+			return false;
+		}
+		page_->header.free_offset -= length;
+		memmove(current_, current_ + length, n_moved);
+			
+		page_->ReverseEraseN<Page::DataPos>(record_in_page_, n, n_moved);
+		page_->header.num_records -= n;
+	}
+
+	void DeletePage();
 
 	PageId AutoInsert(const void* data, size_t length_by_bytes) {
 		const char* cdata = reinterpret_cast<const char*>(data);
@@ -674,6 +867,7 @@ private:
 
 	const Page::DataPos& GetDataPos() const { return page_->ReverseRead<Page::DataPos>(record_in_page_); }
 	Page::DataPos& GetDataPos() { return page_->ReverseRead<Page::DataPos>(record_in_page_); }
+	Page::DataPos& GetDataPos(size_t num) { return page_->ReverseRead<Page::DataPos>(num); }
 
 	friend class BufferManager;
 	char* current_;
@@ -681,6 +875,12 @@ private:
 	BufferManager* boss_;
 	uint16_t record_in_page_;
 };
+
+
+template<typename T>
+inline PageId BufferManager::Iterator<T>::InsertPageAfter() {
+	return boss_->IteratorInsertPageAfter<T>(this);
+}
 
 template<typename T>
 inline BufferManager::Iterator<T>& BufferManager::Iterator<T>::operator++() {
@@ -809,7 +1009,7 @@ inline const BufferManager::Iterator<T>& BufferManager::Iterator<T>::operator+=(
 		}
 
 		cpage.id += page_->header.next;
-		*this = boss_->GetPage<T>(piggy->finfo.id, cpage);
+		*this = boss_->GetPage<T>(piggy->finfo->id, cpage);
 
 		last_offset = offset;
 		
@@ -850,7 +1050,7 @@ inline const BufferManager::Iterator<T>& BufferManager::Iterator<T>::operator-=(
 		}
 
 		cpage.id += page_->header.prev;
-		*this = boss_->GetPage<T>(piggy->finfo.id, cpage);
+		*this = boss_->GetPage<T>(piggy->finfo->id, cpage);
 
 		last_offset = offset;
 		offset -= num_left;
@@ -861,6 +1061,21 @@ inline const BufferManager::Iterator<T>& BufferManager::Iterator<T>::operator-=(
 	return operator-=(last_offset);
 }
 
+template<typename T>
+inline PageId BufferManager::Iterator<T>::pageid() const
+{
+	auto piggy = reinterpret_cast<PagePiggyback*>(page_->piggyback);
+	return piggy->page_id;
+}
+
+
+template<typename T>
+inline void BufferManager::Iterator<T>::DeletePage() {
+	boss_->IteratorDeletePage(page_);
+	page_ = nullptr;
+	record_in_page_ = 0;
+	current_ = nullptr;
+}
 
 
 template<typename T>
@@ -881,7 +1096,7 @@ inline void BufferManager::IteratorNextPage(Iterator<T>* target)
 
 	target_page.id += page.header.next;
 
-	(*target) = GetPage<T>(piggy->finfo.id, target_page);
+	(*target) = GetPage<T>(piggy->finfo->id, target_page);
 }
 
 template<typename T>
@@ -892,14 +1107,14 @@ inline void BufferManager::IteratorPrevPage(Iterator<T>* target)
 	PageId target_page = piggy->page_id;
 
 	target_page.id += page.header.prev;
-	(*target) = GetPage<T>(piggy->finfo.id, target_page);
+	(*target) = GetPage<T>(piggy->finfo->id, target_page);
 }
 
 template<typename T>
 inline PageId BufferManager::IteratorInsertPageAfter(Iterator<T>* target)
 {
 	auto piggy = static_cast<PagePiggyback*>(target->page().piggyback);
-	FileId fid = piggy->finfo.id;
+	FileId fid = piggy->finfo->id;
 	return AllocatePageAfter(fid, piggy->page_id);
 }
 

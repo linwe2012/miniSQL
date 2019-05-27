@@ -1,0 +1,40 @@
+.TH "IndexManager" 3 "Mon May 27 2019" "MiniSQL" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+IndexManager
+.SH SYNOPSIS
+.br
+.PP
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "\fBBufferManager::Iterator\fP< char > \fBLookUp\fP (\fBAttribute\fP &, const char *key, int key_size_by_bytes)"
+.br
+.ti -1c
+.RI "bool \fBIsIndexed\fP (\fBAttribute\fP &)"
+.br
+.ti -1c
+.RI "void \fBBuildIndex\fP (\fBAttribute\fP &)"
+.br
+.ti -1c
+.RI "void \fBDropIndex\fP (\fBAttribute\fP &)"
+.br
+.ti -1c
+.RI "void \fBInsert\fP (\fBItemPayload\fP payload)"
+.br
+.ti -1c
+.RI "void \fBDelete\fP (\fBItemPayload\fP payload)"
+.br
+.ti -1c
+.RI "void \fBUpdate\fP (\fBItemPayload\fP payload)"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+Definition at line 7 of file index\-manager\&.h\&.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MiniSQL from the source code\&.

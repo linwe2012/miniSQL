@@ -1,0 +1,78 @@
+\hypertarget{class_buffer_manager}{}\section{Buffer\+Manager Class Reference}
+\label{class_buffer_manager}\index{BufferManager@{BufferManager}}
+\subsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{struct_buffer_manager_1_1_file_header}{File\+Header}}
+\item 
+struct \mbox{\hyperlink{struct_buffer_manager_1_1_file_info}{File\+Info}}
+\item 
+class \mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Iterator}}
+\item 
+class \mbox{\hyperlink{class_buffer_manager_1_1_iterator_3_01char_01_5_01_4}{Iterator$<$ char $\ast$ $>$}}
+\item 
+struct \mbox{\hyperlink{struct_buffer_manager_1_1_page_piggyback}{Page\+Piggyback}}
+\item 
+struct \mbox{\hyperlink{struct_buffer_manager_1_1_unique_page}{Unique\+Page}}
+\end{DoxyCompactItemize}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_buffer_manager_a2713f7e998dc536389fb8d74f92c53e2}\label{class_buffer_manager_a2713f7e998dc536389fb8d74f92c53e2}} 
+bool {\bfseries Is\+Opened} (const char $\ast$path)
+\item 
+\mbox{\Hypertarget{class_buffer_manager_a64a8a1b316a30dd37763d53a3ff6dac8}\label{class_buffer_manager_a64a8a1b316a30dd37763d53a3ff6dac8}} 
+\mbox{\hyperlink{struct_generic_i_o_id}{File\+Id}} {\bfseries Open\+File} (const char $\ast$path)
+\item 
+\mbox{\Hypertarget{class_buffer_manager_a20113f877ed39ee6593b31f8dccf946d}\label{class_buffer_manager_a20113f877ed39ee6593b31f8dccf946d}} 
+\mbox{\hyperlink{struct_generic_i_o_id}{File\+Id}} {\bfseries New\+File} (const char $\ast$path)
+\item 
+\mbox{\Hypertarget{class_buffer_manager_a7b6c9ee9cc42f934432199f92ef0dd7f}\label{class_buffer_manager_a7b6c9ee9cc42f934432199f92ef0dd7f}} 
+{\footnotesize template$<$typename T $>$ }\\\mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Iterator}}$<$ T $>$ {\bfseries Get\+Page} (\mbox{\hyperlink{struct_generic_i_o_id}{File\+Id}} file\+\_\+id, \mbox{\hyperlink{struct_generic_i_o_id}{Page\+Id}} page\+\_\+id)
+\item 
+\mbox{\Hypertarget{class_buffer_manager_ae3ac3fa222aaec06eb818fe132e7551a}\label{class_buffer_manager_ae3ac3fa222aaec06eb818fe132e7551a}} 
+\mbox{\hyperlink{struct_generic_i_o_id}{Page\+Id}} {\bfseries Allocate\+Page\+After} (\mbox{\hyperlink{struct_generic_i_o_id}{File\+Id}} fid, \mbox{\hyperlink{struct_generic_i_o_id}{Page\+Id}} prev)
+\item 
+\mbox{\Hypertarget{class_buffer_manager_a73139131df9e65d8f1df68a4e83599b4}\label{class_buffer_manager_a73139131df9e65d8f1df68a4e83599b4}} 
+{\footnotesize template$<$typename T $>$ }\\void {\bfseries Iterator\+Next\+Page} (\mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Iterator}}$<$ T $>$ $\ast$target)
+\item 
+\mbox{\Hypertarget{class_buffer_manager_a2b7137a1335875bb314f0f8c4ba5769e}\label{class_buffer_manager_a2b7137a1335875bb314f0f8c4ba5769e}} 
+{\footnotesize template$<$typename T $>$ }\\void {\bfseries Iterator\+Prev\+Page} (\mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Iterator}}$<$ T $>$ $\ast$target)
+\item 
+\mbox{\Hypertarget{class_buffer_manager_abd7effc6301c9a022b8d19b40c106c73}\label{class_buffer_manager_abd7effc6301c9a022b8d19b40c106c73}} 
+{\footnotesize template$<$typename T $>$ }\\\mbox{\hyperlink{struct_generic_i_o_id}{Page\+Id}} {\bfseries Iterator\+Insert\+Page\+After} (\mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Iterator}}$<$ T $>$ $\ast$target)
+\item 
+\mbox{\Hypertarget{class_buffer_manager_ae745995d49f0d07e5c8e14ed3f876a55}\label{class_buffer_manager_ae745995d49f0d07e5c8e14ed3f876a55}} 
+void {\bfseries Iterator\+Delete\+Page} (\mbox{\hyperlink{struct_page}{Page}} $\ast$target)
+\item 
+\mbox{\Hypertarget{class_buffer_manager_af7cd0ce8c0ec727c21fced195f2be157}\label{class_buffer_manager_af7cd0ce8c0ec727c21fced195f2be157}} 
+\mbox{\hyperlink{struct_page}{Page}} $\ast$ {\bfseries Auto\+Fetch\+Page} (\mbox{\hyperlink{struct_buffer_manager_1_1_unique_page}{Unique\+Page}})
+\item 
+\mbox{\Hypertarget{class_buffer_manager_af796267f9111e1240fd1b01441459456}\label{class_buffer_manager_af796267f9111e1240fd1b01441459456}} 
+void {\bfseries Flush\+Page\+To\+Disk} (\mbox{\hyperlink{struct_page}{Page}} $\ast$page, \mbox{\hyperlink{struct_generic_i_o_id}{Page\+Id}} pid)
+\item 
+\mbox{\Hypertarget{class_buffer_manager_a909cda1c5cc52fb8a32ac24c382d09c3}\label{class_buffer_manager_a909cda1c5cc52fb8a32ac24c382d09c3}} 
+void {\bfseries Flush\+File\+Header\+To\+Disk} (\mbox{\hyperlink{struct_generic_i_o_id}{File\+Id}} fid)
+\item 
+\mbox{\Hypertarget{class_buffer_manager_ac1f0a593fd8605be8f2de406a28f6205}\label{class_buffer_manager_ac1f0a593fd8605be8f2de406a28f6205}} 
+void {\bfseries Unload\+Page} (\mbox{\hyperlink{struct_buffer_manager_1_1_unique_page}{Unique\+Page}})
+\item 
+\mbox{\Hypertarget{class_buffer_manager_a572f8d37bdfc1d325e977241fcbd504f}\label{class_buffer_manager_a572f8d37bdfc1d325e977241fcbd504f}} 
+\mbox{\hyperlink{struct_page}{Page}} $\ast$ {\bfseries Get\+Empty\+Page} (int prev, int next)
+\item 
+\mbox{\Hypertarget{class_buffer_manager_aa6f56da237d614e4f7b60d832923ca92}\label{class_buffer_manager_aa6f56da237d614e4f7b60d832923ca92}} 
+\mbox{\hyperlink{struct_page_1_1_header}{Page\+::\+Header}} {\bfseries Get\+Page\+Header} (\mbox{\hyperlink{struct_generic_i_o_id}{File\+Id}} fid, \mbox{\hyperlink{struct_generic_i_o_id}{Page\+Id}} psid)
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+
+
+Definition at line 244 of file buffer-\/manager.\+h.
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+D\+:/\+V\+C\+Repos/\+Database0/\+Database0/buffer-\/manager.\+h\item 
+D\+:/\+V\+C\+Repos/\+Database0/\+Database0/buffer-\/manager.\+cc\end{DoxyCompactItemize}

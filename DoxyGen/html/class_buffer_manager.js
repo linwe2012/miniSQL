@@ -1,0 +1,25 @@
+var class_buffer_manager =
+[
+    [ "FileHeader", "struct_buffer_manager_1_1_file_header.html", "struct_buffer_manager_1_1_file_header" ],
+    [ "FileInfo", "struct_buffer_manager_1_1_file_info.html", "struct_buffer_manager_1_1_file_info" ],
+    [ "Iterator", "class_buffer_manager_1_1_iterator.html", "class_buffer_manager_1_1_iterator" ],
+    [ "Iterator< char * >", "class_buffer_manager_1_1_iterator_3_01char_01_5_01_4.html", "class_buffer_manager_1_1_iterator_3_01char_01_5_01_4" ],
+    [ "PagePiggyback", "struct_buffer_manager_1_1_page_piggyback.html", "struct_buffer_manager_1_1_page_piggyback" ],
+    [ "UniquePage", "struct_buffer_manager_1_1_unique_page.html", "struct_buffer_manager_1_1_unique_page" ],
+    [ "~BufferManager", "class_buffer_manager.html#a3d7b202dce720e902dffef83e361e1d2", null ],
+    [ "AllocatePageAfter", "class_buffer_manager.html#ae3ac3fa222aaec06eb818fe132e7551a", null ],
+    [ "AutoFetchPage", "class_buffer_manager.html#af7cd0ce8c0ec727c21fced195f2be157", null ],
+    [ "FlushFileHeaderToDisk", "class_buffer_manager.html#a909cda1c5cc52fb8a32ac24c382d09c3", null ],
+    [ "FlushPageToDisk", "class_buffer_manager.html#af796267f9111e1240fd1b01441459456", null ],
+    [ "GetEmptyPage", "class_buffer_manager.html#a572f8d37bdfc1d325e977241fcbd504f", null ],
+    [ "GetPage", "class_buffer_manager.html#a7b6c9ee9cc42f934432199f92ef0dd7f", null ],
+    [ "GetPageHeader", "class_buffer_manager.html#aa6f56da237d614e4f7b60d832923ca92", null ],
+    [ "IsOpened", "class_buffer_manager.html#a2713f7e998dc536389fb8d74f92c53e2", null ],
+    [ "IteratorDeletePage", "class_buffer_manager.html#ae745995d49f0d07e5c8e14ed3f876a55", null ],
+    [ "IteratorInsertPageAfter", "class_buffer_manager.html#abd7effc6301c9a022b8d19b40c106c73", null ],
+    [ "IteratorNextPage", "class_buffer_manager.html#a73139131df9e65d8f1df68a4e83599b4", null ],
+    [ "IteratorPrevPage", "class_buffer_manager.html#a2b7137a1335875bb314f0f8c4ba5769e", null ],
+    [ "NewFile", "class_buffer_manager.html#a20113f877ed39ee6593b31f8dccf946d", null ],
+    [ "OpenFile", "class_buffer_manager.html#a64a8a1b316a30dd37763d53a3ff6dac8", null ],
+    [ "UnloadPage", "class_buffer_manager.html#ac1f0a593fd8605be8f2de406a28f6205", null ]
+];

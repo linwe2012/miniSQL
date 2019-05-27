@@ -1,0 +1,55 @@
+.TH "FStream" 3 "Mon May 27 2019" "MiniSQL" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+FStream
+.SH SYNOPSIS
+.br
+.PP
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "\fBFStream\fP (fs::path p)"
+.br
+.ti -1c
+.RI "\fBFStream\fP (const \fBFStream\fP &)=delete"
+.br
+.ti -1c
+.RI "const \fBFStream\fP & \fBoperator=\fP (const \fBFStream\fP &)=delete"
+.br
+.ti -1c
+.RI "void \fBOpen\fP (fs::path p)"
+.br
+.ti -1c
+.RI "void \fBNewFile\fP (fs::path p)"
+.br
+.ti -1c
+.RI "void \fBWrite\fP (const void *data, size_t size)"
+.br
+.ti -1c
+.RI "void \fBRead\fP (void *buf, size_t size)"
+.br
+.ti -1c
+.RI "void \fBSeekPut\fP (size_t pos, int way)"
+.br
+.ti -1c
+.RI "void \fBSeekGet\fP (size_t pos, int way)"
+.br
+.ti -1c
+.RI "void \fBFlush\fP ()"
+.br
+.ti -1c
+.RI "size_t \fBTellGet\fP ()"
+.br
+.ti -1c
+.RI "size_t \fBTellPut\fP ()"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+Definition at line 71 of file buffer\-manager\&.cc\&.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MiniSQL from the source code\&.

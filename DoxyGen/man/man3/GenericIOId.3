@@ -1,0 +1,66 @@
+.TH "GenericIOId< UnderlyingType, StrongType >" 3 "Mon May 27 2019" "MiniSQL" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+GenericIOId< UnderlyingType, StrongType >
+.SH SYNOPSIS
+.br
+.PP
+.SS "Public Types"
+
+.in +1c
+.ti -1c
+.RI "enum : UnderlyingType { \fBkMax\fP = std::numeric_limits<UnderlyingType>::max() }"
+.br
+.ti -1c
+.RI "using \fBIdType\fP = UnderlyingType"
+.br
+.in -1c
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "\fBGenericIOId\fP (UnderlyingType t)"
+.br
+.ti -1c
+.RI "\fBoperator UnderlyingType\fP ()"
+.br
+.ti -1c
+.RI "bool \fBoperator<\fP (const \fBGenericIOId\fP &rhs) const"
+.br
+.ti -1c
+.RI "bool \fBoperator==\fP (const \fBGenericIOId\fP &rhs) const"
+.br
+.ti -1c
+.RI "bool \fBoperator!=\fP (const \fBGenericIOId\fP &rhs) const"
+.br
+.ti -1c
+.RI "bool \fBoperator>\fP (const \fBGenericIOId\fP &rhs) const"
+.br
+.ti -1c
+.RI "void \fBInc\fP ()"
+.br
+.ti -1c
+.RI "bool \fBIsNil\fP ()"
+.br
+.in -1c
+.SS "Public Attributes"
+
+.in +1c
+.ti -1c
+.RI "UnderlyingType \fBid\fP"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+
+.SS "template<typename UnderlyingType, int StrongType>
+.br
+struct GenericIOId< UnderlyingType, StrongType >"
+
+.PP
+Definition at line 15 of file buffer\-manager\&.h\&.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MiniSQL from the source code\&.

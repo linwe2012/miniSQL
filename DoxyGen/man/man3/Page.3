@@ -1,0 +1,100 @@
+.TH "Page" 3 "Mon May 27 2019" "MiniSQL" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+Page
+.SH SYNOPSIS
+.br
+.PP
+.SS "Classes"
+
+.in +1c
+.ti -1c
+.RI "struct \fBDataPos\fP"
+.br
+.ti -1c
+.RI "struct \fBHeader\fP"
+.br
+.in -1c
+.SS "Public Types"
+
+.in +1c
+.ti -1c
+.RI "enum { \fBkPageSize\fP = PAGE_SIZE_BY_BYTES, \fBkDiscretionSpace\fP = kPageSize - sizeof(Header), \fBkInValidOffset\fP = UINT16_MAX, \fBkBeginOfReversed\fP = kDiscretionSpace - 1, \fBkfIsVariadic\fP = 0, \fBkfExtendToNext\fP = 1, \fBkfIsUnused\fP = 2 }"
+.br
+.in -1c
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "template<typename T > void \fBWrite\fP (size_t offset, T data)"
+.br
+.ti -1c
+.RI "template<typename T > void \fBReverseInsertN\fP (size_t src_offet, size_t num_vals, size_t move_size, T val)"
+.br
+.ti -1c
+.RI "template<typename T > void \fBReverseEraseN\fP (size_t src_offet, size_t num_vals, size_t move_size)"
+.br
+.ti -1c
+.RI "template<typename T > T \fBRead\fP (size_t offset) const"
+.br
+.ti -1c
+.RI "template<typename T > T & \fBRead\fP (size_t offset)"
+.br
+.ti -1c
+.RI "template<typename T > T & \fBReverseRead\fP (size_t offset)"
+.br
+.ti -1c
+.RI "template<typename T > T \fBReverseRead\fP (size_t offset) const"
+.br
+.ti -1c
+.RI "size_t \fBSpaceLeftByByte\fP ()"
+.br
+.ti -1c
+.RI "size_t \fBSpaceLeftByByteFixedSize\fP () const"
+.br
+.ti -1c
+.RI "size_t \fBSpaceLeftByByteVariadicSize\fP () const"
+.br
+.ti -1c
+.RI "bool \fBHasPrev\fP () const"
+.br
+.ti -1c
+.RI "bool \fBHasNext\fP () const"
+.br
+.ti -1c
+.RI "char * \fBend\fP ()"
+.br
+.ti -1c
+.RI "const char * \fBend\fP () const"
+.br
+.ti -1c
+.RI "template<> void \fBWrite\fP (size_t offset, bool data)"
+.br
+.ti -1c
+.RI "template<> bool \fBRead\fP (size_t offset) const"
+.br
+.in -1c
+.SS "Public Attributes"
+
+.in +1c
+.ti -1c
+.RI "\fBHeader\fP \fBheader\fP"
+.br
+.ti -1c
+.RI "char \fBspace\fP [kDiscretionSpace]"
+.br
+.ti -1c
+.RI "bool \fBis_dirty\fP = false"
+.br
+.ti -1c
+.RI "void * \fBpiggyback\fP = nullptr"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+Definition at line 63 of file buffer\-manager\&.h\&.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MiniSQL from the source code\&.

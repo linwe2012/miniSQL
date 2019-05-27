@@ -1,0 +1,47 @@
+\hypertarget{class_catalog_manager}{}\section{Catalog\+Manager Class Reference}
+\label{class_catalog_manager}\index{CatalogManager@{CatalogManager}}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_catalog_manager_a78d28bcfdef16c00ffd8a1b5492571c0}\label{class_catalog_manager_a78d28bcfdef16c00ffd8a1b5492571c0}} 
+const \mbox{\hyperlink{struct_meta_data}{Meta\+Data}} \& {\bfseries Fetch\+Table} (const std\+::string \&db\+\_\+name, const std\+::string \&table\+\_\+name)
+\item 
+\mbox{\Hypertarget{class_catalog_manager_a888a24b88f366bfa75e038fac7dbf13d}\label{class_catalog_manager_a888a24b88f366bfa75e038fac7dbf13d}} 
+const \mbox{\hyperlink{struct_attribute}{Attribute}} \& {\bfseries Fetch\+Column} (\mbox{\hyperlink{struct_column_name}{Column\+Name}} col\+\_\+name)
+\item 
+\mbox{\Hypertarget{class_catalog_manager_a01af7632802b69d0b94d010038c04b61}\label{class_catalog_manager_a01af7632802b69d0b94d010038c04b61}} 
+void {\bfseries New\+Table} (const \mbox{\hyperlink{struct_meta_data}{Meta\+Data}} \&meta)
+\item 
+\mbox{\Hypertarget{class_catalog_manager_a6691fedf4636ccb6458bfaf58be0f9f6}\label{class_catalog_manager_a6691fedf4636ccb6458bfaf58be0f9f6}} 
+void {\bfseries Drop\+Table} (const std\+::string \&db\+\_\+name, const std\+::string \&table\+\_\+name)
+\item 
+\mbox{\Hypertarget{class_catalog_manager_a38247db9616049d45471f932cb56f60b}\label{class_catalog_manager_a38247db9616049d45471f932cb56f60b}} 
+void {\bfseries New\+Column} (\mbox{\hyperlink{struct_column_name}{Column\+Name}} col\+\_\+name)
+\item 
+\mbox{\Hypertarget{class_catalog_manager_a76dadf7aa79fe1b6e8785b63c1501335}\label{class_catalog_manager_a76dadf7aa79fe1b6e8785b63c1501335}} 
+void {\bfseries Drop\+Column} (\mbox{\hyperlink{struct_column_name}{Column\+Name}} col\+\_\+name)
+\item 
+\mbox{\Hypertarget{class_catalog_manager_a91a84d275347a0ec43afc4c3539f908f}\label{class_catalog_manager_a91a84d275347a0ec43afc4c3539f908f}} 
+void {\bfseries Serialize\+One\+Table} (\mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Buffer\+Manager\+::\+Iterator}}$<$ char $\ast$ $>$ \&itr, const \mbox{\hyperlink{struct_meta_data}{Meta\+Data}} \&meta)
+\item 
+\mbox{\Hypertarget{class_catalog_manager_a89bceed7f145ac65d36fbe725971095d}\label{class_catalog_manager_a89bceed7f145ac65d36fbe725971095d}} 
+void {\bfseries Serialize\+One\+Attrib} (\mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Buffer\+Manager\+::\+Iterator}}$<$ char $\ast$ $>$ \&itr, const \mbox{\hyperlink{struct_attribute}{Attribute}} \&attrib)
+\item 
+\mbox{\Hypertarget{class_catalog_manager_a84f329d0ce4091bfeaf05d8c4fddf857}\label{class_catalog_manager_a84f329d0ce4091bfeaf05d8c4fddf857}} 
+void {\bfseries Deserialize\+Meta} (\mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Buffer\+Manager\+::\+Iterator}}$<$ char $\ast$ $>$ \&itr, \mbox{\hyperlink{struct_meta_data}{Meta\+Data}} \&meta)
+\item 
+\mbox{\Hypertarget{class_catalog_manager_a9ef09234d95960fc12fbfc0c6b0a02df}\label{class_catalog_manager_a9ef09234d95960fc12fbfc0c6b0a02df}} 
+void {\bfseries Deserialize\+One\+Attribute} (\mbox{\hyperlink{class_buffer_manager_1_1_iterator}{Buffer\+Manager\+::\+Iterator}}$<$ char $\ast$ $>$ \&itr, \mbox{\hyperlink{struct_attribute}{Attribute}} \&attrib, const std\+::string \&column\+\_\+name)
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+
+
+Definition at line 11 of file catalog-\/manager.\+h.
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+D\+:/\+V\+C\+Repos/\+Database0/\+Database0/catalog-\/manager.\+h\end{DoxyCompactItemize}

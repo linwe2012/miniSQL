@@ -1,0 +1,352 @@
+.TH "BufferManager::Iterator< T >" 3 "Mon May 27 2019" "MiniSQL" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+BufferManager::Iterator< T >
+.SH SYNOPSIS
+.br
+.PP
+.SS "Public Types"
+
+.in +1c
+.ti -1c
+.RI "using \fBpointer\fP = T *"
+.br
+.in -1c
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "\fBIterator\fP (T *current, \fBPage\fP *\fBpage\fP, \fBBufferManager\fP *boss)"
+.br
+.ti -1c
+.RI "\fBIterator\fP (T *current, \fBPage\fP *\fBpage\fP, \fBBufferManager\fP *boss, uint16_t record_in_page)"
+.br
+.ti -1c
+.RI "bool \fBIsNil\fP () const"
+.br
+.ti -1c
+.RI "bool \fBIsEndPage\fP () const"
+.br
+.ti -1c
+.RI "bool \fBIsEnd\fP () const"
+.br
+.ti -1c
+.RI "bool \fBIsBegin\fP () const"
+.br
+.ti -1c
+.RI "\fBPageId\fP \fBInsertPageAfter\fP ()"
+.br
+.ti -1c
+.RI "\fBIterator\fP & \fBoperator++\fP ()"
+.br
+.ti -1c
+.RI "\fBIterator\fP \fBoperator++\fP (int)"
+.br
+.ti -1c
+.RI "\fBIterator\fP & \fBoperator\-\-\fP ()"
+.br
+.ti -1c
+.RI "\fBIterator\fP \fBoperator\-\-\fP (int)"
+.br
+.ti -1c
+.RI "const \fBIterator\fP & \fBoperator+=\fP (int offset)"
+.br
+.ti -1c
+.RI "const \fBIterator\fP & \fBoperator\-=\fP (int offset)"
+.br
+.ti -1c
+.RI "T & \fBoperator *\fP ()"
+.br
+.ti -1c
+.RI "T * \fBoperator\->\fP ()"
+.br
+.ti -1c
+.RI "const T & \fBoperator *\fP () const"
+.br
+.ti -1c
+.RI "const T * \fBoperator\->\fP () const"
+.br
+.ti -1c
+.RI "const \fBPage\fP & \fBpage\fP () const"
+.br
+.ti -1c
+.RI "size_t \fBFreeSlots\fP () const"
+.br
+.ti -1c
+.RI "size_t \fBFreeBytes\fP () const"
+.br
+.ti -1c
+.RI "\fBPageId\fP \fBpageid\fP () const"
+.br
+.ti -1c
+.RI "bool \fBInsert\fP (const T *first, const T *last)"
+.br
+.ti -1c
+.RI "bool \fBInsert\fP (T val)"
+.br
+.ti -1c
+.RI "bool \fBEraseInPage\fP (size_t n=1)"
+.br
+.ti -1c
+.RI "void \fBDeletePage\fP ()"
+.br
+.ti -1c
+.RI "bool \fBInsert\fP (\fBIterator\fP first, \fBIterator\fP last)"
+.br
+.ti -1c
+.RI "void \fBMoveToPageCenter\fP ()"
+.br
+.ti -1c
+.RI "void \fBMoveToPageEnd\fP ()"
+.br
+.ti -1c
+.RI "void \fBMoveToPageBegin\fP ()"
+.br
+.ti -1c
+.RI "\fBPageId\fP \fBSplitPage\fP ()"
+.br
+.ti -1c
+.RI "bool \fBInsertNil\fP (uint16_t n)"
+.br
+.ti -1c
+.RI "void \fBSetStep\fP (uint16_t step)"
+.br
+.ti -1c
+.RI "template<typename U > \fBIterator\fP< U > \fBCast\fP (\fBIterator\fP t)"
+.br
+.in -1c
+.SS "Friends"
+
+.in +1c
+.ti -1c
+.RI "class \fBBufferManager\fP"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+
+.SS "template<typename T>
+.br
+class BufferManager::Iterator< T >"
+
+.PP
+Definition at line 247 of file buffer\-manager\&.h\&.
+.SH "Member Function Documentation"
+.PP 
+.SS "template<typename T> template<typename U > \fBIterator\fP<U> \fBBufferManager::Iterator\fP< T >::Cast (\fBIterator\fP< T > t)\fC [inline]\fP"
+enforce cast into another type of pointer, 
+.PP
+\fBNote:\fP
+.RS 4
+use it only when it \fC\fBIsBegin()\fP = true\fP 
+.RE
+.PP
+
+.PP
+Definition at line 543 of file buffer\-manager\&.h\&.
+.SS "template<typename T > void \fBBufferManager::Iterator\fP< T >::DeletePage ()\fC [inline]\fP"
+Delete the page itr is pointing to 
+.PP
+\fBNote:\fP
+.RS 4
+the iterator will be invalid after page is deleted 
+.RE
+.PP
+
+.PP
+Definition at line 1073 of file buffer\-manager\&.h\&.
+.SS "template<typename T> bool \fBBufferManager::Iterator\fP< T >::EraseInPage (size_t n = \fC1\fP)\fC [inline]\fP"
+erase elemnts in current page, starting from position iterator is pointing to 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIn\fP number of elements wish to be erased 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+false if \fCn\fP exceeds the rest number of records in page 
+.RE
+.PP
+
+.PP
+Definition at line 408 of file buffer\-manager\&.h\&.
+.SS "template<typename T> size_t \fBBufferManager::Iterator\fP< T >::FreeBytes () const\fC [inline]\fP"
+free bytes of current page 
+.PP
+Definition at line 353 of file buffer\-manager\&.h\&.
+.SS "template<typename T> size_t \fBBufferManager::Iterator\fP< T >::FreeSlots () const\fC [inline]\fP"
+free slots on current page, i\&.e\&. how many more element can be put into current page 
+.PP
+Definition at line 346 of file buffer\-manager\&.h\&.
+.SS "template<typename T> bool \fBBufferManager::Iterator\fP< T >::Insert (const T * first, const T * last)\fC [inline]\fP"
+insert data 
+.PP
+\fBReturns:\fP
+.RS 4
+false if space is not enough, no data will be inserted! 
+.PP
+true if successful 
+.RE
+.PP
+\fBParameters:\fP
+.RS 4
+\fIfirst\fP the pointing to begining of data 
+.br
+\fIlast\fP last of data 
+.PP
+.nf
+Iterator<int> itr; int data[10]
+itr\&.Insert(data, data + 10); // insert 10 element
+
+int a;
+itr\&.Insert(&a, &a + 1); // insert 1 element
+
+.fi
+.PP
+ 
+.RE
+.PP
+
+.PP
+Definition at line 375 of file buffer\-manager\&.h\&.
+.SS "template<typename T> bool \fBBufferManager::Iterator\fP< T >::Insert (T val)\fC [inline]\fP"
+
+.PP
+\fBReturns:\fP
+.RS 4
+false if space is not enough, no data will be inserted! 
+.PP
+true if successful 
+.RE
+.PP
+\fBNote:\fP
+.RS 4
+calls \fCInsert(&val, &val + 1)\fP 
+.RE
+.PP
+\fBSee also:\fP
+.RS 4
+\fCbool \fBInsert(const T* first, const T* last)\fP\fP 
+.RE
+.PP
+
+.PP
+Definition at line 400 of file buffer\-manager\&.h\&.
+.SS "template<typename T> bool \fBBufferManager::Iterator\fP< T >::Insert (\fBIterator\fP< T > first, \fBIterator\fP< T > last)\fC [inline]\fP"
+Use iterator to insert data, data can span across multiple pages 
+.PP
+\fBReturns:\fP
+.RS 4
+false if insertion is failed, no data will be modified 
+.RE
+.PP
+\fBSee also:\fP
+.RS 4
+\fCbool \fBInsert(const T* first, const T* last)\fP\fP 
+.RE
+.PP
+
+.PP
+Definition at line 432 of file buffer\-manager\&.h\&.
+.SS "template<typename T> bool \fBBufferManager::Iterator\fP< T >::InsertNil (uint16_t n)\fC [inline]\fP"
+insert n nil into page 
+.PP
+Definition at line 522 of file buffer\-manager\&.h\&.
+.SS "template<typename T > \fBPageId\fP \fBBufferManager::Iterator\fP< T >::InsertPageAfter ()\fC [inline]\fP"
+insert page after the page iterator is pointing to, 
+.PP
+\fBReturns:\fP
+.RS 4
+new page id just inserted 
+.RE
+.PP
+\fBNote:\fP
+.RS 4
+iterator won't move it's postition 
+.RE
+.PP
+
+.PP
+Definition at line 881 of file buffer\-manager\&.h\&.
+.SS "template<typename T> bool \fBBufferManager::Iterator\fP< T >::IsBegin () const\fC [inline]\fP"
+check is beginning to linked page 
+.PP
+Definition at line 282 of file buffer\-manager\&.h\&.
+.SS "template<typename T> bool \fBBufferManager::Iterator\fP< T >::IsEnd () const\fC [inline]\fP"
+\fCoperator *\fP returns invalid data when is end of page 
+.PP
+Definition at line 274 of file buffer\-manager\&.h\&.
+.SS "template<typename T> bool \fBBufferManager::Iterator\fP< T >::IsEndPage () const\fC [inline]\fP"
+\fCoperator *\fP returns invalid data when is end of page use \fCoperator++\fP to forward to next page 
+.PP
+Definition at line 267 of file buffer\-manager\&.h\&.
+.SS "template<typename T> bool \fBBufferManager::Iterator\fP< T >::IsNil () const\fC [inline]\fP"
+check current position is nil, \fCoperator *\fP returns invalid data when is nil 
+.PP
+Definition at line 259 of file buffer\-manager\&.h\&.
+.SS "template<typename T> void \fBBufferManager::Iterator\fP< T >::MoveToPageBegin ()\fC [inline]\fP"
+move cursor to the end of the page 
+.PP
+Definition at line 496 of file buffer\-manager\&.h\&.
+.SS "template<typename T> void \fBBufferManager::Iterator\fP< T >::MoveToPageCenter ()\fC [inline]\fP"
+move cursor to page center useful when trying to split a page in half, 
+.PP
+.nf
+Iterator<int> itr;
+itr\&.MoveToPageCenter();
+auto new_page = itr\&.SplitPage();
+
+.fi
+.PP
+ 
+.PP
+Definition at line 473 of file buffer\-manager\&.h\&.
+.SS "template<typename T> void \fBBufferManager::Iterator\fP< T >::MoveToPageEnd ()\fC [inline]\fP"
+move cursor to the end of the page 
+.PP
+Definition at line 488 of file buffer\-manager\&.h\&.
+.SS "template<typename T> T& \fBBufferManager::Iterator\fP< T >::operator * ()\fC [inline]\fP"
+Return data pointing to data is invalid when \fC\fBIsEndPage()\fP\fP or \fC\fBIsEnd()\fP\fP or \fC\fBIsNil()\fP\fP 
+.PP
+Definition at line 329 of file buffer\-manager\&.h\&.
+.SS "template<typename T > \fBBufferManager::Iterator\fP< T > & \fBBufferManager::Iterator\fP< T >::operator++ ()\fC [inline]\fP"
+forward iterator jump into next page if \fC\fBIsEndPage()\fP = true\fP won't move if \fC\fBIsEnd()\fP = true\fP 
+.PP
+Definition at line 886 of file buffer\-manager\&.h\&.
+.SS "template<typename T > const \fBBufferManager::Iterator\fP< T > & \fBBufferManager::Iterator\fP< T >::operator+= (int offset)\fC [inline]\fP"
+forward iterator by offset will walk through several pages if neccessary 
+.PP
+Definition at line 983 of file buffer\-manager\&.h\&.
+.SS "template<typename T > \fBBufferManager::Iterator\fP< T > & \fBBufferManager::Iterator\fP< T >::operator\-\- ()\fC [inline]\fP"
+move back iterator 
+.PP
+Definition at line 940 of file buffer\-manager\&.h\&.
+.SS "template<typename T > const \fBBufferManager::Iterator\fP< T > & \fBBufferManager::Iterator\fP< T >::operator\-= (int offset)\fC [inline]\fP"
+move back iterator by offset will walk through several pages if neccessary 
+.PP
+Definition at line 1023 of file buffer\-manager\&.h\&.
+.SS "template<typename T> const \fBPage\fP& \fBBufferManager::Iterator\fP< T >::page () const\fC [inline]\fP"
+Get page the iterator is pointing to 
+.PP
+Definition at line 340 of file buffer\-manager\&.h\&.
+.SS "template<typename T > \fBPageId\fP \fBBufferManager::Iterator\fP< T >::pageid () const\fC [inline]\fP"
+the page id iterator is pointing to 
+.PP
+Definition at line 1065 of file buffer\-manager\&.h\&.
+.SS "template<typename T> \fBPageId\fP \fBBufferManager::Iterator\fP< T >::SplitPage ()\fC [inline]\fP"
+populate a new page and tranfer all data to next page @detail all data starting from curser will be copied to next page and the cursur pointing to end of page i\&.e\&. cursor is not moved 
+.PP
+\fBSee also:\fP
+.RS 4
+\fBMoveToPageCenter()\fP for example 
+.RE
+.PP
+
+.PP
+Definition at line 506 of file buffer\-manager\&.h\&.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MiniSQL from the source code\&.
