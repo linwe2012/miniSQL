@@ -10,11 +10,14 @@ Database0/x64
 unit-test/x64
 unit-test/Release
 unit-test/Debug
-*/Debug
-*/Release
 
 # data base file for testing
 Database0/*.db
-
+backup
 build
 .vscode/ipch
+
+**/Debug
+**/Release
+
+
