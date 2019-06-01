@@ -26,9 +26,9 @@ int main()
 		
 
 		// allocate first page for column A
-		PageId column_A_1 = bm.AllocatePageAfter(db_file, 0);
-		PageId column_Var = bm.AllocatePageAfter(db_file, 0);
-		PageId column_A_2 = bm.AllocatePageAfter(db_file, column_A_1);
+		PageId column_A_1 = bm.AllocatePageAfter(db_file, 0); (void) column_A_1;
+		PageId column_Var = bm.AllocatePageAfter(db_file, 0);(void)column_Var;
+		PageId column_A_2 = bm.AllocatePageAfter(db_file, column_A_1);(void)column_A_2;
 
 
 
@@ -38,6 +38,7 @@ int main()
 		dummy.id = 1; dummy.type = 2;
 		Attribute attrib_name = dummy;
 
+		/*
 		MetaData meta{
 			std::string("library"),
 			std::string("user"),
@@ -53,7 +54,7 @@ int main()
 
 			Authorization()
 		};
-
+		*/
 
 		catalog.SerializeOneTable(cat_itr, meta);
 
@@ -77,18 +78,18 @@ int main()
 		// get an iterator on the page
 		auto itr = bm.GetPage<double>(db_file, column_A_1);
 
-		// char* ÊÇÒ»¸öÌØÊâµÄµü´úÆ÷£¬±íÊ¾±ä³¤µÄÊý¾Ý£¬±ß³¤Êý¾ÝÀíÂÛÉÏ¿ÉÒÔ´æ·ÅÈÎºÎÀàÐÍµÄÊý¾Ý£¬µ«»áÕ¼¸ü¶à¿Õ¼ä
+		// char* ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Äµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ä³¤ï¿½ï¿½ï¿½ï¿½ï¿½Ý£ï¿½ï¿½ß³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¿ï¿½ï¿½Ô´ï¿½ï¿½ï¿½Îºï¿½ï¿½ï¿½ï¿½Íµï¿½ï¿½ï¿½ï¿½Ý£ï¿½ï¿½ï¿½ï¿½ï¿½Õ¼ï¿½ï¿½ï¿½ï¿½Õ¼ï¿½
 		// auto v = bm.GetPage<char*>(db_file, column_Var);
-		auto last_page = &itr.page();
+		auto last_page = &itr.page_id();
 		for (int i = 0; i < fill_up; ++i) {
 			if (!itr.Insert(/* (double)rand() / RAND_MAX*/ double(i))) {
 				++itr;
 				itr.Insert(double(i));
 			}
 			
-			if (&itr.page() != last_page) {
+			if (&itr.page_id() != last_page) {
 				std::cerr << "We've just walk into another page!!" << std::endl;
-				last_page = &itr.page();
+				last_page = &itr.page_id();
 				getchar();
 			}
 			++itr;
@@ -125,11 +126,11 @@ int main()
 		
 
 
-		// ÒòÎªÖ®Ç°·ÖÅäµÄcolumn µÄPageId ÊÇ 1,ÕâÀïÍµÀÁÖ±½ÓÓÃ1, ÕâÓ¦¸ÃÓÉ Catalog Manager ¼ÇÂ¼
-		// Catalog Manager ÖªµÀ±íÖÐÃ¿Ò»ÁÐ¶ÔÓ¦µÄµÚÒ»¸öPageId, ²éÑ¯ÁÐµÄÊ±ºòÓ¦¸Ã·µ»ØÒ»¸öÖ¸ÏòµÚÒ»ÐÐµÄµü´úÆ÷
-		// Index Manager Ó¦¸Ã¼ÇÂ¼ÄÄÐ©Key¶ÔÓ¦ÄÄÒ»¸öPageId, ²éÑ¯KeyµÄÊ±ºò·µ»Ø Ò»¸öµü´úÆ÷
+		// ï¿½ï¿½ÎªÖ®Ç°ï¿½ï¿½ï¿½ï¿½ï¿½column ï¿½ï¿½PageId ï¿½ï¿½ 1,ï¿½ï¿½ï¿½ï¿½Íµï¿½ï¿½Ö±ï¿½ï¿½ï¿½ï¿½1, ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ Catalog Manager ï¿½ï¿½Â¼
+		// Catalog Manager Öªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã¿Ò»ï¿½Ð¶ï¿½Ó¦ï¿½Äµï¿½Ò»ï¿½ï¿½PageId, ï¿½ï¿½Ñ¯ï¿½Ðµï¿½Ê±ï¿½ï¿½Ó¦ï¿½Ã·ï¿½ï¿½ï¿½Ò»ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½Ò»ï¿½ÐµÄµï¿½ï¿½ï¿½ï¿½ï¿½
+		// Index Manager Ó¦ï¿½Ã¼ï¿½Â¼ï¿½ï¿½Ð©Keyï¿½ï¿½Ó¦ï¿½ï¿½Ò»ï¿½ï¿½PageId, ï¿½ï¿½Ñ¯Keyï¿½ï¿½Ê±ï¿½ò·µ»ï¿½ Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		
-		//TODO ¼Æ»®ÔÚ µ¥¸öPage ÉÏÊµÏÖ¶þ·Ö²éÕÒ
+		//TODO ï¿½Æ»ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Page ï¿½ï¿½Êµï¿½Ö¶ï¿½ï¿½Ö²ï¿½ï¿½ï¿½
 		auto itr = bm.GetPage<double>(db_file, 2);
 		auto v = bm.GetPage<char*>(db_file, 3);
 		auto itr2 = bm.GetPage<double>(db_file, 4);

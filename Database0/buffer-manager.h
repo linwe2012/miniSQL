@@ -60,7 +60,9 @@ struct Variadic {
 	char placeholder;
 };
 
+
 struct Page {
+	using Offset = uint16_t;
 	struct Header {
 		int prev = 0; // OFFSET of previous page
 		int next = 0;
@@ -241,17 +243,27 @@ inline bool Page::Read<bool>(size_t offset) const {
 	return target & ~mask;
 }
 
+
+struct IteratorPosition {
+	PageId page_id = 0;
+	Page::Offset offset = Page::kInValidOffset;
+	uint16_t record_in_page;
+	bool IsNil() {
+		return offset == Page::kInValidOffset;
+	}
+};
+
 class BufferManager {
 public:
 	template<typename T>
 	class Iterator {
 	public:
 		using pointer = T *;
-		Iterator(T* current, Page* page, BufferManager* boss)
-			:current_(current), page_(page), boss_(boss), record_in_page_(0) {}
+		Iterator(T* current, Page* page_id, BufferManager* boss)
+			:current_(current), page_(page_id), boss_(boss), record_in_page_(0) {}
 
-		Iterator(T* current, Page* page, BufferManager* boss, uint16_t record_in_page)
-			:current_(current), page_(page), boss_(boss), record_in_page_(record_in_page) {}
+		Iterator(T* current, Page* page_id, BufferManager* boss, uint16_t record_in_page, uint64_t row)
+			:current_(current), page_(page_id), boss_(boss), record_in_page_(record_in_page), row_(row){}
 
 		/** 
 		* check current position is nil, `operator *` returns invalid data when is nil
@@ -357,6 +369,8 @@ public:
 		/** the page id iterator is pointing to
 		*/
 		PageId pageid() const;
+
+		FileId fileid() const;
 
 		/** 
 		* insert data
@@ -543,8 +557,10 @@ public:
 		*/
 		template<typename U>
 		Iterator<U> Cast(Iterator t) {
-			return Iterator<U>(reinterpret_cast<U*>(current_), page_, boss_, record_in_page_);
+			return Iterator<U>(reinterpret_cast<U*>(current_), page_, boss_, record_in_page_, row_);
 		}
+
+		uint64_t row() const { return row_; }
 
 	private:
 		friend class BufferManager;
@@ -553,12 +569,13 @@ public:
 		BufferManager* boss_;
 		uint16_t record_in_page_;
 		uint16_t step_ = 1;
+		uint64_t row_ = 0;
 	};
 
 	
 
 	struct UniquePage {
-		PageId page;
+		PageId page_id;
 		FileId file;
 		mutable uint16_t use_count;
 		bool operator<(const UniquePage& rhs) const { 
@@ -570,7 +587,7 @@ public:
 				return false;
 			}
 
-			return page < rhs.page;
+			return page_id < rhs.page_id;
 		}
 	};
 
@@ -629,7 +646,7 @@ public:
 	// first loop it up in memory, if failed, find in disk
 	Page* AutoFetchPage(UniquePage);
 
-	void FlushPageToDisk(Page* page, PageId pid);
+	void FlushPageToDisk(Page* page_id, PageId pid);
 
 	void FlushFileHeaderToDisk(FileId fid);
 
@@ -655,16 +672,17 @@ private:
 	Page* empty_page_ = nullptr;
 };
 
+
 // variadic parameter
 template<>
 class BufferManager::Iterator<char*> {
 public:
 	using pointer = char*;
-	Iterator(char* current, Page* page, BufferManager* boss)
-		:current_(current), page_(page), boss_(boss), record_in_page_(0) {}
+	Iterator(char* current, Page* page_id, BufferManager* boss)
+		:current_(current), page_(page_id), boss_(boss), record_in_page_(0) {}
 
-	Iterator(char* current, Page* page, BufferManager* boss, uint16_t record_in_page)
-		:current_(current), page_(page), boss_(boss), record_in_page_(record_in_page) {}
+	Iterator(char* current, Page* page_id, BufferManager* boss, uint16_t record_in_page)
+		:current_(current), page_(page_id), boss_(boss), record_in_page_(record_in_page) {}
 
 	bool IsNil() const {
 		return GetDataPos().offset == Page::kInValidOffset;
@@ -852,11 +870,32 @@ public:
 		return res;
 	}
 
-	template<>
-	std::string Read() {
-		std::string str(current_, GetDataPos().length);
-		SkipEndPageNext();
-		return str;
+	std::string Read();
+
+	PageId pageid() const;
+	FileId fileid() const;
+
+	IteratorPosition TellPosition() {
+		return IteratorPosition{
+		pageid(),
+		static_cast<Page::Offset>((char*)current_ - page_->space),
+		record_in_page_,
+		};
+	}
+
+	void MoveTo(IteratorPosition ip) {
+		if (ip.page_id != pageid()) {
+			*this = boss_->GetPage<char*>(fileid(), pageid());
+		}
+
+		current_ = reinterpret_cast<char*>(page_->space + ip.offset);
+
+		record_in_page_ = ip.record_in_page;
+	}
+
+	template<typename U>
+	Iterator<U> Cast() {
+		return Iterator<U>(reinterpret_cast<U*>(current_), page_, boss_, record_in_page_, row_);
 	}
 
 private:
@@ -876,8 +915,15 @@ private:
 	Page* page_;
 	BufferManager* boss_;
 	uint16_t record_in_page_;
+	uint64_t row_ = 0;
 };
 
+template<>
+inline std::string BufferManager::Iterator<char*>::Read() {
+	std::string str(current_, GetDataPos().length);
+	SkipEndPageNext();
+	return str;
+}
 
 template<typename T>
 inline PageId BufferManager::Iterator<T>::InsertPageAfter() {
@@ -892,6 +938,9 @@ inline BufferManager::Iterator<T>& BufferManager::Iterator<T>::operator++() {
 			++current_;
 		}
 		++record_in_page_;
+		if (record_in_page_ != page_->header.num_records) {
+			++row_;
+		}
 		return *this;
 	}
 
@@ -901,6 +950,7 @@ inline BufferManager::Iterator<T>& BufferManager::Iterator<T>::operator++() {
 	}
 
 	boss_->IteratorNextPage(this);
+	++row_;
 	return *this;
 }
 
@@ -917,7 +967,7 @@ inline BufferManager::Iterator<char*>& BufferManager::Iterator<char*>::operator+
 		if (!IsNil()) {
 			current_ = page_->space + page_->ReverseRead<Page::DataPos>(record_in_page_).offset;
 		}
-		
+		++row_;
 		return *this;
 	}
 
@@ -927,6 +977,7 @@ inline BufferManager::Iterator<char*>& BufferManager::Iterator<char*>::operator+
 	}
 
 	boss_->IteratorNextPage(this);
+	++row_;
 	return *this;
 }
 
@@ -953,6 +1004,7 @@ inline BufferManager::Iterator<T>& BufferManager::Iterator<T>::operator--()
 	if (!IsNil()) {
 		--current_;
 	}
+	--row_;
 }
 
 inline BufferManager::Iterator<char*>& BufferManager::Iterator<char*>::operator--()
@@ -969,6 +1021,7 @@ inline BufferManager::Iterator<char*>& BufferManager::Iterator<char*>::operator-
 	if (!IsNil()) {
 		current_ = page_->space + page_->ReverseRead<Page::DataPos>(record_in_page_).offset;
 	}
+	--row_;
 }
 
 
@@ -1070,6 +1123,13 @@ inline PageId BufferManager::Iterator<T>::pageid() const
 	return piggy->page_id;
 }
 
+template<typename T>
+inline FileId BufferManager::Iterator<T>::fileid() const
+{
+	auto piggy = reinterpret_cast<PagePiggyback*>(page_->piggyback);
+	return piggy->finfo->id;
+}
+
 
 template<typename T>
 inline void BufferManager::Iterator<T>::DeletePage() {
@@ -1084,19 +1144,19 @@ template<typename T>
 inline BufferManager::Iterator<T> BufferManager::GetPage(FileId file_id, PageId page_id)
 {
 	UniquePage unipage{ page_id, file_id };
-	Page* page = AutoFetchPage(unipage);
+	Page* page_id = AutoFetchPage(unipage);
 	
-	return Iterator<T>(reinterpret_cast<typename Iterator<T>::pointer>(page->space), page, this);
+	return Iterator<T>(reinterpret_cast<typename Iterator<T>::pointer>(page_id->space), page_id, this);
 }
 
 template<typename T>
 inline void BufferManager::IteratorNextPage(Iterator<T>* target)
 {
-	auto& page = target->page();
-	auto piggy = static_cast<const PagePiggyback*>(page.piggyback);
+	auto& page_id = target->page_id();
+	auto piggy = static_cast<const PagePiggyback*>(page_id.piggyback);
 	PageId target_page = piggy->page_id;
 
-	target_page.id += page.header.next;
+	target_page.id += page_id.header.next;
 
 	(*target) = GetPage<T>(piggy->finfo->id, target_page);
 }
@@ -1104,18 +1164,18 @@ inline void BufferManager::IteratorNextPage(Iterator<T>* target)
 template<typename T>
 inline void BufferManager::IteratorPrevPage(Iterator<T>* target)
 {
-	auto& page = target->page();
-	auto piggy = static_cast<const PagePiggyback*>(page.piggyback);
+	auto& page_id = target->page_id();
+	auto piggy = static_cast<const PagePiggyback*>(page_id.piggyback);
 	PageId target_page = piggy->page_id;
 
-	target_page.id += page.header.prev;
+	target_page.id += page_id.header.prev;
 	(*target) = GetPage<T>(piggy->finfo->id, target_page);
 }
 
 template<typename T>
 inline PageId BufferManager::IteratorInsertPageAfter(Iterator<T>* target)
 {
-	auto piggy = static_cast<PagePiggyback*>(target->page().piggyback);
+	auto piggy = static_cast<PagePiggyback*>(target->page_id().piggyback);
 	FileId fid = piggy->finfo->id;
 	return AllocatePageAfter(fid, piggy->page_id);
 }

@@ -120,10 +120,13 @@
     <ClInclude Include="attribute.h" />
     <ClInclude Include="buffer-manager.h" />
     <ClInclude Include="index-manager.h" />
+    <ClInclude Include="record-manager.h" />
     <ClInclude Include="sqldata.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="buffer-manager.cc" />
+    <ClCompile Include="catalog-manager.cc" />
+    <ClCompile Include="index-manager.cc" />
     <ClCompile Include="test_buffm.cc" />
   </ItemGroup>
   <ItemGroup>

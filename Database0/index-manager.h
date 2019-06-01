@@ -7,6 +7,7 @@
 class IndexManager {
 public:
 
+	void Initialize(BufferManager*, FileId, PageId);
 
 	// http://www.cplusplus.com/reference/cstring/memcmp/ <-- memcmp
 	//无论是 int/double 都可以利用 memcpy((char*) rhs, (char*) lhs, key_size_by_bytes) 比较
@@ -27,3 +28,5 @@ public:
 	void Update(ItemPayload payload);
 
 };
+
+

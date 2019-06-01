@@ -8,8 +8,20 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#ifdef _WIN32
 #include <io.h>
+#else
+#ifndef O_BINARY
+#define O_BINARY 0
+#define DONT_HAVE_TELL
+#endif
+#include <unistd.h>
+#endif
+
+
+
 #ifdef  BUFFER_MANAGER_USE_STD_STREAM
+
 class FStream {
 public:
 	FStream(fs::path p) {
@@ -138,11 +150,19 @@ public:
 	}
 
 	size_t TellGet() {
+#ifdef DONT_HAVE_TELL
+		return lseek(fd, 0, SEEK_CUR);
+#else
 		return tell(fd);
+#endif
 	}
 
 	size_t TellPut() {
+#ifdef DONT_HAVE_TELL
+		return lseek(fd, 0, SEEK_CUR);
+#else
 		return tell(fd);
+#endif
 	}
 
 	~FStream() {
@@ -221,7 +241,6 @@ FileId BufferManager::NewFile(const char* path)
 	else{
 		// finfo.fd = fopen(canon.string().c_str(), "w+");
 		finfo.fd = new FStream();
-		canon = fs::canonical(path);
 	}
 	
 	auto itr = loaded_files_.find(canon);
@@ -230,14 +249,19 @@ FileId BufferManager::NewFile(const char* path)
 	}
 
 	
-	finfo.abs_path = canon.string();
+	
+	
 	// TestFileOk(finfo.fd, finfo.abs_path);
 
-	Page* page = GetEmptyPage(0, 0);
+	Page* page_id = GetEmptyPage(0, 0);
 
 	auto& ios = GetStream(finfo);
 	ios.NewFile(path);
-	ios.Write(page, Page::kPageSize);
+	ios.Write(page_id, Page::kPageSize);
+
+	finfo.abs_path = canon.string();
+	// gcc 7.4 does not support weakly_canconial
+	canon = fs::canonical(path);
 	
 	// fwrite(page, Page::kPageSize, 1, finfo.fd);
 	// fseek(finfo.fd, 0, SEEK_SET);
@@ -270,26 +294,26 @@ Page* BufferManager::AutoFetchPage(UniquePage unipage)
 	FileInfo& finfo = file_infos_[unipage.file];
 	PagePiggyback* ppb = new PagePiggyback;
 	ppb->finfo = &finfo;
-	ppb->page_id = unipage.page;
+	ppb->page_id = unipage.page_id;
 
-	Page* page = new Page;
-	page->piggyback = ppb;
+	Page* page_id = new Page;
+	page_id->piggyback = ppb;
 
 	auto& ios = GetStream(finfo);
-	ios.SeekGet(unipage.page * Page::kPageSize, std::ios::beg);
-	ios.Read(page, Page::kPageSize);
+	ios.SeekGet(unipage.page_id * Page::kPageSize, std::ios::beg);
+	ios.Read(page_id, Page::kPageSize);
 	
-	pages_[unipage] = page;
-	return page;
+	pages_[unipage] = page_id;
+	return page_id;
 }
 
-void BufferManager::FlushPageToDisk(Page* page, PageId pid) {
-	auto piggy = static_cast<PagePiggyback*>(page->piggyback);
+void BufferManager::FlushPageToDisk(Page* page_id, PageId pid) {
+	auto piggy = static_cast<PagePiggyback*>(page_id->piggyback);
 	auto& ios = GetStream(*(piggy->finfo));
 	ios.SeekPut(pid * Page::kPageSize, std::ios::beg);
-	ios.Write(page, Page::kPageSize);
+	ios.Write(page_id, Page::kPageSize);
 	ios.Flush();
-	page->is_dirty = false;
+	page_id->is_dirty = false;
 }
 
 void BufferManager::FlushFileHeaderToDisk(FileId fid)
@@ -309,7 +333,7 @@ void BufferManager::UnloadPage(UniquePage unipage)
 	}
 
 	if (itr->second->is_dirty) {
-		FlushPageToDisk(itr->second, unipage.page);
+		FlushPageToDisk(itr->second, unipage.page_id);
 	}
 
 	DeletePage(itr->second);
@@ -335,10 +359,10 @@ BufferManager::~BufferManager()
 PageId BufferManager::AllocatePageAfter(FileId fid, PageId prev)
 {
 	auto populate_adjust_page = [this, &fid, &prev](PageId current) -> Page* {
-		Page* page = nullptr;
+		Page* page_id = nullptr;
 		// we are poupulate a fresh new page
 		if (prev.id == 0) {
-			page = GetEmptyPage(0, 0);
+			page_id = GetEmptyPage(0, 0);
 		}
 		else {
 			// get previous page
@@ -364,10 +388,10 @@ PageId BufferManager::AllocatePageAfter(FileId fid, PageId prev)
 
 				next_offset = next - current;
 			}
-			page = GetEmptyPage(prev - current, next_offset);
+			page_id = GetEmptyPage(prev - current, next_offset);
 		}
-		page->header.clear_flag(Page::kfIsUnused);
-		return page;
+		page_id->header.clear_flag(Page::kfIsUnused);
+		return page_id;
 	};
 
 	auto& finfo = file_infos_[fid];
@@ -383,20 +407,20 @@ PageId BufferManager::AllocatePageAfter(FileId fid, PageId prev)
 		auto& ios = GetStream(finfo);
 		
 		
-		auto page = populate_adjust_page(current);
+		auto page_id = populate_adjust_page(current);
 		ios.SeekPut(end_of_file, std::ios::beg);
-		ios.Write(page, Page::kPageSize);
+		ios.Write(page_id, Page::kPageSize);
 		
 		return current;
 	}
 
 	PageId result = finfo.header.first_free;
-	Page* page = AutoFetchPage(UniquePage{
+	Page* page_id = AutoFetchPage(UniquePage{
 		result,
 		fid
 		});
 
-	auto& header = page->header;
+	auto& header = page_id->header;
 	if (!header.flag(Page::kfIsUnused)) {
 		std::stringstream ss;
 		ss << "File: " << finfo.abs_path
@@ -407,7 +431,7 @@ PageId BufferManager::AllocatePageAfter(FileId fid, PageId prev)
 
 	Page* adjusted_page = populate_adjust_page(result);
 
-	memcpy(&page->header, &adjusted_page->header, sizeof(header));
+	memcpy(&page_id->header, &adjusted_page->header, sizeof(header));
 
 	if (header.next == 0) {
 		finfo.header.first_free = 0;
@@ -416,7 +440,7 @@ PageId BufferManager::AllocatePageAfter(FileId fid, PageId prev)
 		finfo.header.first_free.id += header.next;
 	}
 	
-	FlushPageToDisk(page, result);
+	FlushPageToDisk(page_id, result);
 	FlushFileHeaderToDisk(fid);
 	return result;
 }
@@ -448,20 +472,20 @@ Page::Header BufferManager::GetPageHeader(FileId fid, PageId pid)
 	return header;
 }
 
-void BufferManager::DeletePage(Page* page)
+void BufferManager::DeletePage(Page* page_id)
 {
-	auto piggy = static_cast<PagePiggyback*>(page->piggyback);
+	auto piggy = static_cast<PagePiggyback*>(page_id->piggyback);
 	delete piggy;
-	delete page;
+	delete page_id;
 }
 
 
-void BufferManager::IteratorDeletePage(Page* page) {
-	auto piggy = static_cast<PagePiggyback*>(page->piggyback);
+void BufferManager::IteratorDeletePage(Page* page_id) {
+	auto piggy = static_cast<PagePiggyback*>(page_id->piggyback);
 	auto& header = file_infos_[piggy->finfo->id].header;
-	page->is_dirty = true;
-	page->header.next = header.first_free - piggy->page_id;
-	page->header.set_flag(Page::kfIsUnused);
+	page_id->is_dirty = true;
+	page_id->header.next = header.first_free - piggy->page_id;
+	page_id->header.set_flag(Page::kfIsUnused);
 	header.first_free = piggy->page_id;
 	UnloadPage(UniquePage{ piggy->page_id, piggy->finfo->id });
 }

@@ -8,12 +8,49 @@
 #include "sqldata.h"
 #include "buffer-manager.h"
 
+template <typename T>
+class Maybe {
+public:
+	T* operator->() { return *target_; }
+	T& operator*() { return **target_; }
 
+	Maybe(T** location) {
+		target_ = (location);
+	}
+
+	Maybe() : target_(nullptr) {}
+
+	const T* operator->() const { return *target_; }
+	const T& operator*() const  { return **target_; }
+
+	bool IsNil() const { return target_ != nullptr && *target_ != nullptr; }
+
+	bool operator==(const Maybe<T> rhs) const {
+		if (IsNil()) {
+			if (rhs.IsNil()) {
+				return true;
+			}
+			else {
+				return false;
+			}
+		}
+
+		return operator->() == rhs.operator->();
+	}
+
+	T** location() {
+		return target_;
+	}
+
+
+private:
+	T** target_;
+};
 
 struct ItemPayload {
 	BufferManager::Iterator<char> target;
 	const char* data;
-	int size_by_bytes;
+	uint64_t size_by_bytes;
 	bool is_variadic;
 };
 
@@ -41,9 +78,13 @@ struct Attribute {
 	PageId first_page;
 	PageId first_index;
 
+	int max_length;
+
 	bool nullable;
 	bool is_primary_key;
 };
+
+
 
 // a descriptor of table
 struct MetaData {
@@ -51,7 +92,8 @@ struct MetaData {
 	std::string table_name;
 
 	FileId file;
-	std::map<std::string, Attribute> attributes;
+	std::vector<Attribute> attributes;
+	std::map<std::string, Attribute*> attributes_map;
 	std::vector<int> primary_keys;
 
 	Authorization authorization;

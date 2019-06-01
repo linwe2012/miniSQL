@@ -148,14 +148,14 @@ SQL_DATA_TYPE_LIST(FWD_DECALRE)
 
 class ISQLDataVisitor {
 public:
-#define VISITOR(t, u)  virtual void visit(SQL##t *) = 0;
+#define VISITOR(t, u)  virtual void Visit(SQL##t *) = 0;
 	SQL_DATA_TYPE_LIST(VISITOR)
 #undef VISITOR
 };
 
 class IConstSQLDataVisitor {
 public:
-#define VISITOR(t, u)  virtual void visit(const SQL##t *) = 0;
+#define VISITOR(t, u)  virtual void Visit(const SQL##t *) = 0;
 	SQL_DATA_TYPE_LIST(VISITOR)
 #undef VISITOR
 };
@@ -178,7 +178,17 @@ public:
 	virtual bool IsTimeStamp()  const { return false; }
 	virtual bool IsNull()       const { return false; }
 
+	virtual bool IsVariadic()   const { return false; }
+
 	virtual ~ISQLData() = 0;
+
+	struct RawData {
+		const void* ptr = nullptr;
+		size_t size = 0;
+	};
+
+	virtual RawData GetRaw() const = 0;
+
 #define AS(t, u) virtual SQL##t * As##t() { return nullptr; }  virtual const SQL##t * As##t() const { return nullptr; } 
 	SQL_DATA_TYPE_LIST(AS);
 #undef AS
@@ -207,6 +217,7 @@ public:
 	void Accept(IConstSQLDataVisitor*) const override;
 	int Compare(const ISQLData* rhs) const override { return kFail; }
 	~SQLNull() override {}
+	RawData GetRaw() const override { return RawData{ nullptr, 0 }; }
 };
 
 class ISQLNumber : public ISQLData {
@@ -224,7 +235,8 @@ void Accept(IConstSQLDataVisitor*) const override;  \
 SQL##type* As##type() override { return this; }     \
 const SQL##type* As##type() const override { return this; }     \
 SQL##type(data_type val) : val_(val) {}             \
-~SQL##type() override {}
+~SQL##type() override {} \
+RawData GetRaw() const override { return RawData{&val_, sizeof(data_type)};}
 
 
 #define CMP_HELPER(type)\
@@ -349,6 +361,13 @@ public:
 
 	SQLString* AsString() { return this; }
 	~SQLString() override {}
+
+	RawData GetRaw() const override {
+		return RawData{ val_.c_str(), val_.length() + 1 };
+	}
+
+	bool IsVariadic() const override { return true; }
+
 private:
 	std::string val_;
 };
@@ -389,7 +408,7 @@ private:
 template <typename T>
 struct SQLTypeID {
 	constexpr static int value = -1;
-	constexpr static char* name = "invalid_type";
+	constexpr static const char* name = "invalid_type";
 };
 
 
@@ -454,10 +473,10 @@ struct SQLTypeID<SQLTimeStamp> {
 };
 
 
-#define ACCEPT(t, u) inline void SQL##t::Accept(ISQLDataVisitor* visitor) { visitor->visit(this); } 
+#define ACCEPT(t, u) inline void SQL##t::Accept(ISQLDataVisitor* visitor) { visitor->Visit(this); } 
 SQL_DATA_TYPE_LIST(ACCEPT)
 #undef ACCEPT
 
-#define ACCEPT(t, u) inline void SQL##t::Accept(IConstSQLDataVisitor* visitor) const { visitor->visit(this); } 
+#define ACCEPT(t, u) inline void SQL##t::Accept(IConstSQLDataVisitor* visitor) const { visitor->Visit(this); } 
 SQL_DATA_TYPE_LIST(ACCEPT)
 #undef ACCEPT

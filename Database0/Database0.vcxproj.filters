@@ -27,6 +27,9 @@
     <ClInclude Include="index-manager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="record-manager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="buffer-manager.cc">
@@ -34,6 +37,12 @@
     </ClCompile>
     <ClCompile Include="test_buffm.cc">
       <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="catalog-manager.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="index-manager.cc">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
