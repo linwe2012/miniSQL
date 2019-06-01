@@ -15,6 +15,7 @@ public:
 	BufferManager::Iterator<char> LookUp(Attribute&,
 		const char* key,
 		int key_size_by_bytes);
+
 	bool IsIndexed(Attribute&);
 
 	void BuildIndex(Attribute&);
@@ -30,3 +31,19 @@ public:
 };
 
 
+void xxx() {
+	Attribute a;
+	BufferManager bm;
+	auto itr = bm.GetPage<int>(a.file, a.first_page);
+	while (!itr.IsEnd()) {
+		int data = *itr;
+
+		//....
+
+		++itr;
+
+		PageId page = itr.SplitPage();
+
+
+	}
+}
