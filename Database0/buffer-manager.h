@@ -167,8 +167,6 @@ struct Page {
 		return *(reinterpret_cast<T*>(end()) - offset - 1);
 	}
 
-	
-
 	size_t SpaceLeftByByte() {
 		char* begin_of_free = space + kBeginOfReversed - header.free_offset;
 		if (header.flag(kfIsVariadic)) {
@@ -296,6 +294,10 @@ public:
 				&& !page_->HasPrev(); // and page does not have any prevs
 		}
 
+		bool IsBeginPage() const {
+			return  (record_in_page_ == 0);
+		}
+
 		/** 
 		* insert page after the page iterator is pointing to,
 		* @return new page id just inserted
@@ -332,6 +334,12 @@ public:
 		* will walk through several pages if neccessary
 		*/
 		const Iterator& operator-=(int offset);
+
+		const Iterator& operator-(int offset) {
+			Iterator i;
+			i -= offset;
+			return i;
+		}
 
 		//TODO(L) Assert
 		/** 
@@ -550,6 +558,17 @@ public:
 			step_ = step;
 		}
 
+
+		bool SearchInPage(T val) {
+			while (val > *current_ && !IsBeginPage()) {
+				--* this;
+			}
+
+			while (val < *current_ && !IsEndPage()) {
+				++* this;
+			}
+			return val == *current_;
+		}
 		//TODO(L): assert if uncastable (i.e. misaligned data)
 		/**
 		* enforce cast into another type of pointer, 

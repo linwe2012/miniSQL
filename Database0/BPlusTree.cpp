@@ -1,4 +1,5 @@
 #include "BPlusTree.h" 
+#include "index-manager.h"
 
 template <class KeyType>
 TreeNode<KeyType>::TreeNode(int m_degree,bool newLeaf):count(0),parent(NULL),nextLeafNode(NULL),isLeaf(newLeaf),degree(m_degree)
@@ -8,6 +9,7 @@ TreeNode<KeyType>::TreeNode(int m_degree,bool newLeaf):count(0),parent(NULL),nex
         childs.push_back(NULL);
         keys.push_back(KeyType());
         vals.push_back(offsetNumber());
+		values.push_back(PageId());
     }
     childs.push_back(NULL);
 }
@@ -112,7 +114,7 @@ TreeNode<KeyType>* TreeNode<KeyType>::splite(KeyType &key)
     TreeNode* newNode = new TreeNode(degree,this->isLeaf);
     if(newNode == NULL)
     {
-        cout << "Problems in allocate momeory of TreeNode in splite node of " << key << endl;
+		throw  std::bad_alloc();//"Problems in allocate momeory of TreeNode in splite node of " << key << endl;
         exit(2);
     }
     
@@ -155,40 +157,7 @@ TreeNode<KeyType>* TreeNode<KeyType>::splite(KeyType &key)
     return newNode;
 }
 
-//This function is used to add the key in the branch node and return the position added.
-template <class KeyType>
-size_t TreeNode<KeyType>::add(KeyType &key)
-{
-    if(count == 0)
-    {
-        keys[0] = key;
-        count ++;
-        return 0;
-    }
-    else //count > 0
-    {
-        size_t index = 0; // record the index of the tree
-        bool exist = search(key, index);
-        if(exist)
-        {
-            cout << "Error:In add(Keytype &key),key has already in the tree!" << endl;
-            exit(3);
-        }
-        else // add the key into the node
-        {
-            for(size_t i = count;i > index;i --)
-                keys[i] = keys[i-1];
-            keys[index] = key;
-            
-            for(size_t i = count + 1;i > index+1;i --)
-                childs[i] = childs[i-1];
-            childs[index+1] = NULL; // this child will link to another node
-            count ++;
-            
-            return index;
-        }
-    }
-}
+
 
 //This function is used to add the key in the leaf node and return the position added.
 template <class KeyType>
@@ -196,8 +165,7 @@ size_t TreeNode<KeyType>::add(KeyType &key,offsetNumber val)
 {
     if(!isLeaf)
     {
-        cout << "Error:add(KeyType &key,offsetNumber val) is a function for leaf nodes" << endl;
-        return -1;
+		throw std::invalid_argument("Error:add(KeyType &key,offsetNumber val) is a function for leaf nodes");
     }
     if(count == 0)
     {
@@ -331,6 +299,11 @@ void BPlusTree<KeyType>::findToLeaf(Node pNode,KeyType key,searchNodeParse & snp
             findToLeaf(pNode->childs[index],key,snp);
         }
     }
+}
+
+template<typename KeyType>
+void BPlusTree<KeyType>::insert(KeyType key)
+{
 }
 
 //This function is used to insert the key in right position.Then, adjust the whole tree for the rules of b+ tree.
