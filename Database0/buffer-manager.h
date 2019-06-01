@@ -564,6 +564,7 @@ public:
 			step_ = step;
 		}
 
+		IteratorPosition TellPosition();
 
 		bool SearchInPage(T val) {
 			while (val > *current_ && !IsBeginPage()) {
@@ -581,7 +582,7 @@ public:
 		* @note use it only when it `IsBegin() = true`
 		*/
 		template<typename U>
-		Iterator<U> Cast(Iterator t) {
+		Iterator<U> Cast() {
 			return Iterator<U>(reinterpret_cast<U*>(current_), page_, boss_, record_in_page_, row_);
 		}
 
@@ -905,13 +906,7 @@ public:
 	PageId pageid() const;
 	FileId fileid() const;
 
-	IteratorPosition TellPosition() {
-		return IteratorPosition{
-		pageid(),
-		static_cast<Page::Offset>((char*)current_ - page_->space),
-		record_in_page_,
-		};
-	}
+	IteratorPosition TellPosition();
 
 	void MoveTo(IteratorPosition ip) {
 		if (ip.page_id != pageid()) {
@@ -1062,7 +1057,14 @@ inline BufferManager::Iterator<T> BufferManager::Iterator<T>::operator--(int)
 	--* this;
 	return self;
 }
-
+template<typename T>
+IteratorPosition BufferManager::Iterator<T>::TellPosition() {
+	return IteratorPosition{
+	pageid(),
+	static_cast<Page::Offset>((char*)current_ - page_->space),
+	record_in_page_,
+	};
+}
 
 template<typename T>
 inline const BufferManager::Iterator<T>& BufferManager::Iterator<T>::operator+=(int offset)

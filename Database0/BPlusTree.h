@@ -71,7 +71,14 @@ private:
 public:
     BPlusTree(string m_name,int keySize,int degree);
     ~BPlusTree();
+	
+	void insert(KeyType key, IteratorPosition pos) {
+		root->insert(key, pos);
+	}
 
+	auto find(KeyType key) {
+		return root->find(key);
+	}
 	
     offsetNumber search(KeyType& key); // search the value of specific key
     bool insertKey(KeyType &key,offsetNumber val);
