@@ -22,7 +22,9 @@ public:
 
 	void DropIndex(Attribute&);
 
-	void Insert(ItemPayload payload);
+	void Insert(Attribute& a, ItemPayload payload) {
+
+	}
 
 	void Delete(ItemPayload payload);
 

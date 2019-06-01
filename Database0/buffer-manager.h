@@ -262,6 +262,12 @@ public:
 
 		Iterator(T* current, Page* page_id, BufferManager* boss, uint16_t record_in_page, uint64_t row)
 			:current_(current), page_(page_id), boss_(boss), record_in_page_(record_in_page), row_(row){}
+		
+		Iterator() : Iterator(nullptr, nullptr, nullptr) {}
+
+		bool IsValid() const {
+			return page_ != nullptr;
+		}
 
 		/** 
 		* check current position is nil, `operator *` returns invalid data when is nil
@@ -642,7 +648,12 @@ public:
 	Iterator<T> GetPage(FileId file_id, PageId page_id);
 
 
-
+	template<typename T>
+	Iterator<T> GetPage(FileId file_id, IteratorPosition pos) {
+		auto itr = GetPage(file_id, pos.page_id);
+		itr.MoveTo(pos);
+		return itr;
+	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	//// This part is used mostly as internal apis, ignore if ur not familiar w/ it  /////

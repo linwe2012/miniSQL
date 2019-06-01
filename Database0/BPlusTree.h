@@ -18,6 +18,7 @@ public:
     vector <TreeNode*> childs;
     vector <offsetNumber> vals;
 	vector<PageId> values;
+	vector<IteratorPosition> positions;
 
     TreeNode* nextLeafNode; // point to the next leaf node
     
@@ -31,6 +32,8 @@ public:
     TreeNode(int degree,bool newLeaf=false);
     
 public:
+	void insert(KeyType key, IteratorPosition pos);
+	IteratorPosition find(KeyType key);
 	bool IsFull();
     bool isRoot();
     bool search(KeyType key,size_t &index);//search a key and return by the reference of a parameter
@@ -88,59 +91,42 @@ private:
 	FileId file_;
 };
 
-//This function is used to add the key in the branch node and return the position added.
-template <class KeyType>
-size_t TreeNode<KeyType>::add(BufferManager& bm,FileId file, KeyType& key)
+
+template<typename KeyType>
+void TreeNode<KeyType>::insert(KeyType key, IteratorPosition pos)
 {
-	if (count == 0)
-	{
-		keys[0] = key;
-		count++;
-		return 0;
+	size_t index;
+	bool exist = search(key, index);
+
+	if (!isLeaf) {
+		return childs[index]->insert(key, pos);
 	}
-	else //count > 0
-	{
-		size_t index = 0; // record the index of the tree
-		bool exist = search(key, index);
-		if (exist)
-		{
-			throw std::invalid_argument("Error:In add(Keytype &key),key has already in the tree!");
-		}
-		else // leaf node
-		{
-			
-			auto itr = bm.GetPage<KeyType>(file, values[index]);
-			itr.SearchInPage(key);
 
-			if (itr.FreeSlots() == 0) {
-				if (IsFull()) {
-					split(); // `split` just split the tree in half without do any insertion!!!
-				}
-
-				PageId new_page = itr.SplitPage();
-				keys.insert(keys.begin() + index, *(itr - 1));
-				values.insert(values.begin() + index, new_page);
-			}
-
-			itr.Insert(key);
-
-			++count;
-
-				// keys.insert(keys.begin() + count, key);
-				// 
-				// 
-				// // for(size_t i = count;i > index;i --)
-				// //     keys[i] = keys[i-1];
-				// // keys[index] = key;
-				// 
-				// for(size_t i = count + 1;i > index+1;i --)
-				//     childs[i] = childs[i-1];
-				// childs[index+1] = NULL; // this child will link to another node
-				// count ++;
-
-				return index;
-		}
+	if (IsFull()) {
+		split(); // `split` just split the tree in half without do any insertion!!!
+		search(key, index);
 	}
+
+	keys.insert(keys.begin() + index, key);
+	positions.insert(positions.begin() + index, pos);
+	++count;
 }
 
+template<typename KeyType>
+IteratorPosition TreeNode<KeyType>::find(KeyType key)
+{
+	size_t index;
+	bool exist = search(key, index);
+
+	if (!isLeaf) {
+		return childs[index]->find(key);
+	}
+
+	
+	if (!exist) {
+		return IteratorPosition();
+	}
+
+	return positions[index];
+}
 
