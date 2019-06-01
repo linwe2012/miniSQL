@@ -27,12 +27,12 @@ TEST(BufferManger, IOFixed_NumberIsGood) {
 
 		// char* 是一个特殊的迭代器，表示变长的数据，边长数据理论上可以存放任何类型的数据，但会占更多空间
 		// auto v = bm.GetPage<char*>(db_file, column_Var);
-		auto last_page = &itr.page();
+		auto last_page = &itr.page_id();
 		for (int i = 0; i < fill_up; ++i) {
 			itr.Insert((double)rand() / RAND_MAX);
-			if (&itr.page() != last_page) {
+			if (&itr.page_id() != last_page) {
 				std::cerr << "We've just walk into another page!!" << std::endl;
-				last_page = &itr.page();
+				last_page = &itr.page_id();
 			}
 			++itr;
 		}

@@ -13,10 +13,12 @@ SET(SRC_FILES
   ${SRC_DIR}/buffer-manager.cc
 )
 
+set(CMAKE_BUILD_TYPE Debug)
 set(LIB )
 set(LIB_DIR ${SRC_DIR}/lib)
 set(INCLUDE_DIR Database0)
-set(CMAKE_CXX_FLAGS "-std=c++17 -lstdc++fs" )
+# if(CMAKE_COMPILER_IS_GNUCC)
+set(CMAKE_CXX_FLAGS "-Wall" ) 
 link_directories(${LIB_DIR})
 link_libraries(${LIB})
 include_directories(${INCLUDE_DIR})

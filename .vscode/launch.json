@@ -1,5 +1,6 @@
+/*
 { 
-    "version": "2.0.0",
+    "version": "0.2.0",
     "configurations": [
         {
             "name": "(gdb) Bash on Windows Launch",
@@ -36,13 +37,89 @@
                     }
                 ]
             },
-            /*"setupCommands": [
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                }
-            ]*/
         },
     ]
-}
+}*/
+
+
+{
+    "version": "0.2.0",
+        "configurations": [
+            {
+                "name": "WSL",
+                "type": "cppdbg",
+                "request": "launch",
+                "program": "${workspaceFolder}/build/minisql",
+                "args": [],
+                "stopAtEntry": false,
+                "cwd": "${workspaceFolder}/build",
+                "environment": [],
+                "externalConsole": true,
+                "MIMode": "gdb",
+                "setupCommands": [
+                    {
+                        "description": "Enable pretty-printing for gdb",
+                        "text": "-enable-pretty-printing",
+                        "ignoreFailures": true
+                    }
+                ],
+                "pipeTransport": {
+                    "pipeCwd": "",
+                    "pipeProgram": "/mnt/c/Windows/System32/bash.exe", // c:\\windows\\sysnative\\bash.exe
+                    "pipeArgs": ["-c"],
+                    "debuggerPath": "/usr/bin/gdb"
+                },
+            },
+            {
+                "name": "(gdb) C Launch",
+                "type": "cppdbg",
+                "request": "launch",
+                "program": "/mnt/d/VCRepos/Database0/build/minisql",
+                "args": [],
+                "stopAtEntry": false,
+                "cwd": "/mnt/d/VCRepos/Database0/build",
+                "environment": [],
+                "externalConsole": true,
+                "MIMode": "gdb",
+                "setupCommands": [
+                    {
+                        "description": "Enable pretty-printing for gdb",
+                        "text": "-enable-pretty-printing",
+                        "ignoreFailures": true
+                    }
+                ]
+            },
+            {
+                "name": "(gdb) Launch",
+                "type": "cppdbg",
+                "request": "launch",
+                "program": "/mnt/d/VCRepos/Database0/build/minisql",
+                "args": ["-fThreading"],
+                "stopAtEntry": true,
+                "cwd": "/mnt/d/VCRepos/Database0/build",
+                "environment": [],
+                "externalConsole": true,
+                "windows": {
+                    "MIMode": "gdb",
+                    "miDebuggerPath": "/usr/bin/gdb",
+                    "setupCommands": [
+                        {
+                            "description": "Enable pretty-printing for gdb",
+                            "text": "-enable-pretty-printing",
+                            "ignoreFailures": true
+                        }
+                    ]
+                },
+                "pipeTransport": {
+                    "pipeCwd": "",
+                    // "pipeProgram": "c:\\windows\\sysnative\\bash.exe",
+                    // "pipeArgs": ["-c"],
+                    "debuggerPath": "/usr/bin/gdb"
+                },
+                "sourceFileMap": {
+                    "/mnt/c": "${env:systemdrive}/",
+                    "/mnt/d":"D:\\"
+                }
+            }
+        ]
+    }

@@ -262,6 +262,7 @@ private:
 
 class SQLBigInt : public ISQLNumber {
 public:
+	using CType = int64_t;
 	SOLID_DATA(BigInt, int64_t)
 		int Compare(const ISQLData* rhs) const override;
 private:
@@ -279,6 +280,7 @@ private:
 
 class SQLDouble : public ISQLNumber {
 public:
+	using CType = double;
 	SOLID_DATA(Double, double)
 	int Compare(const ISQLData* rhs) const override { 
 		CMP_HELPER(Double);

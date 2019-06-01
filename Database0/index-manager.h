@@ -31,19 +31,19 @@ public:
 };
 
 
-void xxx() {
-	Attribute a;
-	BufferManager bm;
-	auto itr = bm.GetPage<int>(a.file, a.first_page);
-	while (!itr.IsEnd()) {
-		int data = *itr;
-
-		//....
-
-		++itr;
-
-		PageId page = itr.SplitPage();
-
-
-	}
-}
+// void xxx() {
+// 	Attribute a;
+// 	BufferManager bm;
+// 	auto itr = bm.GetPage<int>(a.file, a.first_page);
+// 	while (!itr.IsEnd()) {
+// 		int data = *itr;
+// 
+// 		//....
+// 
+// 		++itr;
+// 
+// 		PageId page = itr.SplitPage();
+// 
+// 
+// 	}
+// }
