@@ -336,7 +336,7 @@ public:
 		const Iterator& operator-=(int offset);
 
 		const Iterator& operator-(int offset) {
-			Iterator i;
+			Iterator i(*this);
 			i -= offset;
 			return i;
 		}

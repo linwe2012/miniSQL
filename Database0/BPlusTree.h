@@ -114,11 +114,9 @@ size_t TreeNode<KeyType>::add(BufferManager& bm,FileId file, KeyType& key)
 
 			if (itr.FreeSlots() == 0) {
 				if (IsFull()) {
-					split(); // splite just split the tree in half without do any insertion!!!
+					split(); // `split` just split the tree in half without do any insertion!!!
 				}
 
-				search(*itr, index);
-				itr.MoveToPageCenter();
 				PageId new_page = itr.SplitPage();
 				keys.insert(keys.begin() + index, *(itr - 1));
 				values.insert(values.begin() + index, new_page);
