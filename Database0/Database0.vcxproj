@@ -119,18 +119,17 @@
   <ItemGroup>
     <ClInclude Include="attribute.h" />
     <ClInclude Include="buffer-manager.h" />
+    <ClInclude Include="catalog-manager.h" />
     <ClInclude Include="index-manager.h" />
+    <ClInclude Include="page.h" />
     <ClInclude Include="record-manager.h" />
     <ClInclude Include="sqldata.h" />
+    <ClInclude Include="cluster-bptree.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="buffer-manager.cc" />
-    <ClCompile Include="catalog-manager.cc" />
-    <ClCompile Include="index-manager.cc" />
+    <ClCompile Include="buffer-manager_variadic.cc" />
     <ClCompile Include="test_buffm.cc" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="catalog-manager.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

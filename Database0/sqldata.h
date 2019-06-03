@@ -215,7 +215,7 @@ public:
 	SQLNull* AsNull() override { return this; }
 	void Accept(ISQLDataVisitor*) override;
 	void Accept(IConstSQLDataVisitor*) const override;
-	int Compare(const ISQLData* rhs) const override { return kFail; }
+	int Compare([[maybe_unused]]const ISQLData* rhs) const override { return kFail; }
 	~SQLNull() override {}
 	RawData GetRaw() const override { return RawData{ nullptr, 0 }; }
 };

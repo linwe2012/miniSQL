@@ -8,239 +8,7 @@
 #include <exception>
 #include <sstream>
 #include <experimental/filesystem>
-
-namespace fs = std::experimental::filesystem;
-
-template<typename UnderlyingType, int StrongType>
-struct GenericIOId {
-	using IdType = UnderlyingType;
-	GenericIOId(UnderlyingType t) : id(t) {}
-	GenericIOId() : id(0) {}
-
-	enum : UnderlyingType {
-		kMax = std::numeric_limits<UnderlyingType>::max()
-	};
-
-	operator UnderlyingType() {
-		return id;
-	}
-
-	UnderlyingType id;
-	bool operator<(const GenericIOId& rhs) const {
-		return id < rhs.id;
-	}
-
-	bool operator==(const GenericIOId& rhs) const {
-		return id == rhs.id;
-	}
-
-	bool operator!=(const GenericIOId& rhs) const {
-		return !operator==(rhs);
-	}
-
-	bool operator>(const GenericIOId& rhs) const {
-		return  id > rhs.id;
-	}
-
-	void Inc() {
-		++id;
-	}
-
-	bool IsNil() { return id == 0; }
-};
-
-
-using PageId = GenericIOId<uint32_t, 1>;
-using FileId = GenericIOId<uint16_t, 0>;
-
-
-#define PAGE_SIZE_BY_BYTES 16 * 1024
-
-struct Variadic {
-	char placeholder;
-};
-
-
-struct Page {
-	using Offset = uint16_t;
-	struct Header {
-		int prev = 0; // OFFSET of previous page
-		int next = 0;
-		uint16_t num_records = 0;
-		uint16_t flags = 0;
-		uint16_t free_offset = 0;
-		uint64_t log_sqn = 0;     // log sequence number
-		void set_flag(int i) {
-			flags |= 1 << i;
-		}
-
-		void clear_flag(int i) {
-			flags &= ~(1 << i);
-		}
-
-		bool flag(int i) {
-			return flags & (1 << i);
-		}
-	};
-
-
-	enum {
-		kPageSize = PAGE_SIZE_BY_BYTES,
-		kDiscretionSpace = kPageSize - sizeof(Header),
-		kInValidOffset = UINT16_MAX,
-		kBeginOfReversed = kDiscretionSpace - 1,
-
-		kfIsVariadic = 0, // denotes this page is variadic
-		kfExtendToNext = 1, // whether the last data extend
-		kfIsUnused = 2
-	};
-
-	
-	struct DataPos {
-		uint16_t length;
-		uint16_t offset;
-	};
-
-	static_assert(alignof(Header) == alignof(uint64_t), "Header Must be aligned to max so that it can match any data's align requirement");
-
-	template<typename T>
-	void Write(size_t offset, T data) {
-		*(static_cast<T*>(space) + offset) = data;
-	}
-
-	/*
-	void ReverseWriteBit(int offset, bool data) {
-		int char_of_bit = offset/ 8 + 1;
-		int offset_in_char = 7 - offset % 8;
-		char& target = end()[-char_of_bit];
-		unsigned char mask = 1 << offset_in_char;
-		if (data) {
-			target |= mask;
-		}
-		else {
-			target &= ~mask;
-		}
-	}
-
-	bool ReverseReadBit(int offset) {
-		int char_of_bit = offset / 8 + 1;
-		int offset_in_char = 7 - offset % 8;
-		char target = end()[-char_of_bit];
-		unsigned char mask = 1 << offset_in_char;
-		return target & ~mask;
-	}*/
-	
-
-	template<typename T>
-	void ReverseInsertN(size_t src_offet, size_t num_vals, size_t move_size, T val) {
-		auto t = reinterpret_cast<T*>(end());
-		size_t dst_offset = num_vals + src_offet;
-		// memmove(t - src_offet - move_size, t - dst_offset - move_size, move_size * sizeof(T));
-		memmove(t - dst_offset - move_size, t - src_offet - move_size, move_size * sizeof(T));
-		std::fill_n(t - dst_offset, num_vals, val);
-	}
-
-	template<typename T>
-	void ReverseEraseN(size_t src_offet, size_t num_vals, size_t move_size) {
-		auto t = reinterpret_cast<T*>(end());
-		size_t dst_offset = src_offet - num_vals;
-		memmove(t - src_offet - move_size, t - dst_offset - move_size, move_size * sizeof(T));
-	}
-
-	template<typename T>
-	T Read(size_t offset) const {
-		return *(reinterpret_cast<T*>(space) + offset);
-	}
-
-	template<typename T>
-	T& Read(size_t offset) {
-		return *(reinterpret_cast<T*>(space) + offset);
-	}
-
-	template<typename T>
-	T& ReverseRead(size_t offset) {
-		return *(reinterpret_cast<T*>(end()) - offset - 1);
-	}
-
-	template<typename T>
-	T ReverseRead(size_t offset) const {
-		return *(reinterpret_cast<T*>(end()) - offset - 1);
-	}
-
-	size_t SpaceLeftByByte() {
-		char* begin_of_free = space + kBeginOfReversed - header.free_offset;
-		if (header.flag(kfIsVariadic)) {
-			char* end_of_free = space + header.num_records * sizeof(DataPos);
-			return begin_of_free - end_of_free;
-		}
-		else {
-			char* end_of_free = space + (header.num_records + 7) / 8;
-			return begin_of_free - end_of_free;
-		}
-	}
-
-	size_t SpaceLeftByByteFixedSize() const {
-		const char* begin_of_free = space + header.free_offset;
-		// num_records bits of null table, we round it up to char
-		const char* end_of_free = end() -  (header.num_records + 7) / 8 * 8;
-		return begin_of_free - end_of_free;
-	}
-
-	size_t SpaceLeftByByteVariadicSize() const {
-		const char* begin_of_free = space + kDiscretionSpace - header.free_offset;
-		// num_records bits of null table, we round it up to char
-		const char* end_of_free = space + header.num_records  * sizeof(DataPos);
-		return begin_of_free - end_of_free;
-	}
-
-	bool HasPrev() const {
-		return header.prev != 0;
-	}
-
-	bool HasNext() const {
-		return header.next != 0;
-	}
-
-	char* end() {
-		return space + kDiscretionSpace;
-	}
-
-	const char* end() const {
-		return space + kDiscretionSpace;
-	}
-
-	Header header;
-	char space[kDiscretionSpace];
-
-	// extra info not written to disk
-	bool is_dirty = false;
-	void* piggyback = nullptr;
-};
-
-template<>
-inline void Page::Write<bool>(size_t offset, bool data) {
-	size_t char_of_bit = offset / 8;
-	size_t offset_in_char = offset % 8;
-	char& target = space[char_of_bit];
-	unsigned char mask = 1 << offset_in_char;
-
-	if (data) {
-		target |= mask;
-	}
-	else {
-		target &= ~mask;
-	}
-}
-
-template<>
-inline bool Page::Read<bool>(size_t offset) const {
-	size_t char_of_bit = offset / 8;
-	size_t offset_in_char = offset % 8;
-	char target = space[char_of_bit];
-	unsigned char mask = 1 << offset_in_char;
-	return target & ~mask;
-}
-
+#include "page.h"
 
 struct IteratorPosition {
 	PageId page_id = 0;
@@ -249,6 +17,15 @@ struct IteratorPosition {
 	bool IsNil() {
 		return offset == Page::kInValidOffset;
 	}
+};
+
+struct IteratorSnapshot {
+	uint16_t record_in_page;
+	uint16_t step;
+	PageId page_id;
+	FileId file_id;
+	Page::Offset offset = Page::kInValidOffset;
+	uint64_t row;
 };
 
 class BufferManager {
@@ -341,11 +118,9 @@ public:
 		*/
 		const Iterator& operator-=(int offset);
 
-		const Iterator& operator-(int offset) {
-			Iterator i(*this);
-			i -= offset;
-			return i;
-		}
+		const Iterator operator+(int offset) const;
+
+		const Iterator operator-(int offset) const;
 
 		//TODO(L) Assert
 		/** 
@@ -382,9 +157,9 @@ public:
 
 		/** the page id iterator is pointing to
 		*/
-		PageId pageid() const;
+		PageId page_id() const;
 
-		FileId fileid() const;
+		FileId file_id() const;
 
 		/** 
 		* insert data
@@ -463,7 +238,7 @@ public:
 			Iterator old_first = first;
 			auto slots = FreeSlots();
 			uint16_t count = 0;
-			while (first.pageid() != last.pageid()) {
+			while (first.page_id() != last.page_id()) {
 				Iterator first_endpage = first;
 				first_endpage.MoveToPageEnd();
 				count += first_endpage.current_ - first.current_;
@@ -478,7 +253,7 @@ public:
 			}
 
 			first = old_first;
-			while (first.pageid() != last.pageid()) {
+			while (first.page_id() != last.page_id()) {
 				Iterator first_endpage = first;
 				first_endpage.MoveToPageEnd();
 				auto res = Insert(first.current_, first_endpage.current_);
@@ -494,22 +269,28 @@ public:
 		/**
 		* move cursor to page center,
 		* useful when trying to split a page in half,
+		* @return -1 if move backward
+		* @return 1 if move forward
+		* @return 0 if not moved
 		* @code
 		* Iterator<int> itr;
 		* itr.MoveToPageCenter();
 		* auto new_page = itr.SplitPage();
 		* @endcode
 		*/
-		void MoveToPageCenter() {
+		int MoveToPageCenter() {
 			int target = record_in_page_ - page_->header.num_records / 2;
 			while (target > 0) {
 				--* this;
 				--target;
+				return -1;
 			}
 			while (target < 0) {
 				++* this;
 				++target;
+				return 1;
 			}
+			return 0;
 		}
 
 		/**
@@ -576,6 +357,7 @@ public:
 			}
 			return val == *current_;
 		}
+
 		//TODO(L): assert if uncastable (i.e. misaligned data)
 		/**
 		* enforce cast into another type of pointer, 
@@ -588,7 +370,105 @@ public:
 
 		uint64_t row() const { return row_; }
 
+		uint16_t num_records() const;
+
+		T* PeekNext() {
+			return (current_ + step_);
+		}
+
+		
+
+		IteratorSnapshot Snapshot() {
+			return IteratorSnapshot{
+				record_in_page_,
+				step_,
+				page_id(),
+				file_id(),
+				(char*)current_ - page_->space,
+				row_
+			};
+		}
+
+		void Restore(IteratorSnapshot snap) {
+			*this = boss_->GetPage<T>(snap.file_id, snap.page_id);
+			current_ = reinterpret_cast<T*>(page_->space + snap.offset);
+			row_ = snap.row;
+			record_in_page_ = snap.record_in_page;
+			step_ = snap.step;
+		}
+
+		void GreaterOrEqualBinSearchIndex(const T& val) {
+			int max = num_records();
+			int min = 0;
+			if (IsEndPage()) {
+				if (IsBeginPage()) {
+					break;
+				}
+				--* this;
+				
+			}
+			while (max != min) {
+				if (IsEndPage()) {
+					break;
+				}
+				if (*(T*)current_ < val) {
+					min = record_in_page_;
+					int inc = (max - record_in_page_) / 2 + 1;
+					IgnoreNilMarchInPage(inc);
+				}
+				else if (val == *(T*)current_) {
+					break;
+				}
+				else {
+					max = record_in_page_;
+					int dec = (min - record_in_page_) / 2;
+					if (dec == 0) {
+						break;
+					}
+
+					IgnoreNilMarchInPage(-dec);
+				}
+			}
+		}
+
+		void LessOrEqualBinSearchIndex(const T& val) {
+			int max = num_records();
+			int min = 0;
+			while (max != min) {
+				if (*(T*)current_ < val) {
+					min = record_in_page_;
+					int inc = (max - record_in_page_) / 2;
+					if (inc == 0) {
+						return;
+					}
+					IgnoreNilMarchInPage(inc);
+				}
+				else if (val == *(T*)current_) {
+					break;
+				}
+				else {
+					max = record_in_page_;
+					int dec = (min - record_in_page_) / 2 + 1;
+
+					IgnoreNilMarchInPage(-dec);
+				}
+			}
+		}
+		
 	private:
+#pragma warning (push)
+#pragma warning (disable: 4244)
+		void IgnoreNilMarchInPage(int offset) {
+			current_ += offset * step_;
+			record_in_page_ += offset;
+			row_ += offset;
+		}
+#pragma warning (pop)
+
+		const Iterator Snapshot() const {
+			return Iterator(*this);
+		}
+
 		friend class BufferManager;
 		T* current_;
 		Page* page_;
@@ -661,7 +541,7 @@ public:
 	//////////////////////////////////////////////////////////////////////////////////////
 
 	// allocate a new page on file
-	PageId AllocatePageAfter(FileId fid, PageId prev);
+	PageId AllocatePageAfter(FileId fid, PageId prev, std::vector<int> flags = std::vector<int>());
 
 	template<typename T>
 	void IteratorNextPage(Iterator<T> * target);
@@ -754,6 +634,11 @@ public:
 	// use template version
 	const Iterator& operator-=(int offset);
 
+	const Iterator operator+(int offset) const;
+										  
+	const Iterator operator-(int offset) const;
+
+
 	const Page& page() const { return *page_; }
 
 	std::string AsString() {
@@ -761,40 +646,7 @@ public:
 	}
 
 	// actually this insert one data
-	bool Insert(const char* first, const char* last) {
-		uint16_t num_elem = static_cast<uint16_t>(last - first);
-		uint16_t rounded = RoundUpByte(num_elem);
-		if (num_elem > FreeBytes()) {
-			return false;
-		}
-		size_t size_moved = page_->header.free_offset - (current_ - page_->space);
-
-		page_->header.free_offset += rounded;
-		memmove(current_ + rounded, current_, size_moved);
-		memmove(current_, first, num_elem);
-		
-
-		Page::DataPos pos;
-
-		pos.offset = static_cast<uint16_t>(current_ - page_->space);
-		pos.length = num_elem;
-		page_->ReverseInsertN<Page::DataPos>(record_in_page_, 1, page_->header.num_records - record_in_page_, pos);
-
-		Page::DataPos last_pos;
-		Iterator self(*this);
-		++page_->header.num_records;
-		for (++self; !self.IsEndPage(); ++self) {
-			last_pos = self.GetDataPos();
-			last_pos.offset += rounded;
-
-			self.GetDataPos() = pos;
-
-			pos = last_pos;
-		}
-
-		page_->is_dirty = true;
-		return true;
-	}
+	bool Insert(const char* first, const char* last);
 
 	bool Insert(const std::string& str) {
 		return Insert(str.c_str(), str.c_str() + str.size());
@@ -810,23 +662,11 @@ public:
 	}
 
 	template<typename T>
-	T RoundUpByte(T byte) {
+	constexpr T RoundUpByte(T byte) {
 		return (byte + 7) / 8 * 8;
 	}
 
-	bool InsertNil(int n) {
-		if (FreeBytes() / sizeof(Page::DataPos) < n) {
-			return false;
-		}
-		size_t n_moved = page_->header.num_records - record_in_page_;
-		Page::DataPos pos;
-		pos.offset = Page::kInValidOffset;
-		pos.length = 0;
-		page_->ReverseInsertN<Page::DataPos>(record_in_page_, n, n_moved, pos);
-		page_->header.num_records += n;
-		page_->is_dirty = true;
-		return true;
-	}
+	bool InsertNil(int n);
 
 	/**
 	* if data exceeds free space in current page,
@@ -836,44 +676,15 @@ public:
 	* @return `PageId(0)` (nil) if no page is allocated
 	* @return `PageId(next_page)` if data is written to next page
 	*/
-	PageId AutoInsert(const char* first, const char* last) {
-		if (!Insert(first, last)) {
-			auto piggy = reinterpret_cast<PagePiggyback*>(page_->piggyback);
-			PageId next = boss_->AllocatePageAfter(piggy->finfo->id, piggy->page_id);
-			*this = boss_->GetPage<char*>(piggy->finfo->id, next);
-			if (!Insert(first, last)) {
-				throw std::overflow_error("The string is too long");
-			}
-			// page_->is_dirty = true;
-			++* this;
-			return next;
-		}
-
-		++* this;
-		// page_->is_dirty = true;
-		return PageId();
-	}
+	PageId AutoInsert(const char* first, const char* last);
 	
 	PageId AutoInsert(const std::string& str) {
 		return AutoInsert(str.c_str(), str.c_str() + str.size() + 1);
 	}
 
-	bool EraseInPage(size_t n = 1) {
-		Iterator self = *this;
-		if (page_->header.num_records - record_in_page_ < n) {
-			return false;
-		}
-		uint16_t length = GetDataPos(record_in_page_ + n).offset + GetDataPos(record_in_page_ + n).length - GetDataPos().offset;
-		int32_t n_moved = page_->header.free_offset - length;
-		if (n_moved <= 0) {
-			return false;
-		}
-		page_->header.free_offset -= length;
-		memmove(current_, current_ + length, n_moved);
-			
-		page_->ReverseEraseN<Page::DataPos>(record_in_page_, n, n_moved);
-		page_->header.num_records -= n;
-	}
+	int MoveToPageCenter();
+
+	bool EraseInPage(size_t n = 1);
 
 	void DeletePage();
 
@@ -892,8 +703,8 @@ public:
 	template<typename T>
 	T Read() {
 		if (GetDataPos().length != sizeof(T)) {
-			size_t len = GetDataPos().length;
-			size_t sizeT = sizeof(T);
+			// size_t len = GetDataPos().length;
+			// size_t sizeT = sizeof(T);
 			throw std::invalid_argument("size of the data mismatch what is written in");
 		}
 		T res =  *reinterpret_cast<T*>(current_);
@@ -901,36 +712,106 @@ public:
 		return res;
 	}
 
+	template<typename T>
+	T& GetUnchecked() {
+		return *reinterpret_cast<T*>(current_);
+	}
+
+	PageId SplitPage();
+
 	std::string Read();
 
-	PageId pageid() const;
-	FileId fileid() const;
+	PageId page_id() const;
+	FileId file_id() const;
 
 	IteratorPosition TellPosition();
 
-	void MoveTo(IteratorPosition ip) {
-		if (ip.page_id != pageid()) {
-			*this = boss_->GetPage<char*>(fileid(), pageid());
-		}
-
-		current_ = reinterpret_cast<char*>(page_->space + ip.offset);
-
-		record_in_page_ = ip.record_in_page;
-	}
+	void MoveTo(IteratorPosition ip);
 
 	template<typename U>
 	Iterator<U> Cast() {
 		return Iterator<U>(reinterpret_cast<U*>(current_), page_, boss_, record_in_page_, row_);
 	}
 
+	template<typename T>
+	void GreaterOrEqualBinSearchIndex(const T& val) {
+		int max = num_records();
+		int min = 0;
+		while (max != min) {
+			if (*(T*)current_ < val) {
+				min = record_in_page_;
+				int inc = (max - record_in_page_) / 2 + 1;
+				*this += inc;
+			}
+			else if (val == *(T*)current_) {
+				break;
+			}
+			else {
+				max = record_in_page_;
+				int dec = (min - record_in_page_) / 2;
+				if (dec == 0) {
+					break;
+				}
+				
+				*this -= dec;
+			}
+		}
+	}
+
+	template<typename T>
+	void LessOrEqualBinSearchIndex(const T& val) {
+		int max = num_records();
+		int min = 0;
+		while (max != min) {
+			if (*(T*)current_ < val) {
+				min = record_in_page_;
+				int inc = (max - record_in_page_) / 2;
+				if (inc == 0) {
+					return;
+				}
+				*this += inc;
+			}
+			else if (val == *(T*)current_) {
+				break;
+			}
+			else {
+				max = record_in_page_;
+				int dec = (min - record_in_page_) / 2 + 1;
+
+				*this -= dec;
+			}
+		}
+	}
+
+	uint16_t num_records() const;
+
+	template<typename T>
+	T* PeekNext() {
+		return (T*)(current_ + RoundUpByte(GetDataPos(record_in_page_).length));
+	}
+
+	void SetFlagOfPage(int f) {
+		page_->header.set_flag(f);
+	}
+	bool GetFlagOfPage(int f) {
+		return page_->header.flag(f);
+	}
+
+	IteratorSnapshot Snapshot();
+
+	void Restore(IteratorSnapshot snap);
+
+	template<typename T>
+	T& As() {
+		return *reinterpret_cast<T*>(current_);
+	}
+
+	template<typename T>
+	const T& As() const {
+		return *reinterpret_cast<T*>(current_);
+	}
+
 private:
-	// these are used for others
-	/*Iterator(Variadic* current, Page* page, BufferManager* boss)
-		:current_((char*)current), page_(page), boss_(boss), record_in_page_(0) {}
-
-	Iterator(Variadic* current, Page* page, BufferManager* boss, uint16_t record_in_page)
-		:current_((char*)current), page_(page), boss_(boss), record_in_page_(record_in_page) {}*/
-
 	const Page::DataPos& GetDataPos() const { return page_->ReverseRead<Page::DataPos>(record_in_page_); }
 	Page::DataPos& GetDataPos() { return page_->ReverseRead<Page::DataPos>(record_in_page_); }
 	Page::DataPos& GetDataPos(size_t num) { return page_->ReverseRead<Page::DataPos>(num); }
@@ -980,32 +861,6 @@ inline BufferManager::Iterator<T>& BufferManager::Iterator<T>::operator++() {
 }
 
 
-inline BufferManager::Iterator<char*>& BufferManager::Iterator<char*>::operator++() {
-
-	if (record_in_page_ < page_->header.num_records) {
-		++record_in_page_;
-		if (IsEndPage()) {
-			auto length = page_->ReverseRead<Page::DataPos>(record_in_page_ - 1).length;
-			current_ += RoundUpByte(length);
-			return *this;
-		}
-		if (!IsNil()) {
-			current_ = page_->space + page_->ReverseRead<Page::DataPos>(record_in_page_).offset;
-		}
-		++row_;
-		return *this;
-	}
-
-	// reach the end of linked list
-	if (!page_->HasNext()) {
-		return *this;
-	}
-
-	boss_->IteratorNextPage(this);
-	++row_;
-	return *this;
-}
-
 template<typename T>
 inline BufferManager::Iterator<T> BufferManager::Iterator<T>::operator++(int)
 {
@@ -1032,23 +887,6 @@ inline BufferManager::Iterator<T>& BufferManager::Iterator<T>::operator--()
 	--row_;
 }
 
-inline BufferManager::Iterator<char*>& BufferManager::Iterator<char*>::operator--()
-{
-	if (record_in_page_ == 0) {
-		// reach the end of linked list
-		if (!page_->HasPrev()) {
-			return *this;
-		}
-		boss_->IteratorPrevPage(this);
-	}
-
-	--record_in_page_;
-	if (!IsNil()) {
-		current_ = page_->space + page_->ReverseRead<Page::DataPos>(record_in_page_).offset;
-	}
-	--row_;
-}
-
 
 template<typename T>
 inline BufferManager::Iterator<T> BufferManager::Iterator<T>::operator--(int)
@@ -1057,13 +895,20 @@ inline BufferManager::Iterator<T> BufferManager::Iterator<T>::operator--(int)
 	--* this;
 	return self;
 }
+
 template<typename T>
 IteratorPosition BufferManager::Iterator<T>::TellPosition() {
 	return IteratorPosition{
-	pageid(),
+	page_id(),
 	static_cast<Page::Offset>((char*)current_ - page_->space),
 	record_in_page_,
 	};
+}
+
+
+template<typename T>
+uint16_t BufferManager::Iterator<T>::num_records() const {
+	return page_->header.num_records;
 }
 
 template<typename T>
@@ -1091,6 +936,7 @@ inline const BufferManager::Iterator<T>& BufferManager::Iterator<T>::operator+=(
 
 		if (!page_->HasNext()) {
 			current_ = reinterpret_cast<pointer>(page_->header.free_offset + page_->space);
+			row_ += page_->header.num_records - record_in_page_;
 			record_in_page_ = page_->header.num_records;
 			return *this;
 		}
@@ -1101,10 +947,12 @@ inline const BufferManager::Iterator<T>& BufferManager::Iterator<T>::operator+=(
 		last_offset = offset;
 		
 		offset -= page_->header.num_records;
+		row_ += page_->header.num_records;
 	}
 	
 	return operator+=(last_offset);
 }
+
 
 template<typename T>
 inline const BufferManager::Iterator<T>& BufferManager::Iterator<T>::operator-=(int offset)
@@ -1133,6 +981,7 @@ inline const BufferManager::Iterator<T>& BufferManager::Iterator<T>::operator-=(
 		if (!page_->HasPrev()) {
 			current_ = reinterpret_cast<pointer>(page_->space);
 			record_in_page_ = 0;
+			row_ -= record_in_page_;
 			return *this;
 		}
 
@@ -1143,24 +992,27 @@ inline const BufferManager::Iterator<T>& BufferManager::Iterator<T>::operator-=(
 		offset -= num_left;
 
 		num_left = page_->header.num_records;
+		row_ -= page_->header.num_records;
 	}
 
 	return operator-=(last_offset);
 }
 
+
 template<typename T>
-inline PageId BufferManager::Iterator<T>::pageid() const
-{
-	auto piggy = reinterpret_cast<PagePiggyback*>(page_->piggyback);
-	return piggy->page_id;
+inline const BufferManager::Iterator<T> BufferManager::Iterator<T>::operator-(int offset) const {
+	Iterator i(*this);
+	i -= offset;
+	return i;
 }
 
 template<typename T>
-inline FileId BufferManager::Iterator<T>::fileid() const
-{
-	auto piggy = reinterpret_cast<PagePiggyback*>(page_->piggyback);
-	return piggy->finfo->id;
+inline const BufferManager::Iterator<T> BufferManager::Iterator<T>::operator+(int offset) const {
+	Iterator i(*this);
+	i += offset;
+	return i;
 }
+
 
 
 template<typename T>
@@ -1171,24 +1023,38 @@ inline void BufferManager::Iterator<T>::DeletePage() {
 	current_ = nullptr;
 }
 
+template<typename T>
+FileId BufferManager::Iterator<T>::file_id() const
+{
+	auto piggy = reinterpret_cast<PagePiggyback*>(page_->piggyback);
+	return piggy->finfo->id;
+}
+
+template<typename T>
+inline PageId BufferManager::Iterator<T>::page_id() const
+{
+	auto piggy = reinterpret_cast<PagePiggyback*>(page_->piggyback);
+	return piggy->page_id;
+}
+
 
 template<typename T>
 inline BufferManager::Iterator<T> BufferManager::GetPage(FileId file_id, PageId page_id)
 {
 	UniquePage unipage{ page_id, file_id };
-	Page* page_id = AutoFetchPage(unipage);
+	Page* page = AutoFetchPage(unipage);
 	
-	return Iterator<T>(reinterpret_cast<typename Iterator<T>::pointer>(page_id->space), page_id, this);
+	return Iterator<T>(reinterpret_cast<typename Iterator<T>::pointer>(page->space), page, this);
 }
 
 template<typename T>
 inline void BufferManager::IteratorNextPage(Iterator<T>* target)
 {
-	auto& page_id = target->page_id();
-	auto piggy = static_cast<const PagePiggyback*>(page_id.piggyback);
+	auto& page = target->page();
+	auto piggy = static_cast<const PagePiggyback*>(page.piggyback);
 	PageId target_page = piggy->page_id;
 
-	target_page.id += page_id.header.next;
+	target_page.id += page.header.next;
 
 	(*target) = GetPage<T>(piggy->finfo->id, target_page);
 }
@@ -1196,18 +1062,18 @@ inline void BufferManager::IteratorNextPage(Iterator<T>* target)
 template<typename T>
 inline void BufferManager::IteratorPrevPage(Iterator<T>* target)
 {
-	auto& page_id = target->page_id();
-	auto piggy = static_cast<const PagePiggyback*>(page_id.piggyback);
+	auto& page = target->page();
+	auto piggy = static_cast<const PagePiggyback*>(page.piggyback);
 	PageId target_page = piggy->page_id;
 
-	target_page.id += page_id.header.prev;
+	target_page.id += page.header.prev;
 	(*target) = GetPage<T>(piggy->finfo->id, target_page);
 }
 
 template<typename T>
 inline PageId BufferManager::IteratorInsertPageAfter(Iterator<T>* target)
 {
-	auto piggy = static_cast<PagePiggyback*>(target->page_id().piggyback);
+	auto piggy = static_cast<PagePiggyback*>(target->page().piggyback);
 	FileId fid = piggy->finfo->id;
 	return AllocatePageAfter(fid, piggy->page_id);
 }

@@ -107,7 +107,7 @@ public:
 		}
 	}
 	void Write(const void* data, size_t size) {
-		auto res = write(fd, data, size);
+		auto res = write(fd, data, static_cast<unsigned>(size));
 		if (res == -1) {
 			int a = EBADF;
 			int b = ENOSPC;
@@ -121,16 +121,16 @@ public:
 	}
 
 	void Read(void* buf, size_t size) {
-		auto res = read(fd, buf, size);
+		auto res = read(fd, buf, static_cast<unsigned>(size));
 		if (res != size) {
 			throw std::ios_base::failure("Read failed");
 		}
 	}
-	void SeekPut(size_t pos, int way) {
+	void SeekPut(size_t _pos, int way) {
 
-		auto res = lseek(fd, pos, SEEK_SET);
+		auto res = lseek(fd, _pos, SEEK_SET);
 		if (way == std::ios::beg) {
-			if (res != pos) {
+			if (res != _pos) {
 				throw std::ios_base::failure("Fail to seek");
 			}
 		}
@@ -356,13 +356,13 @@ BufferManager::~BufferManager()
 	// STLs are expcted to do the rest jobs
 }
 
-PageId BufferManager::AllocatePageAfter(FileId fid, PageId prev)
+PageId BufferManager::AllocatePageAfter(FileId fid, PageId prev, std::vector<int> flags)
 {
-	auto populate_adjust_page = [this, &fid, &prev](PageId current) -> Page* {
-		Page* page_id = nullptr;
+	auto populate_adjust_page = [this, &fid, &prev, &flags](PageId current) -> Page* {
+		Page* page = nullptr;
 		// we are poupulate a fresh new page
 		if (prev.id == 0) {
-			page_id = GetEmptyPage(0, 0);
+			page = GetEmptyPage(0, 0);
 		}
 		else {
 			// get previous page
@@ -388,10 +388,13 @@ PageId BufferManager::AllocatePageAfter(FileId fid, PageId prev)
 
 				next_offset = next - current;
 			}
-			page_id = GetEmptyPage(prev - current, next_offset);
+			page = GetEmptyPage(prev - current, next_offset);
 		}
-		page_id->header.clear_flag(Page::kfIsUnused);
-		return page_id;
+		page->header.clear_flag(Page::kfIsUnused);
+		for (auto f : flags) {
+			page->header.set_flag(f);
+		}
+		return page;
 	};
 
 	auto& finfo = file_infos_[fid];
@@ -450,6 +453,7 @@ Page* BufferManager::GetEmptyPage(int prev, int next)
 	if (empty_page_ == nullptr) {
 		empty_page_ = new Page;
 		empty_page_->is_dirty = false;
+		empty_page_->header.flags = 0;
 		empty_page_->header.set_flag(Page::kfIsUnused);
 	}
 	empty_page_->header.prev = prev;
@@ -489,6 +493,8 @@ void BufferManager::IteratorDeletePage(Page* page_id) {
 	header.first_free = piggy->page_id;
 	UnloadPage(UniquePage{ piggy->page_id, piggy->finfo->id });
 }
+
+
 
 
 

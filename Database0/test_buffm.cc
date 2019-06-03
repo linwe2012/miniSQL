@@ -2,6 +2,9 @@
 #include "catalog-manager.h"
 #include <iostream>
 
+PageId TestWriteIndex();
+void TestReadIndex(PageId);
+
 int main()
 {
 	BufferManager bm;
@@ -56,40 +59,39 @@ int main()
 		};
 		*/
 
-		catalog.SerializeOneTable(cat_itr, meta);
-
-		// rewind to beginning of page
-		cat_itr = bm.GetPage<char*>(db_file, catalog_page);
-
-		MetaData fetched_meta;
-		catalog.DeserializeMeta(cat_itr, fetched_meta);
-		MetaData& tb = fetched_meta;
-
-		std::cout << "Database: " << tb.db_name
-			<< "\nTable: " << tb.table_name << std::endl;
-
-		for (auto& it : tb.attributes) {
-			auto& attrib = it.second;
-			std::cout << it.first << " " << attrib.id << " " << attrib.type
-				<< " " << attrib.column_name;
-		}
+		// catalog.SerializeOneTable(cat_itr, meta);
+		// 
+		// // rewind to beginning of page
+		// cat_itr = bm.GetPage<char*>(db_file, catalog_page);
+		// 
+		// MetaData fetched_meta;
+		// catalog.DeserializeMeta(cat_itr, fetched_meta);
+		// MetaData& tb = fetched_meta;
+		// 
+		// std::cout << "Database: " << tb.db_name
+		// 	<< "\nTable: " << tb.table_name << std::endl;
+		// 
+		// for (auto& it : tb.attributes) {
+		// 	auto& attrib = it.second;
+		// 	std::cout << it.first << " " << attrib.id << " " << attrib.type
+		// 		<< " " << attrib.column_name;
+		// }
 
 
 		// get an iterator on the page
 		auto itr = bm.GetPage<double>(db_file, column_A_1);
 
-		// char* ��һ������ĵ���������ʾ�䳤�����ݣ��߳����������Ͽ��Դ���κ����͵����ݣ�����ռ����ռ�
 		// auto v = bm.GetPage<char*>(db_file, column_Var);
-		auto last_page = &itr.page_id();
+		auto last_page = &itr.page();
 		for (int i = 0; i < fill_up; ++i) {
 			if (!itr.Insert(/* (double)rand() / RAND_MAX*/ double(i))) {
 				++itr;
 				itr.Insert(double(i));
 			}
 			
-			if (&itr.page_id() != last_page) {
+			if (&itr.page() != last_page) {
 				std::cerr << "We've just walk into another page!!" << std::endl;
-				last_page = &itr.page_id();
+				last_page = &itr.page();
 				getchar();
 			}
 			++itr;
@@ -106,25 +108,6 @@ int main()
 	// read data
 	else {
 		db_file = bm.OpenFile(db_file_name);
-
-		// rewind to beginning of page
-		auto cat_itr = bm.GetPage<char*>(db_file, 1);
-
-		MetaData fetched_meta;
-		catalog.DeserializeMeta(cat_itr, fetched_meta);
-		MetaData& tb = fetched_meta;
-
-		std::cout << "Database: " << tb.db_name
-			<< "\nTable: " << tb.table_name << std::endl;
-
-		for (auto& it : tb.attributes) {
-			auto& attrib = it.second;
-			std::cout << it.first << ":\t" << attrib.id << "\t" << attrib.type
-				<< "\t" << attrib.column_name << std::endl;
-		}
-
-		
-
 
 		// ��Ϊ֮ǰ�����column ��PageId �� 1,����͵��ֱ����1, ��Ӧ���� Catalog Manager ��¼
 		// Catalog Manager ֪������ÿһ�ж�Ӧ�ĵ�һ��PageId, ��ѯ�е�ʱ��Ӧ�÷���һ��ָ���һ�еĵ�����
@@ -145,11 +128,46 @@ int main()
 			}
 		}
 		
-		getchar();
-		getchar();
+		//getchar();
+		//getchar();
 	}
 
-	
+	bm.~BufferManager();
+	{
+		PageId p = TestWriteIndex();
+		TestReadIndex(p);
+	}
+
+
 
 }
 
+#include "cluster-bptree.h"
+
+PageId TestWriteIndex() {
+	BufferManager bm;
+	FileId file = bm.NewFile("./test2.db");
+
+	PageId page = bm.AllocatePageAfter(file, 0);
+
+	ClusteredBPTree<double> dt(&bm, file, 0);
+	auto root_index = dt.BuildIndex(bm.GetPage<double>(file, page));
+	for (double i = 0.1; i < 10000; i += 0.01) {
+		dt.Insert(i);
+	}
+
+	return root_index;
+}
+
+
+void TestReadIndex(PageId root) {
+	BufferManager bm;
+	FileId file = bm.NewFile("./test2.db");
+
+	ClusteredBPTree<double> dt(&bm, file, root);
+
+	for (double i = 0.1; i < 10000; i += 0.01) {
+		auto itr = dt.Lookup(i);
+		assert(*itr == i);
+	}
+}
