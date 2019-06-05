@@ -300,7 +300,7 @@ Page* BufferManager::AutoFetchPage(UniquePage unipage)
 	page_id->piggyback = ppb;
 
 	auto& ios = GetStream(finfo);
-	ios.SeekGet(unipage.page_id * Page::kPageSize, std::ios::beg);
+	ios.SeekGet(unipage.page_id * (size_t)Page::kPageSize, std::ios::beg);
 	ios.Read(page_id, Page::kPageSize);
 	
 	pages_[unipage] = page_id;
@@ -452,10 +452,11 @@ Page* BufferManager::GetEmptyPage(int prev, int next)
 {
 	if (empty_page_ == nullptr) {
 		empty_page_ = new Page;
-		empty_page_->is_dirty = false;
-		empty_page_->header.flags = 0;
-		empty_page_->header.set_flag(Page::kfIsUnused);
 	}
+	empty_page_->is_dirty = false;
+	empty_page_->header.flags = 0;
+	empty_page_->header.set_flag(Page::kfIsUnused);
+
 	empty_page_->header.prev = prev;
 	empty_page_->header.next = next;
 	return empty_page_;

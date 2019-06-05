@@ -134,8 +134,8 @@ int main()
 
 	bm.~BufferManager();
 	{
-		PageId p = TestWriteIndex();
-		TestReadIndex(p);
+		// PageId p = TestWriteIndex();
+		TestReadIndex(822);
 	}
 
 
@@ -146,6 +146,9 @@ int main()
 
 PageId TestWriteIndex() {
 	BufferManager bm;
+	if (fs::exists("./test2.db")) {
+		fs::remove("./test2.db");
+	}
 	FileId file = bm.NewFile("./test2.db");
 
 	PageId page = bm.AllocatePageAfter(file, 0);
@@ -153,7 +156,10 @@ PageId TestWriteIndex() {
 	ClusteredBPTree<double> dt(&bm, file, 0);
 	auto root_index = dt.BuildIndex(bm.GetPage<double>(file, page));
 	for (double i = 0.1; i < 10000; i += 0.01) {
-		dt.Insert(i);
+		if (i >= 3173.82) {
+			int cc = 10;
+		}
+		root_index = dt.Insert(i);
 	}
 
 	return root_index;
@@ -162,11 +168,15 @@ PageId TestWriteIndex() {
 
 void TestReadIndex(PageId root) {
 	BufferManager bm;
-	FileId file = bm.NewFile("./test2.db");
+	
+	FileId file = bm.OpenFile("./test2.db");
 
 	ClusteredBPTree<double> dt(&bm, file, root);
 
 	for (double i = 0.1; i < 10000; i += 0.01) {
+		if (i >= 3713.82) {
+			int cc = 10;
+		}
 		auto itr = dt.Lookup(i);
 		assert(*itr == i);
 	}

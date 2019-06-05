@@ -60,7 +60,7 @@ struct Page {
 		uint16_t num_records = 0;
 		uint16_t flags = 0;
 		uint16_t free_offset = 0;
-		uint64_t log_sqn = 0;     // log sequence number
+		uint64_t log_sqn = 0;     // log sequence number [not used]
 		void set_flag(int i) {
 			flags |= 1 << i;
 		}
@@ -69,7 +69,7 @@ struct Page {
 			flags &= ~(1 << i);
 		}
 
-		bool flag(int i) {
+		bool flag(int i) const {
 			return flags & (1 << i);
 		}
 	};
@@ -161,30 +161,29 @@ struct Page {
 		return *(reinterpret_cast<T*>(end()) - offset - 1);
 	}
 
-	size_t SpaceLeftByByte() {
-		char* begin_of_free = space + kBeginOfReversed - header.free_offset;
+	[[deprecated("Ues specified verison")]]
+	size_t SpaceLeftByByte() const {
 		if (header.flag(kfIsVariadic)) {
-			char* end_of_free = space + header.num_records * sizeof(DataPos);
-			return begin_of_free - end_of_free;
+			return SpaceLeftByByteVariadicSize();
 		}
 		else {
-			char* end_of_free = space + (header.num_records + 7) / 8;
-			return begin_of_free - end_of_free;
+			return SpaceLeftByByteFixedSize();
 		}
 	}
 
 	size_t SpaceLeftByByteFixedSize() const {
 		const char* begin_of_free = space + header.free_offset;
 		// num_records bits of null table, we round it up to char
-		const char* end_of_free = end() - (header.num_records + 7) / 8 * 8;
-		return begin_of_free - end_of_free;
+		// const char* end_of_free = end() - (header.num_records + 7) / 8 * 8;
+		const char* end_of_free = end() - header.num_records;
+		return  end_of_free - begin_of_free;
 	}
 
 	size_t SpaceLeftByByteVariadicSize() const {
-		const char* begin_of_free = space + kDiscretionSpace - header.free_offset;
+		const char* begin_of_free = space + header.free_offset;
 		// num_records bits of null table, we round it up to char
-		const char* end_of_free = space + header.num_records * sizeof(DataPos);
-		return begin_of_free - end_of_free;
+		const char* end_of_free = end() - header.num_records * sizeof(DataPos);
+		return end_of_free - begin_of_free;
 	}
 
 	bool HasPrev() const {

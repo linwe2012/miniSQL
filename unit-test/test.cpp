@@ -69,7 +69,9 @@ TEST(BufferManger, IODeletePage) {
 
 		auto itr = bm.GetPage<double>(db, page1);
 
-		while(itr.IsEnd())
+		while (itr.IsEnd()) {
+
+		}
 	}
 
 }

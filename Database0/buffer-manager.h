@@ -269,9 +269,10 @@ public:
 		/**
 		* move cursor to page center,
 		* useful when trying to split a page in half,
-		* @return -1 if move backward
-		* @return 1 if move forward
+		* @return < 0 if move backward
+		* @return > 0 if move forward
 		* @return 0 if not moved
+		* 
 		* @code
 		* Iterator<int> itr;
 		* itr.MoveToPageCenter();
@@ -280,17 +281,23 @@ public:
 		*/
 		int MoveToPageCenter() {
 			int target = record_in_page_ - page_->header.num_records / 2;
+			int res = -target;
 			while (target > 0) {
 				--* this;
 				--target;
-				return -1;
 			}
 			while (target < 0) {
 				++* this;
 				++target;
-				return 1;
 			}
-			return 0;
+			return res;
+		}
+
+		// if there is all data is non nil
+		int MoveToPageCenterNonNil() {
+			int direction = page_->header.num_records / 2 - record_in_page_;
+			IgnoreNilMarchInPage(direction);
+			return direction;
 		}
 
 		/**
@@ -324,6 +331,7 @@ public:
 			next.Insert(current_, current_ + moved_size);
 			page_->header.num_records = record_in_page_;
 			page_->header.free_offset -= moved_size;
+			page_->is_dirty = true;
 			return pid;
 		}
 
@@ -397,15 +405,16 @@ public:
 			step_ = snap.step;
 		}
 
+		// locate index greater or equal to val
+		// data must be Sorted && Non Nil (primary index)
 		void GreaterOrEqualBinSearchIndex(const T& val) {
 			int max = num_records();
 			int min = 0;
 			if (IsEndPage()) {
 				if (IsBeginPage()) {
-					break;
+					return;
 				}
 				--* this;
-				
 			}
 			while (max != min) {
 				if (IsEndPage()) {
@@ -421,8 +430,15 @@ public:
 				}
 				else {
 					max = record_in_page_;
-					int dec = (min - record_in_page_) / 2;
+					int dec = (record_in_page_ - min) / 2;
 					if (dec == 0) {
+						if (!IsBeginPage()) {
+							IgnoreNilMarchInPage(-1);
+							if (*(T*)current_ == val) {
+								break;
+							}
+							IgnoreNilMarchInPage(1);
+						}
 						break;
 					}
 
@@ -434,12 +450,26 @@ public:
 		void LessOrEqualBinSearchIndex(const T& val) {
 			int max = num_records();
 			int min = 0;
+			if (IsEndPage()) {
+				if (IsBeginPage()) {
+					return;
+				}
+				--* this;
+			}
 			while (max != min) {
+				if (IsEndPage()) {
+					break;
+				}
 				if (*(T*)current_ < val) {
 					min = record_in_page_;
 					int inc = (max - record_in_page_) / 2;
 					if (inc == 0) {
-						return;
+						IgnoreNilMarchInPage(1);
+						if (!IsEndPage()  && *(T*)current_ == val) {
+							break;
+						}
+						IgnoreNilMarchInPage(-1);
+						break;
 					}
 					IgnoreNilMarchInPage(inc);
 				}
@@ -448,7 +478,7 @@ public:
 				}
 				else {
 					max = record_in_page_;
-					int dec = (min - record_in_page_) / 2 + 1;
+					int dec = (record_in_page_ - min) / 2 + 1;
 
 					IgnoreNilMarchInPage(-dec);
 				}
@@ -459,7 +489,7 @@ public:
 #pragma warning (push)
 #pragma warning (disable: 4244)
 		void IgnoreNilMarchInPage(int offset) {
-			current_ += offset * step_;
+			current_ += (int64_t)offset * step_;
 			record_in_page_ += offset;
 			row_ += offset;
 		}
@@ -608,6 +638,10 @@ public:
 		return (record_in_page_ == page_->header.num_records);
 	}
 
+	bool IsBeginPage() const {
+		return (record_in_page_ == 0);
+	}
+
 	bool IsBegin() const {
 		return (record_in_page_ == 0)  // we reach end of the page
 			&& !page_->HasPrev(); // and page does not have any prevs
@@ -659,6 +693,11 @@ public:
 
 	size_t FreeBytes() const {
 		return page_->SpaceLeftByByteVariadicSize();
+	}
+
+	template<typename T>
+	size_t FreeSlots() const {
+		return FreeBytes() / (sizeof(T) + sizeof(Page::DataPos));
 	}
 
 	template<typename T>
@@ -717,7 +756,7 @@ public:
 		return *reinterpret_cast<T*>(current_);
 	}
 
-	PageId SplitPage();
+	PageId SplitPage(std::vector<int> flags = std::vector<int>());
 
 	std::string Read();
 
@@ -737,7 +776,16 @@ public:
 	void GreaterOrEqualBinSearchIndex(const T& val) {
 		int max = num_records();
 		int min = 0;
+		if (IsEndPage()) {
+			if (IsBeginPage()) {
+				return;
+			}
+			--* this;
+		}
 		while (max != min) {
+			if (IsEndPage()) {
+				break;
+			}
 			if (*(T*)current_ < val) {
 				min = record_in_page_;
 				int inc = (max - record_in_page_) / 2 + 1;
@@ -748,8 +796,16 @@ public:
 			}
 			else {
 				max = record_in_page_;
-				int dec = (min - record_in_page_) / 2;
+				int dec = (record_in_page_ - min) / 2;
 				if (dec == 0) {
+					if (!IsBeginPage()) {
+						--* this;
+						if (*(T*)current_ == val) {
+							break;
+						}
+						++* this;
+					}
+					
 					break;
 				}
 				
@@ -762,12 +818,26 @@ public:
 	void LessOrEqualBinSearchIndex(const T& val) {
 		int max = num_records();
 		int min = 0;
+		if (IsEndPage()) {
+			if (IsBeginPage()) {
+				return;
+			}
+			--* this;
+		}
 		while (max != min) {
+			if (IsEndPage()) {
+				break;
+			}
 			if (*(T*)current_ < val) {
 				min = record_in_page_;
 				int inc = (max - record_in_page_) / 2;
 				if (inc == 0) {
-					return;
+					++* this;
+					if (!IsEndPage() && *(T*)current_ == val) {
+						break;
+					}
+					--* this;
+					break;
 				}
 				*this += inc;
 			}
@@ -776,7 +846,7 @@ public:
 			}
 			else {
 				max = record_in_page_;
-				int dec = (min - record_in_page_) / 2 + 1;
+				int dec = (record_in_page_ - min) / 2 + 1;
 
 				*this -= dec;
 			}
@@ -963,7 +1033,7 @@ inline const BufferManager::Iterator<T>& BufferManager::Iterator<T>::operator-=(
 
 	size_t num_left = record_in_page_;
 
-	if (offset < record_in_page_) {
+	if (offset <= record_in_page_) {
 		for (; offset > 0; --offset) {
 			--* this;
 		}

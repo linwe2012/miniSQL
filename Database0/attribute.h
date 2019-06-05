@@ -178,6 +178,7 @@ class WhereClause {
 
 };
 
+
 struct Condition {
 
 };
@@ -196,33 +197,6 @@ struct Condition {
 
 // calls lexer and call appropriate functions incl. insert/ delete etc.
 ResultPtr Query(const char* query);
-
-class DataPage {
-	enum Type : uint8_t {
-		kIndexed, // node of b+ tree
-		kInode,   // index page, i.e. b+ tree
-	};
-	enum Format : uint8_t {
-		kHamburger
-	};
-	enum Compress : uint8_t {
-		kNotCompressed
-	};
-	int checksum;
-	uint32_t offset;
-	uint32_t prev;
-	uint32_t next;
-	uint64_t log_sqn;
-	uint32_t space_id;
-	Compress compress;
-	Format format;
-	Type type;
-	
-
-	uint16_t last_insert;
-	
-
-};
 
 class MetaPage {
 	

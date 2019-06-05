@@ -22,12 +22,15 @@ bool BufferManager::Iterator<char*>::Insert(const char* first, const char* last)
 
 	pos.offset = static_cast<uint16_t>(current_ - page_->space);
 	pos.length = num_elem;
-	page_->ReverseInsertN<Page::DataPos>(record_in_page_, 1, page_->header.num_records - record_in_page_, pos);
+
+	// page_->ReverseInsertN<Page::DataPos>(record_in_page_, 1, page_->header.num_records - record_in_page_, pos);
+	
+	++page_->header.num_records;
 
 	Page::DataPos last_pos;
 	Iterator self(*this);
-	++page_->header.num_records;
-	for (++self; !self.IsEndPage(); ++self) {
+	
+	for (; !self.IsEndPage(); ++self) {
 		last_pos = self.GetDataPos();
 		last_pos.offset += rounded;
 
@@ -155,10 +158,16 @@ const BufferManager::Iterator<char*>& BufferManager::Iterator<char*>::operator-=
 
 	size_t num_left = record_in_page_;
 
-	if (offset < record_in_page_) {
+	if (offset <= record_in_page_) {
 		record_in_page_ -= offset;
-		const auto& pos = GetDataPos(record_in_page_ - 1);
-		current_ = page_->space + pos.offset + RoundUpByte(pos.length);
+		if (record_in_page_ == 0) {
+			current_ = page_->space;
+		}
+		else {
+			const auto& pos = GetDataPos(record_in_page_ - 1);
+			current_ = page_->space + pos.offset + RoundUpByte(pos.length);
+		}
+		
 		row_ -= offset;
 		return *this;
 	}
@@ -202,8 +211,14 @@ const BufferManager::Iterator<char*>& BufferManager::Iterator<char*>::operator+=
 
 	if (offset <= num_left) {
 		record_in_page_ += offset;
-		const auto& pos = GetDataPos(record_in_page_ - 1);
-		current_ = page_->space + pos.offset + RoundUpByte(pos.length);
+		if (IsBeginPage()) {
+			current_ = page_->space;
+		}
+		else {
+			const auto& pos = GetDataPos(record_in_page_ - 1);
+			current_ = page_->space + pos.offset + RoundUpByte(pos.length);
+		}
+		
 		row_ += offset;
 		return *this;
 	}
@@ -222,7 +237,6 @@ const BufferManager::Iterator<char*>& BufferManager::Iterator<char*>::operator+=
 			return *this;
 		}
 
-		cpage.id += page_->header.next;
 		*this = boss_->GetPage<char*>(piggy->finfo->id, cpage);
 
 		last_offset = offset;
@@ -265,26 +279,28 @@ void BufferManager::Iterator<char*>::MoveTo(IteratorPosition ip) {
 }
 
 int BufferManager::Iterator<char*>::MoveToPageCenter() {
-	int target = (int)(num_records() / 2) - record_in_page_;
-	*this += target;
-	return target;
+	int direction = (int)(num_records() / 2) - record_in_page_;
+	*this += direction;
+	return direction;
 }
 
 
-PageId BufferManager::Iterator<char*>::SplitPage() {
+PageId BufferManager::Iterator<char*>::SplitPage(std::vector<int> flags) {
 	auto piggy = reinterpret_cast<PagePiggyback*>(page_->piggyback);
 
-	PageId pid = boss_->AllocatePageAfter(piggy->finfo->id, piggy->page_id);
+	PageId pid = boss_->AllocatePageAfter(piggy->finfo->id, piggy->page_id, flags);
 	Iterator next = boss_->GetPage<char *>(piggy->finfo->id, pid);
 
 	Iterator self = *this;
 	while (!self.IsEndPage()) {
 		next.Insert(self.current_, self.GetDataPos().length);
 		++self;
+		++next;
 	}
 
 	page_->header.num_records = record_in_page_;
 	page_->header.free_offset = GetDataPos().offset;
+	page_->is_dirty = true;
 	return pid;
 }
 
