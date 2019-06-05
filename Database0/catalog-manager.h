@@ -118,7 +118,7 @@ private:
 	int latest_id_;
 	FileId file_;
 	PageId page_;
-	BufferManager bm;
+	BufferManager* bm;
 
 	std::string meta2str(MetaData meta);
 	MetaData str2meta(std::string str);

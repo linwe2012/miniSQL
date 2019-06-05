@@ -6,7 +6,7 @@
 
 
 void CatalogManager::Initialize(BufferManager* buffer_manager, FileId file, PageId page) {
-	bm = *buffer_manager;
+	bm = buffer_manager;
 	file_ = file;
 	page_ = page;
 }
@@ -16,8 +16,10 @@ void CatalogManager::NewDatabase(const std::string& db_name) {
 	if(f!=tables_.end())
 		throw std::invalid_argument("exsisted database!");
 
-	FileId file = bm.NewFile("./database/$dbname");
-	tables_.insert(std::pair<std::string, std::map<std::string, MetaData>>(db_name, std::pair<std::string, MetaData>(NULL, NULL)));
+	fs::path path("./database");
+	path /= db_name;
+	FileId file = bm->NewFile(path.string().c_str());
+	tables_[db_name]; // std::map automacitally create this slot
 }
 
 void CatalogManager::NewTable(const std::string& db_name,const std::string& table_name, std::vector<ColumnInfo> columns) {
@@ -27,25 +29,26 @@ void CatalogManager::NewTable(const std::string& db_name,const std::string& tabl
 		throw std :: invalid_argument("exsisted table!");
 
 	//metadata census
-	MetaData meta;
+	MetaData& meta = tables_[db_name][table_name];
 	meta.db_name = db_name;
 	meta.table_name = table_name;
 	std::string file_name = "./database/" + db_name;
 	if (!fs::exists(file_name))
 		throw std::invalid_argument("no such database!");
-	else meta.file = bm.OpenFile(file_name.c_str());
+	else meta.file = bm->OpenFile(file_name.c_str());
 
 	int id = 0;
+	
 	std::vector<ColumnInfo>::iterator iter;
-	for (iter = columns._Myfirst; iter < columns._Myend; iter++) {
+	for (iter = columns._Myfirst(); iter < columns._Myend; iter++) {
 		Attribute attr_tmp;
 		attr_tmp.id = id++;
 		attr_tmp.type = iter->type;
 		attr_tmp.column_name = iter->name.column_name;
 		attr_tmp.comment = iter->comment;
 		attr_tmp.file = meta.file;
-		attr_tmp.first_page = bm.AllocatePageAfter(meta.file, 1);//属性从哪里开始分配？
-		attr_tmp.first_index = bm.AllocatePageAfter(meta.file, 1);
+		attr_tmp.first_page = bm->AllocatePageAfter(meta.file, 0);//属性从哪里开始分配？
+		// attr_tmp.first_index = bm->AllocatePageAfter(meta.file, 1);
 		attr_tmp.max_length = iter->max_length;
 		attr_tmp.is_primary_key = iter->is_primary_key;
 		attr_tmp.nullable = iter->nullable;
@@ -55,18 +58,15 @@ void CatalogManager::NewTable(const std::string& db_name,const std::string& tabl
 	}
 
 	std::string str_meta = meta2str(meta);
-	auto v_meta = bm.GetPage<char*>(file_, page_);
+	auto v_meta = bm->GetPage<char*>(file_, page_);
 	v_meta.Insert(str_meta);
-
-
-	tables_.insert(std::pair<std::string, std::map<std::string, MetaData>>(db_name, std::pair<std::string, MetaData>(table_name, meta)));
 }
 
 void CatalogManager::DropTable(const std::string& db_name, const std::string& table_name) {
 	if(!FindTable(db_name,table_name))
 		throw std::invalid_argument("no such table!");
 
-	auto v_meta = bm.GetPage<char*>(file_, page_);
+	auto v_meta = bm->GetPage<char*>(file_, page_);
 	for (int i = 1; i < tables_.size(); i++) {
 		MetaData meta_tmp;
 		std::string str_meta = *(v_meta);
@@ -88,7 +88,7 @@ MetaData& CatalogManager::FetchTable(const std::string& db_name, const std::stri
 	if (!FindTable(db_name, table_name))
 		throw std::invalid_argument("no such table!");
 
-	auto v_meta = bm.GetPage<char*>(file_, page_);
+	auto v_meta = bm->GetPage<char*>(file_, page_);
 	MetaData meta;
 	for (int i = 1; i < tables_.size(); i++) {
 		std::string str_meta = *(v_meta);
@@ -126,7 +126,7 @@ void CatalogManager::NewColumn(ColumnInfo col_name) {
 	if (m_iter != table.attributes_map.end())
 		throw std::invalid_argument("existed column!");
 	
-	auto v_meta = bm.GetPage<char*>(file_, page_);
+	auto v_meta = bm->GetPage<char*>(file_, page_);
 	for (int i = 1; i < tables_.size(); i++) {
 		MetaData meta_tmp;
 		std::string str_meta = *(v_meta);
@@ -138,8 +138,7 @@ void CatalogManager::NewColumn(ColumnInfo col_name) {
 			attr_tmp.column_name = col_name.name.column_name;
 			attr_tmp.comment = col_name.comment;
 			attr_tmp.file = meta_tmp.file;
-			attr_tmp.first_page = bm.AllocatePageAfter(meta_tmp.file, 1);//属性从哪里开始分配？
-			attr_tmp.first_index = bm.AllocatePageAfter(meta_tmp.file, 1);
+			attr_tmp.first_page = bm->AllocatePageAfter(meta_tmp.file, 0);//属性从哪里开始分配？
 			attr_tmp.max_length = col_name.max_length;
 			attr_tmp.is_primary_key = col_name.is_primary_key;
 			attr_tmp.nullable = col_name.nullable;
@@ -164,7 +163,7 @@ void CatalogManager::DropColumn(ColumnName col_name) {
 	if (m_iter == table.attributes_map.end())
 		throw std::invalid_argument("no such column!");
 
-	auto v_meta = bm.GetPage<char*>(file_, page_);
+	auto v_meta = bm->GetPage<char*>(file_, page_);
 	for (int i = 1; i < tables_.size(); i++) {
 		MetaData meta_tmp;
 		std::string str_meta = *(v_meta);
