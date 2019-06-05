@@ -1,8 +1,9 @@
-#pragma once
 #include "catalog-manager.h"
 #include <stdexcept>
 #include <cmath>
 #include <utility>
+#include <cstring>
+
 
 void CatalogManager::Initialize(BufferManager* buffer_manager, FileId file, PageId page) {
 	bm = *buffer_manager;
@@ -29,31 +30,34 @@ void CatalogManager::NewTable(const std::string& db_name,const std::string& tabl
 	MetaData meta;
 	meta.db_name = db_name;
 	meta.table_name = table_name;
-	if (!fs::exists("./database/$db_name"))
+	std::string file_name = "./database/" + db_name;
+	if (!fs::exists(file_name))
 		throw std::invalid_argument("no such database!");
-	else meta.file = bm.OpenFile("./database/$db_name");
+	else meta.file = bm.OpenFile(file_name.c_str());
 
-	std::vector<ColumnInfo>::iterator iter;
 	int id = 0;
-	for (iter = columns.begin(); iter != columns.end(); iter++) {
+	std::vector<ColumnInfo>::iterator iter;
+	for (iter = columns._Myfirst; iter < columns._Myend; iter++) {
 		Attribute attr_tmp;
 		attr_tmp.id = id++;
-		attr_tmp.type = (*iter).type;
-		attr_tmp.column_name = (*iter).name.column_name;
-		attr_tmp.comment = (*iter).comment;
+		attr_tmp.type = iter->type;
+		attr_tmp.column_name = iter->name.column_name;
+		attr_tmp.comment = iter->comment;
 		attr_tmp.file = meta.file;
-		attr_tmp.first_page = bm.AllocatePageAfter(meta.file, 1);//属性从哪里开始分配？
+		attr_tmp.first_page = bm.AllocatePageAfter(meta.file, 1);//灞炴�т粠鍝噷寮�濮嬪垎閰嶏紵
 		attr_tmp.first_index = bm.AllocatePageAfter(meta.file, 1);
-		attr_tmp.max_length = (*iter).max_length;
-		attr_tmp.is_primary_key = (*iter).is_primary_key;
-		attr_tmp.nullable = (*iter).nullable;
+		attr_tmp.max_length = iter->max_length;
+		attr_tmp.is_primary_key = iter->is_primary_key;
+		attr_tmp.nullable = iter->nullable;
 		meta.attributes.push_back(attr_tmp);
 		meta.attributes_map.insert(std::pair<std::string, Attribute*>(attr_tmp.column_name, &attr_tmp));
 		if (attr_tmp.is_primary_key) meta.primary_keys.push_back(id);
 	}
 
+	std::string str_meta = meta2str(meta);
 	auto v_meta = bm.GetPage<char*>(file_, page_);
-	v_meta.Insert(meta);
+	v_meta.Insert(str_meta);
+
 
 	tables_.insert(std::pair<std::string, std::map<std::string, MetaData>>(db_name, std::pair<std::string, MetaData>(table_name, meta)));
 }
@@ -65,11 +69,13 @@ void CatalogManager::DropTable(const std::string& db_name, const std::string& ta
 	auto v_meta = bm.GetPage<char*>(file_, page_);
 	for (int i = 1; i < tables_.size(); i++) {
 		MetaData meta_tmp;
-		meta_tmp = *(v_meta + i);
+		std::string str_meta = *(v_meta);
+		meta_tmp = str2meta(str_meta);
 		if (db_name == meta_tmp.db_name && table_name == meta_tmp.table_name) {
-		//在page里delete这个
+		//鍦╬age閲宒elete杩欎釜
 			break;
 		}
+		v_meta++;
 	}
 	std::map<std::string, std::map<std::string, MetaData>>::iterator iter;
 	iter = tables_.find(db_name);
@@ -85,9 +91,11 @@ MetaData& CatalogManager::FetchTable(const std::string& db_name, const std::stri
 	auto v_meta = bm.GetPage<char*>(file_, page_);
 	MetaData meta;
 	for (int i = 1; i < tables_.size(); i++) {
-		meta = *(v_meta + i);
+		std::string str_meta = *(v_meta);
+		meta = str2meta(str_meta);
 		if (db_name == meta.db_name && table_name == meta.table_name)
 			return meta;
+		v_meta++;
 	}
 }
 
@@ -121,7 +129,8 @@ void CatalogManager::NewColumn(ColumnInfo col_name) {
 	auto v_meta = bm.GetPage<char*>(file_, page_);
 	for (int i = 1; i < tables_.size(); i++) {
 		MetaData meta_tmp;
-		meta_tmp = *(v_meta + i);
+		std::string str_meta = *(v_meta);
+		meta_tmp = str2meta(str_meta);
 		if (col_name.name.db_name == meta_tmp.db_name && col_name.name.table_name == meta_tmp.table_name) {
 			Attribute attr_tmp;
 			attr_tmp.id = meta_tmp.attributes.size()+ 1;
@@ -129,17 +138,22 @@ void CatalogManager::NewColumn(ColumnInfo col_name) {
 			attr_tmp.column_name = col_name.name.column_name;
 			attr_tmp.comment = col_name.comment;
 			attr_tmp.file = meta_tmp.file;
-			attr_tmp.first_page = bm.AllocatePageAfter(meta_tmp.file, 1);//属性从哪里开始分配？
+			attr_tmp.first_page = bm.AllocatePageAfter(meta_tmp.file, 1);//灞炴�т粠鍝噷寮�濮嬪垎閰嶏紵
 			attr_tmp.first_index = bm.AllocatePageAfter(meta_tmp.file, 1);
 			attr_tmp.max_length = col_name.max_length;
 			attr_tmp.is_primary_key = col_name.is_primary_key;
 			attr_tmp.nullable = col_name.nullable;
-			(*(v_meta+i)).attributes.push_back(attr_tmp);
-			(*(v_meta + i)).attributes_map.insert(std::pair<std::string, Attribute*>(attr_tmp.column_name, &attr_tmp));
-			if (attr_tmp.is_primary_key) (*(v_meta + i)).primary_keys.push_back(attr_tmp.id);
+			meta_tmp.attributes.push_back(attr_tmp);
+			meta_tmp.attributes_map.insert(std::pair<std::string, Attribute*>(attr_tmp.column_name, &attr_tmp));
+			if (attr_tmp.is_primary_key) meta_tmp.primary_keys.push_back(attr_tmp.id);
+			//drop original
+			v_meta.Write<std::string>(meta2str(meta_tmp));
 			break;
 		}
+		v_meta++;
 	}
+
+
 }
 
 void CatalogManager::DropColumn(ColumnName col_name) {
@@ -153,29 +167,105 @@ void CatalogManager::DropColumn(ColumnName col_name) {
 	auto v_meta = bm.GetPage<char*>(file_, page_);
 	for (int i = 1; i < tables_.size(); i++) {
 		MetaData meta_tmp;
-		meta_tmp = *(v_meta + i);
+		std::string str_meta = *(v_meta);
+		meta_tmp = str2meta(str_meta);
 		if (col_name.db_name == meta_tmp.db_name && col_name.table_name == meta_tmp.table_name) {
 			std::vector<Attribute> ::iterator iter;
-			for (iter = (v_meta + i)->attributes.begin(); iter < (v_meta + i)->attribute.end(); iter++) {
+			for (iter = meta_tmp.attributes.begin(); iter < meta_tmp.attributes.end(); iter++) {
 				if (iter->column_name == col_name.column_name)
 					break;
 			}
-			(*(v_meta + i)).attributes.erase(iter,iter+1);
+			meta_tmp.attributes.erase(iter,iter+1);
 			std::map<std::string, Attribute*> m_iter = (v_meta + i)->find(col_name.column_name);
-			(*(v_meta + i)).attributes_map.errase(m_iter);
+			meta_tmp.attributes_map.erase(m_iter);
 			std::vector<int> ::iterator i_iter;
-			for (i_iter = (v_meta + i)->primary_keys.begin(); i_iter < (v_meta + i)->primary_keys.end(); i_iter++) {
+			for (i_iter = meta_tmp.primary_keys.begin(); i_iter < meta_tmp.primary_keys.end(); i_iter++) {
 				if (*i_iter == iter->id)
 					break;
 			}
 			if (i_iter != (v_meta + i)->primary_keys.end()) (*(v_meta + i)).primary_keys.erase(i_iter,i_iter + 1);
 			break;
+			//drop original
+			v_meta.Write<std::string>(meta2str(meta_tmp));
 		}
+		v_meta++;
 	}
 }
 
 
-/*std::string CatalogManager::itos(int num) {
+std::string CatalogManager::meta2str(MetaData meta) {
+	std::string str = "";
+	str = meta.db_name + "#" + meta.table_name + "#" + itos(meta.file) + "#" + itos(meta.attributes.size());
+	for (int i = 0; i < meta.attributes.size(); i++) {
+		str = str + "#" + attr2str(meta.attributes[i]);
+	}
+}
+
+MetaData CatalogManager::str2meta(std::string str) {
+	MetaData meta;
+	std::string::size_type pos1, pos2;
+	pos2 = str.find("#");
+	pos1 = 0;
+	meta.db_name = str.substr(pos1, pos2 - pos1);
+	pos1 = pos2 + 1;
+	pos2 = s.find(" ", pos1);
+	meta.table_name = str.substr(pos1, pos2 - pos1);
+	pos1 = pos2 + 1;
+	pos2 = s.find("#", pos1);
+	int size = stoi(str.substr(pos1, pos2 - pos1));
+	for (int i = 0; i < size; i++) {
+		pos1 = pos2 + 1;
+		pos2 = s.find("#", pos1);
+		std::string str_tmp = str.substr(pos1, pos2 - pos1);
+		Attribute attr_tmp = str2attr(str_tmp);
+		meta.attributes.push_back(attr_tmp);
+		meta.attributes_map.insert(std::pair<std::string, Attribute*>(attr_tmp.column_name, &attr_tmp));
+		if (attr_tmp.is_primary_key) meta.primary_keys.push_back(attr_tmp.id);
+	}
+	return meta;
+}
+
+std::string CatalogManager::attr2str(Attribute attr) {
+	std::string str = "";
+	str = itos(attr.id) + " " + itos(attr.type) + " " + attr.column_name + " " + itos(attr.file) + " " + itos(attr.first_page) + " " + itos(attr.first_index) + " " + itos(attr.max_length);
+	str = str + " " + +itos(attr.nullable) + " " + itos(attr.is_primary_key);
+	return str;
+}
+
+Attribute CatalogManager::str2attr(std::string str) {
+	Attribute attr;
+	std::string::size_type pos1, pos2;
+	pos2 = str.find(" ");
+	pos1 = 0;
+	attr.id = stoi(str.substr(pos1, pos2 - pos1));
+	pos1 = pos2 + 1;
+	pos2 = s.find(" ", pos1);
+	attr.type = stoi(str.substr(pos1, pos2 - pos1));
+	pos1 = pos2 + 1;
+	pos2 = s.find(" ", pos1);
+	attr.column_name = str.substr(pos1, pos2 - pos1);
+	pos1 = pos2 + 1;
+	pos2 = s.find(" ", pos1);
+	attr.file = stoi(str.substr(pos1, pos2 - pos1));
+	pos1 = pos2 + 1;
+	pos2 = s.find(" ", pos1);
+	attr.first_page = stoi(str.substr(pos1, pos2 - pos1));
+	pos1 = pos2 + 1;
+	pos2 = s.find(" ", pos1);
+	attr.first_index = stoi(str.substr(pos1, pos2 - pos1));
+	pos1 = pos2 + 1;
+	pos2 = s.find(" ", pos1);
+	attr.max_length = stoi(str.substr(pos1, pos2 - pos1));
+	pos1 = pos2 + 1;
+	pos2 = s.find(" ", pos1);
+	attr.nullable = stoi(str.substr(pos1, pos2 - pos1));
+	pos1 = pos2 + 1;
+	pos2 = s.find(" ", pos1);
+	attr.is_primary_key = stoi(str.substr(pos1, pos2 - pos1));
+	return attr;
+}
+
+std::string CatalogManager::itos(int num) {
 	std::string s = "";
 	if (num < 0) {
 		s += "-";
@@ -188,6 +278,10 @@ void CatalogManager::DropColumn(ColumnName col_name) {
 		digit++;
 	}
 	for (int i = digit; i > 0; i--) 
-		s += (num /(int)pow(10, i - 1) % 10 + '0');
+		s =s + (num /(int)pow(10, i - 1) % 10 + '0');
 	return s;
-}*/
+}
+
+int CatalogManager::stoi(std::string str) {
+	return atoi(str.c_str());
+}
