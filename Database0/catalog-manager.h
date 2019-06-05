@@ -25,8 +25,8 @@ public:
 
 	void Initialize(BufferManager*, FileId, PageId);
 
-	// ¸÷ÖÖ´íÎó±ÈÈçÖØ¸´ÃüÃûµÄtable·´ÕıÈÓÒ»¸östd::exception ¾ÍºÃÁË
-	// https://en.cppreference.com/w/cpp/error/exception <-- exception µÄÁĞ±í
+	// å„ç§é”™è¯¯æ¯”å¦‚é‡å¤å‘½åçš„tableåæ­£æ‰”ä¸€ä¸ªstd::exception å°±å¥½äº†
+	// https://en.cppreference.com/w/cpp/error/exception <-- exception çš„åˆ—è¡¨
 	const MetaData& FetchTable(const std::string& db_name,
 		                       const std::string& table_name) const;
 
@@ -35,11 +35,11 @@ public:
 
 	const Attribute& FetchColumn(ColumnName col_name);
 
-	void NewDatabase(const std::string& db_name);
+	void NewDatabase(const std::string& db_name);//å¡è¿›map
 
 	void NewTable(const std::string& db_name,
 		         const std::string& table_name,
-		         std::vector<ColumnInfo> columns);
+		         std::vector<ColumnInfo> columns);//ç»Ÿè®¡metadata å¡è¿›map
 
 	void NewColumn(ColumnInfo col_name);
 
@@ -48,8 +48,11 @@ public:
 	void DropTable(const std::string& db_name,
 		           const std::string& table_name);
 
+	int FindTable(const std::string& db_name,
+				   const std::string& table_name);
+
 	void SerializeOneTable(BufferManager::Iterator<char*>& itr, const MetaData& meta) {
-		itr.AutoInsert(meta.db_name); // Èç¹ûÕâÒ»Ò³Êı¾İ²»¹»ÁË£¬auto insert ÄÜ×Ô¶¯¿ªÒ»Ò³
+		itr.AutoInsert(meta.db_name); // å¦‚æœè¿™ä¸€é¡µæ•°æ®ä¸å¤Ÿäº†ï¼Œauto insert èƒ½è‡ªåŠ¨å¼€ä¸€é¡µ
 		itr.AutoInsert(meta.table_name);
 		itr.AutoInsert(&meta.file, sizeof(FileId));
 
@@ -60,7 +63,7 @@ public:
 			SerializeOneAttrib(itr, attrib);
 		}
 
-		// ×¢ÊÍµôÎªÁË²âÊÔÓÃ
+		// æ³¨é‡Šæ‰ä¸ºäº†æµ‹è¯•ç”¨
 		// size_t num_primkeys = meta.primary_keys.size();
 		// itr.AutoInsert(&num_primkeys, sizeof(num_primkeys));
 		// for (auto pk : meta.primary_keys) {
@@ -69,7 +72,7 @@ public:
 	}
 
 	void SerializeOneAttrib(BufferManager::Iterator<char*>& itr, const Attribute& attrib) {
-		itr.AutoInsert(&attrib.id, 2 * sizeof(int)); // ÕâÀïÍµÀÁÖ±½Ó°ÑÁ½¸öintÈû½øÈ¥ÁË
+		itr.AutoInsert(&attrib.id, 2 * sizeof(int)); // è¿™é‡Œå·æ‡’ç›´æ¥æŠŠä¸¤ä¸ªintå¡è¿›å»äº†
 		itr.AutoInsert(attrib.column_name);
 		itr.AutoInsert(attrib.comment);
 
@@ -99,7 +102,7 @@ public:
 		attrib.id = *data;
 		attrib.type = *(++data);
 
-		// ³ÔµôÉÏÃæÁ½¸öint
+		// åƒæ‰ä¸Šé¢ä¸¤ä¸ªint
 		itr.Read<int64_t>();
 
 		attrib.column_name = itr.Read<std::string>();
@@ -116,6 +119,13 @@ private:
 	FileId file_;
 	PageId page_;
 	BufferManager bm;
+
+	std::string meta2str(MetaData meta);
+	MetaData str2meta(std::string str);
+	std::string attr2str(Attribute attr);
+	Attribute str2attr(std::string str);
+	std::string itos(int num);
+	int stoi(std::string str);
 };
 
 
@@ -125,7 +135,7 @@ void SerializeOneTable(BufferManager::Iterator<char*>& tb_itr,
 	BufferManager::Iterator<char*>& attrib_itr,
 	const MetaData& meta) {
 
-	tb_itr.AutoInsert(meta.db_name); // Èç¹ûÕâÒ»Ò³Êı¾İ²»¹»ÁË£¬auto insert ÄÜ×Ô¶¯¿ªÒ»Ò³
+	tb_itr.AutoInsert(meta.db_name); // å¦‚æœè¿™ä¸€é¡µæ•°æ®ä¸å¤Ÿäº†ï¼Œauto insert èƒ½è‡ªåŠ¨å¼€ä¸€é¡µ
 	tb_itr.AutoInsert(meta.table_name);
 	tb_itr.AutoInsert(&meta.file, sizeof(FileId));
 
@@ -148,7 +158,7 @@ void SerializeOneTable(BufferManager::Iterator<char*>& tb_itr,
 	}
 
 
-	// ×¢ÊÍµôÎªÁË²âÊÔÓÃ
+	// æ³¨é‡Šæ‰ä¸ºäº†æµ‹è¯•ç”¨
 	// size_t num_primkeys = meta.primary_keys.size();
 	// itr.AutoInsert(&num_primkeys, sizeof(num_primkeys));
 	// for (auto pk : meta.primary_keys) {
@@ -174,7 +184,7 @@ void SerializeAttribs(BufferManager::Iterator<char*>& itr,
 		pos = itr.TellPosition();
 
 		itr.AutoInsert(attrib.column_name);
-		itr.AutoInsert(&attrib.id, 2 * sizeof(int)); // ÕâÀïÍµÀÁÖ±½Ó°ÑÁ½¸öintÈû½øÈ¥ÁË
+		itr.AutoInsert(&attrib.id, 2 * sizeof(int)); // è¿™é‡Œå·æ‡’ç›´æ¥æŠŠä¸¤ä¸ªintå¡è¿›å»äº†
 		itr.AutoInsert(attrib.comment);
 
 		// ....
@@ -211,7 +221,7 @@ void DeserializeOneAttribute(BufferManager::Iterator<char*>& tb_itr,
 
 	auto is_loaded = attributes_.find(id);
 
-	// ½«ÔØÈëÄÚ´æµÄ column Ğ´Èë meta
+	// å°†è½½å…¥å†…å­˜çš„ column å†™å…¥ meta
 	auto insert_to_meta = [this, &is_loaded, &meta]() {
 		if (is_loaded->second.attribute == nullptr) {
 			return;
@@ -224,7 +234,7 @@ void DeserializeOneAttribute(BufferManager::Iterator<char*>& tb_itr,
 		}
 	};
 
-	// Èç¹ûÒÑ¾­±»ÔØÈëÄÚ´æ
+	// å¦‚æœå·²ç»è¢«è½½å…¥å†…å­˜
 	if (is_loaded != attributes_.end()) {
 		insert_to_meta();
 		return;
@@ -246,7 +256,7 @@ void DeserializeOneAttribute(BufferManager::Iterator<char*>& tb_itr,
 	attrib.id = *data;
 	attrib.type = *(++data);
 
-	// ³ÔµôÉÏÃæÁ½¸öint
+	// åƒæ‰ä¸Šé¢ä¸¤ä¸ªint
 	attrib_itr.Read<int64_t>();
 	attrib.comment = attrib_itr.Read<std::string>();
 
