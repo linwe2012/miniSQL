@@ -40,26 +40,25 @@ void CatalogManager::NewTable(const std::string& db_name,const std::string& tabl
 	int id = 0;
 	
 	std::vector<ColumnInfo>::iterator iter;
-	for (iter = columns._Myfirst(); iter < columns._Myend; iter++) {
+	for (auto& iter:columns) {
 		Attribute attr_tmp;
 		attr_tmp.id = id++;
-		attr_tmp.type = iter->type;
-		attr_tmp.column_name = iter->name.column_name;
-		attr_tmp.comment = iter->comment;
+		attr_tmp.type = iter.type;
+		attr_tmp.column_name = iter.name.column_name;
+		attr_tmp.comment = iter.comment;
 		attr_tmp.file = meta.file;
 		attr_tmp.first_page = bm->AllocatePageAfter(meta.file, 0);//属性从哪里开始分配？
 		// attr_tmp.first_index = bm->AllocatePageAfter(meta.file, 1);
-		attr_tmp.max_length = iter->max_length;
-		attr_tmp.is_primary_key = iter->is_primary_key;
-		attr_tmp.nullable = iter->nullable;
+		attr_tmp.max_length = iter.max_length;
+		attr_tmp.is_primary_key = iter.is_primary_key;
+		attr_tmp.nullable = iter.nullable;
 		meta.attributes.push_back(attr_tmp);
 		meta.attributes_map.insert(std::pair<std::string, Attribute*>(attr_tmp.column_name, &attr_tmp));
 		if (attr_tmp.is_primary_key) meta.primary_keys.push_back(id);
 	}
 
-	std::string str_meta = meta2str(meta);
 	auto v_meta = bm->GetPage<char*>(file_, page_);
-	v_meta.Insert(str_meta);
+	SerializeOneTable(v_meta, meta);
 }
 
 void CatalogManager::DropTable(const std::string& db_name, const std::string& table_name) {
@@ -69,8 +68,7 @@ void CatalogManager::DropTable(const std::string& db_name, const std::string& ta
 	auto v_meta = bm->GetPage<char*>(file_, page_);
 	for (int i = 1; i < tables_.size(); i++) {
 		MetaData meta_tmp;
-		std::string str_meta = *(v_meta);
-		meta_tmp = str2meta(str_meta);
+		DeserializeMeta(v_meta, meta_tmp);
 		if (db_name == meta_tmp.db_name && table_name == meta_tmp.table_name) {
 		//在page里delete这个
 			break;
@@ -91,8 +89,7 @@ MetaData& CatalogManager::FetchTable(const std::string& db_name, const std::stri
 	auto v_meta = bm->GetPage<char*>(file_, page_);
 	MetaData meta;
 	for (int i = 1; i < tables_.size(); i++) {
-		std::string str_meta = *(v_meta);
-		meta = str2meta(str_meta);
+		DeserializeMeta(v_meta, meta);
 		if (db_name == meta.db_name && table_name == meta.table_name)
 			return meta;
 		v_meta++;
@@ -129,8 +126,7 @@ void CatalogManager::NewColumn(ColumnInfo col_name) {
 	auto v_meta = bm->GetPage<char*>(file_, page_);
 	for (int i = 1; i < tables_.size(); i++) {
 		MetaData meta_tmp;
-		std::string str_meta = *(v_meta);
-		meta_tmp = str2meta(str_meta);
+		DeserializeMeta(v_meta, meta_tmp);
 		if (col_name.name.db_name == meta_tmp.db_name && col_name.name.table_name == meta_tmp.table_name) {
 			Attribute attr_tmp;
 			attr_tmp.id = meta_tmp.attributes.size()+ 1;
@@ -146,7 +142,7 @@ void CatalogManager::NewColumn(ColumnInfo col_name) {
 			meta_tmp.attributes_map.insert(std::pair<std::string, Attribute*>(attr_tmp.column_name, &attr_tmp));
 			if (attr_tmp.is_primary_key) meta_tmp.primary_keys.push_back(attr_tmp.id);
 			//drop original
-			v_meta.Write<std::string>(meta2str(meta_tmp));
+			SerializeOneTable(v_meta,meta_tmp);
 			break;
 		}
 		v_meta++;
@@ -166,8 +162,7 @@ void CatalogManager::DropColumn(ColumnName col_name) {
 	auto v_meta = bm->GetPage<char*>(file_, page_);
 	for (int i = 1; i < tables_.size(); i++) {
 		MetaData meta_tmp;
-		std::string str_meta = *(v_meta);
-		meta_tmp = str2meta(str_meta);
+		DeserializeMeta(v_meta, meta_tmp);
 		if (col_name.db_name == meta_tmp.db_name && col_name.table_name == meta_tmp.table_name) {
 			std::vector<Attribute> ::iterator iter;
 			for (iter = meta_tmp.attributes.begin(); iter < meta_tmp.attributes.end(); iter++) {
@@ -185,14 +180,14 @@ void CatalogManager::DropColumn(ColumnName col_name) {
 			if (i_iter != (v_meta + i)->primary_keys.end()) (*(v_meta + i)).primary_keys.erase(i_iter,i_iter + 1);
 			break;
 			//drop original
-			v_meta.Write<std::string>(meta2str(meta_tmp));
+			SerializeOneTable(v_meta, meta_tmp);
 		}
 		v_meta++;
 	}
 }
 
 
-std::string CatalogManager::meta2str(MetaData meta) {
+/*std::string CatalogManager::meta2str(MetaData meta) {
 	std::string str = "";
 	str = meta.db_name + "#" + meta.table_name + "#" + itos(meta.file) + "#" + itos(meta.attributes.size());
 	for (int i = 0; i < meta.attributes.size(); i++) {
@@ -283,4 +278,4 @@ std::string CatalogManager::itos(int num) {
 
 int CatalogManager::stoi(std::string str) {
 	return atoi(str.c_str());
-}
+}*/
