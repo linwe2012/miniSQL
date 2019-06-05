@@ -170,14 +170,14 @@ void CatalogManager::DropColumn(ColumnName col_name) {
 					break;
 			}
 			meta_tmp.attributes.erase(iter,iter+1);
-			std::map<std::string, Attribute*> m_iter = (v_meta + i)->find(col_name.column_name);
-			meta_tmp.attributes_map.erase(m_iter);
+			std::string del_col(col_name.column_name);
+			meta_tmp.attributes_map.erase(del_col);
 			std::vector<int> ::iterator i_iter;
 			for (i_iter = meta_tmp.primary_keys.begin(); i_iter < meta_tmp.primary_keys.end(); i_iter++) {
 				if (*i_iter == iter->id)
 					break;
 			}
-			if (i_iter != (v_meta + i)->primary_keys.end()) (*(v_meta + i)).primary_keys.erase(i_iter,i_iter + 1);
+			if (i_iter != meta_tmp.primary_keys.end()) meta_tmp.primary_keys.erase(i_iter,i_iter + 1);
 			break;
 			//drop original
 			SerializeOneTable(v_meta, meta_tmp);
