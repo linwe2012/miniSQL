@@ -199,9 +199,15 @@ public:
 		kUnkown = -3,
 		kFail = -2 /**< unable to compare */
 	};
-	virtual int Compare(const ISQLData* rhs) const = 0;
+	virtual CompareResult Compare(const ISQLData* rhs) const = 0;
 	virtual void Accept(ISQLDataVisitor*) = 0;
 	virtual void Accept(IConstSQLDataVisitor*) const = 0;
+
+	virtual std::shared_ptr<ISQLData> Add(const ISQLData* r) const = 0;
+	virtual std::shared_ptr<ISQLData> Sub(const ISQLData* r) const = 0;
+	virtual std::shared_ptr<ISQLData> Mul(const ISQLData* r) const = 0;
+	virtual std::shared_ptr<ISQLData> Div(const ISQLData* r) const = 0;
+	
 };
 
 inline ISQLData::~ISQLData() {}
@@ -215,9 +221,13 @@ public:
 	SQLNull* AsNull() override { return this; }
 	void Accept(ISQLDataVisitor*) override;
 	void Accept(IConstSQLDataVisitor*) const override;
-	int Compare([[maybe_unused]]const ISQLData* rhs) const override { return kFail; }
+	CompareResult Compare([[maybe_unused]]const ISQLData* rhs) const override { return kFail; }
 	~SQLNull() override {}
 	RawData GetRaw() const override { return RawData{ nullptr, 0 }; }
+	std::shared_ptr<ISQLData> Add(const ISQLData* r) const override { return std::make_shared<ISQLData>(SQLNull()); }
+	std::shared_ptr<ISQLData> Sub(const ISQLData* r) const override { return std::make_shared<ISQLData>(SQLNull()); }
+	std::shared_ptr<ISQLData> Mul(const ISQLData* r) const override { return std::make_shared<ISQLData>(SQLNull()); }
+	std::shared_ptr<ISQLData> Div(const ISQLData* r) const override { return std::make_shared<ISQLData>(SQLNull()); }
 };
 
 class ISQLNumber : public ISQLData {
@@ -235,8 +245,12 @@ void Accept(IConstSQLDataVisitor*) const override;  \
 SQL##type* As##type() override { return this; }     \
 const SQL##type* As##type() const override { return this; }     \
 SQL##type(data_type val) : val_(val) {}             \
-~SQL##type() override {} \
-RawData GetRaw() const override { return RawData{&val_, sizeof(data_type)};}
+~SQL##type() override {}                            \
+RawData GetRaw() const override { return RawData{&val_, sizeof(data_type)};} \
+std::shared_ptr<ISQLData> Add(const ISQLData* r) const override;             \
+std::shared_ptr<ISQLData> Sub(const ISQLData* r) const override;             \
+std::shared_ptr<ISQLData> Mul(const ISQLData* r) const override;             \
+std::shared_ptr<ISQLData> Div(const ISQLData* r) const override;
 
 
 #define CMP_HELPER(type)\
@@ -264,7 +278,9 @@ class SQLBigInt : public ISQLNumber {
 public:
 	using CType = int64_t;
 	SOLID_DATA(BigInt, int64_t)
-		int Compare(const ISQLData* rhs) const override;
+	
+	CompareResult Compare(const ISQLData* rhs) const override;
+
 private:
 	int64_t val_;
 };
@@ -282,11 +298,12 @@ class SQLDouble : public ISQLNumber {
 public:
 	using CType = double;
 	SOLID_DATA(Double, double)
-	int Compare(const ISQLData* rhs) const override { 
+	CompareResult Compare(const ISQLData* rhs) const override {
 		CMP_HELPER(Double);
 		CMP_HELPER(BigInt);
 		return kFail;
 	}
+
 	/*
 	SQLDouble(double val) : val_(val) {}
 	bool IsDouble() override { return true; }
@@ -297,11 +314,40 @@ private:
 	double val_;
 };
 
-inline int SQLBigInt::Compare(const ISQLData* rhs) const {
+inline ISQLData::CompareResult SQLBigInt::Compare(const ISQLData* rhs) const {
 	CMP_HELPER(Double);
 	CMP_HELPER(BigInt);
 	return kFail;
 }
+
+#define DEF_NUMBER_OPS(_type__, _name__, _op__)                                 \
+inline std::shared_ptr<ISQLData> _type__::_name__(const ISQLData* r) const {    \
+	auto ri = r->AsBigInt();                                                    \
+	if (ri != nullptr) {                                                        \
+		return std::make_shared<ISQLData>(new SQLBigInt(Value() _op__ ri->Value()));   \
+	}                                                                                  \
+	                                                                                   \
+	auto rd = r->AsDouble();                                                           \
+	if (rd != nullptr) {                                                               \
+		return std::make_shared<ISQLData>(new SQLDouble(Value() _op__ ri->Value()));   \
+	}                                                                                  \
+	return std::make_shared<ISQLData>(SQLNull());                                      \
+}
+
+#define OP_TYPE_LIST(V)\
+V(SQLBigInt, Add, +)\
+V(SQLBigInt, Sub, -)\
+V(SQLBigInt, Mul, *)\
+V(SQLBigInt, Div, /)\
+V(SQLDouble, Add, +)\
+V(SQLDouble, Sub, -)\
+V(SQLDouble, Mul, *)\
+V(SQLDouble, Div, /)\
+
+OP_TYPE_LIST(DEF_NUMBER_OPS)
+#undef OP_TYPE_LIST
+#undef DEF_NUMBER_OPS
+
 /*
 class SQLNumeric : public ISQLNumber {
 public:
@@ -349,6 +395,8 @@ private:
 
 class SQLString : public ISQLData{
 public:
+	SQLString(const std::string& str) : val_(str) {}
+	SQLString(std::string&& str) : val_(std::forward<std::string>(str)) {}
 	SQLString(const char * val, size_t n) : val_(val, n) {}
 	SQLString(const char *val) : val_(val) {}
 	bool IsString() const override { return true; }
@@ -356,7 +404,9 @@ public:
 	void Accept(ISQLDataVisitor*) override;
 	void Accept(IConstSQLDataVisitor*) const override;
 
-	int Compare(const ISQLData* rhs) const override {
+	const std::string& String() const { return val_; }
+
+	CompareResult Compare(const ISQLData* rhs) const override {
 		CMP_HELPER(String);
 		return kFail;
 	}
@@ -369,6 +419,17 @@ public:
 	}
 
 	bool IsVariadic() const override { return true; }
+
+	std::shared_ptr<ISQLData> Add(const ISQLData* r) const override {
+		auto rs = r->AsString();
+		if (rs != nullptr) {
+			return std::make_shared<ISQLData>(String() + rs->String());
+		}
+		return std::make_shared<ISQLData>(SQLNull());
+	}
+	std::shared_ptr<ISQLData> Sub(const ISQLData* r) const override { return std::make_shared<ISQLData>(SQLNull()); }
+	std::shared_ptr<ISQLData> Mul(const ISQLData* r) const override { return std::make_shared<ISQLData>(SQLNull()); }
+	std::shared_ptr<ISQLData> Div(const ISQLData* r) const override { return std::make_shared<ISQLData>(SQLNull()); }
 
 private:
 	std::string val_;
@@ -398,14 +459,21 @@ private:
 
 class SQLTimeStamp : public ISQLTimeOrDate {
 public:
+	using CType = SQLTimeStampStruct;
 	SOLID_DATA(TimeStamp, SQLTimeStampStruct)
-	int Compare(const ISQLData* rhs) const override {
+	
+	CompareResult Compare(const ISQLData* rhs) const override {
 		CMP_HELPER(TimeStamp);
 	}
 private:
 	SQLTimeStampStruct val_;
 };
 
+//TODO(L) implement them
+inline std::shared_ptr<ISQLData> SQLTimeStamp::Add(const ISQLData* r) const { return std::make_shared<ISQLData>(SQLNull()); };
+inline std::shared_ptr<ISQLData> SQLTimeStamp::Sub(const ISQLData* r) const { return std::make_shared<ISQLData>(SQLNull()); };
+inline std::shared_ptr<ISQLData> SQLTimeStamp::Mul(const ISQLData* r) const { return std::make_shared<ISQLData>(SQLNull()); };
+inline std::shared_ptr<ISQLData> SQLTimeStamp::Div(const ISQLData* r) const { return std::make_shared<ISQLData>(SQLNull()); };
 
 template <typename T>
 struct SQLTypeID {

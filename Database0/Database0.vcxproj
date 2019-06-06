@@ -125,6 +125,7 @@
     <ClInclude Include="index-manager.h" />
     <ClInclude Include="oracle.h" />
     <ClInclude Include="page.h" />
+    <ClInclude Include="parser.h" />
     <ClInclude Include="record-manager.h" />
     <ClInclude Include="sqldata.h" />
     <ClInclude Include="cluster-bptree.h" />
@@ -132,6 +133,9 @@
   <ItemGroup>
     <ClCompile Include="buffer-manager.cc" />
     <ClCompile Include="buffer-manager_variadic.cc" />
+    <ClCompile Include="catalog-manager.cc" />
+    <ClCompile Include="cluster-bptree.cc" />
+    <ClCompile Include="oracle.cc" />
     <ClCompile Include="test_buffm.cc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

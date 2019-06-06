@@ -2,6 +2,7 @@
 #include "buffer-manager.h"
 #include "sqldata.h"
 #include "catalog-manager.h"
+#include "token.h"
 
 struct Memory {
 	void* data;
@@ -97,21 +98,34 @@ public:
 	SQLEqVisitor visitor;
 };
 
-enum struct Operator {
-	kAnd = -99, kOr, kNot, // to lazy to create a special unary operator
-	kEqual, kAdd, kMinus, kMul, kDiv
+
+
+class BinopOracle;
+
+class IOracle {
+public:
+	using Iterator = BufferManager::Iterator<char>;
+	using Iterators = std::vector<BufferManager::Iterator<char>>;
+	
+	virtual bool Test(Iterators& itrs) = 0;
+	virtual std::shared_ptr<ISQLData> Data(Iterators& itrs) = 0;
+	
+	virtual BinopOracle* AsBinopAST() { return nullptr; }
+	virtual bool Boolean() = 0;
+
+	
 };
 
-class BinopAST;
 
-class IAST {
+struct BinopOracle : public IOracle {
 public:
-	virtual BinopAST* AsBinopAST() { return nullptr; }
-};
+	BinopOracle(Operator op, IOracle* lhs, IOracle* rhs)
+		: op_(op), lhs_(lhs), rhs_(rhs) {}
 
-struct BinopAST : public IAST {
-public:
-	BinopAST* AsBinopAST() { return this; }
+	BinopOracle(Operator op, IOracle* lhs)
+		: op_(op), lhs_(lhs), rhs_(nullptr) {}
+
+	BinopOracle* AsBinopAST() { return this; }
 
 	bool IsLogical() {
 		return op_ >= Operator::kAnd && op_ <= Operator::kNot;
@@ -121,31 +135,53 @@ public:
 		return op_ >= Operator::kEqual && op_ <= Operator::kDiv;
 	}
 
-	IAST* lhs() {
-		return lhs_;
-	}
+	IOracle* lhs() { return lhs_; }
 
-	IAST* rhs() {
-		return rhs_;
-	}
+	IOracle* rhs() { return rhs_; }
 
-	Operator op() {
-		return op_;
-	}
+	Operator op() { return op_; }
+
+	bool Test(Iterators& itrs) override;
+
+	std::shared_ptr<ISQLData> Data(Iterators& itrs) override;
 
 private:
 	Operator op_;
-	IAST* lhs_;
-	IAST* rhs_;
+	IOracle* lhs_;
+	IOracle* rhs_;
 };
 
-class AttributeAST : public IAST {
-public:
 
+class VariableOracle : public IOracle {
+	void Bind(int id) { id_ = id; }
+	Iterator& Itr(Iterators& itrs) {
+		return itrs[id_];
+	}
 
-	ColumnName column;
-	BufferManager::Iterator<char> itr;
+	bool Test(Iterators& itrs) override {
+		if (type_ == SQLTypeID<SQLString>::value) {
+			return Itr(itrs).Cast<char*>().IsNil();
+		}
+		return Itr(itrs).IsNil();
+	}
+
+	std::shared_ptr<ISQLData> Data(Iterators& itrs) override;
+
+private:
+	int id_;
+	int type_;
 };
+
+class RangedDataOracle : public IOracle {
+};
+
+class ConstantDataOracle : public IOracle {
+
+
+	std::shared_ptr<ISQLData> constant_;
+};
+
+
 
 
 
@@ -157,14 +193,14 @@ class WhereClause {
 		std::vector<ITernaryOracle*> ternaries;
 	};
 
-	IAST* Normalize(IAST* target) {
+	IOracle* Normalize(IOracle* target) {
 		auto binop = target->AsBinopAST();
 		if (!binop || !binop->IsLogical()) {
 			return target;
 		}
 
-		IAST* lhs = binop->lhs();
-		IAST* rhs = binop->rhs();
+		IOracle* lhs = binop->lhs();
+		IOracle* rhs = binop->rhs();
 		if (lhs != nullptr) {
 			lhs = Normalize(binop->lhs());
 		}
@@ -185,12 +221,20 @@ class WhereClause {
 		}
 	}
 
-	IAST* NormalizeAnd(BinopAST* target, IAST* lhs, IAST* rhs) {
+	IOracle* NormalizeAnd(BinopOracle* target, IOracle* lhs, IOracle* rhs) {
 
 	}
 
+	void TraverseAST() {
+
+	}
+
+	
 	std::vector<ConjunctiveNF> dnf_; // disjunctive normal form
 };
+
+
+
 
 void Filter(IUnaryOracle* oracle, BufferManager::Iterator<char>begin, BufferManager::Iterator<char>end) {
 	Memory nil{ nullptr, 0 };

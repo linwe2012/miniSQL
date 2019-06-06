@@ -42,6 +42,9 @@
     <ClInclude Include="oracle.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="parser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="buffer-manager.cc">
@@ -51,6 +54,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="test_buffm.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="catalog-manager.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cluster-bptree.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="oracle.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

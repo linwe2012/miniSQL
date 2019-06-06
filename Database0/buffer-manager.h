@@ -148,6 +148,10 @@ public:
 			return page_->SpaceLeftByByteFixedSize() / (sizeof(T) * step_ + sizeof(char));
 		}
 
+		size_t ExtraSpacePerSlot() const {
+			return sizeof(char);
+		}
+
 		/** 
 		* free bytes of current page
 		*/
@@ -304,6 +308,7 @@ public:
 		* move cursor to the end of the page
 		*/
 		void MoveToPageEnd() {
+			row_ += page_->header.num_records - record_in_page_;
 			record_in_page_ = page_->header.num_records;
 			current_ = reinterpret_cast<T*>(page_->space + page_->header.free_offset);
 		}
@@ -312,6 +317,7 @@ public:
 		* move cursor to the end of the page
 		*/
 		void MoveToPageBegin() {
+			row_ -= record_in_page_;
 			record_in_page_ = 0;
 			current_ = reinterpret_cast<T*>(page_->space);
 		}
@@ -483,6 +489,11 @@ public:
 					IgnoreNilMarchInPage(-dec);
 				}
 			}
+		}
+
+		template<typename U>
+		U& As() {
+			return *(U*)(current_);
 		}
 		
 	private:
@@ -675,7 +686,7 @@ public:
 
 	const Page& page() const { return *page_; }
 
-	std::string AsString() {
+	std::string AsString() const {
 		return std::string(current_, GetDataPos().length);
 	}
 
@@ -698,6 +709,10 @@ public:
 	template<typename T>
 	size_t FreeSlots() const {
 		return FreeBytes() / (sizeof(T) + sizeof(Page::DataPos));
+	}
+
+	size_t ExtraSpacePerSlot() const {
+		return sizeof(Page::DataPos);
 	}
 
 	template<typename T>
@@ -767,6 +782,12 @@ public:
 
 	void MoveTo(IteratorPosition ip);
 
+	void MoveToPageEnd() {
+		row_ += page_->header.num_records - record_in_page_;
+		record_in_page_ = page_->header.num_records;
+		current_ = page_->space + page_->header.free_offset;
+	}
+
 	template<typename U>
 	Iterator<U> Cast() {
 		return Iterator<U>(reinterpret_cast<U*>(current_), page_, boss_, record_in_page_, row_);
@@ -786,12 +807,12 @@ public:
 			if (IsEndPage()) {
 				break;
 			}
-			if (*(T*)current_ < val) {
+			if (As<T>() < val) {
 				min = record_in_page_;
 				int inc = (max - record_in_page_) / 2 + 1;
 				*this += inc;
 			}
-			else if (val == *(T*)current_) {
+			else if (val == As<T>()) {
 				break;
 			}
 			else {
@@ -828,12 +849,12 @@ public:
 			if (IsEndPage()) {
 				break;
 			}
-			if (*(T*)current_ < val) {
+			if (As<T>() < val) {
 				min = record_in_page_;
 				int inc = (max - record_in_page_) / 2;
 				if (inc == 0) {
 					++* this;
-					if (!IsEndPage() && *(T*)current_ == val) {
+					if (!IsEndPage() && As<T>() == val) {
 						break;
 					}
 					--* this;
@@ -841,7 +862,7 @@ public:
 				}
 				*this += inc;
 			}
-			else if (val == *(T*)current_) {
+			else if (val == As<T>()) {
 				break;
 			}
 			else {
@@ -879,6 +900,14 @@ public:
 	template<typename T>
 	const T& As() const {
 		return *reinterpret_cast<T*>(current_);
+	}
+
+	const std::string As<char*>() const {
+		return AsString();
+	}
+
+	size_t ExtraSpacePerSlot() const {
+		return sizeof(Page::DataPos);
 	}
 
 private:

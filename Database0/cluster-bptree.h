@@ -1,10 +1,13 @@
 #pragma once
 // clustered indexing
 #include "buffer-manager.h"
+#include <tuple>
 
 template <typename Key>
 class ClusteredBPTree {
 public:
+	using KeyType = Key;
+
 	ClusteredBPTree(BufferManager* bm, FileId file, PageId root)
 		:root_(root), file_(file), bm_(bm) {}
 
@@ -30,41 +33,26 @@ public:
 
 	BufferManager::Iterator<Key> Lookup(const Key& key);
 
-	PageId BuildIndex(BufferManager::Iterator<Key> first) {
-		root_ = bm_->AllocatePageAfter(file_, 0, {Page::kfIsIndexPage});
-		auto itr = bm_->GetPage<char*>(file_, root_);
-		if(itr.IsEnd()) {
-			first_ = first.page_id();
-		}
-		
-
-		while (!first.IsEnd())
-		{
-			Internal intern(*first, first.page_id());
-			
-			itr.Insert(
-				&intern,
-				sizeof(intern)
-			);
-
-			first.MoveToPageEnd();
-			++first; //jump to next page
-		} 
-
-		
-		return root_;
-	}
+	PageId BuildIndex(BufferManager::Iterator<Key> first);
 
 	void Compact();
 
-	void Remove(BufferManager::Iterator<Key>);
+	void Remove(const Key& key);
 
+	
 private:
+	void StackedTraverseDown(const Key& key, std::vector<PageId>* _stack, BufferManager::Iterator<char*>* _itr);
+
+
 	PageId first_;
 	PageId root_;
 	FileId file_;
 	BufferManager* bm_;
 };
+
+template<>
+PageId ClusteredBPTree<char*>::Insert(const ClusteredBPTree<char*>::KeyType& key);
+
 
 
 template<typename Key>
@@ -92,27 +80,16 @@ inline PageId ClusteredBPTree<Key>::Insert(const Key& key) {
 		return root_;
 	}
 
-	while (itr.GetFlagOfPage(Page::kfIsIndexPage))
-	{
-		itr.LessOrEqualBinSearchIndex(dummy);
-		if (itr.IsEndPage()) {
-			--itr;
-		}
-
-		PageId next_page = itr.GetUnchecked<Internal>().page_id;
-		stack.push_back(next_page);
-
-		itr = bm_->GetPage<char*>(file_, next_page);
-	}
+	StackedTraverseDown(key, &stack, &itr);
 
 	auto res = itr.Cast<Key>();
 	res.GreaterOrEqualBinSearchIndex(key);
 	
-	if (!res.IsEndPage()  && *res == key) {
+	if (!res.IsEndPage()  && res.As<Key>() == key) {
 		throw std::invalid_argument("duplicated primary key");
 	}
 
-	if (res.IsBeginPage() && *res < key) {
+	if (res.IsBeginPage() && res.As<Key>() < key) {
 		for (auto i = stack.rbegin(); i != stack.rend(); ++i) {
 			itr = bm_->GetPage<char*>(file_, *i);
 			itr.LessOrEqualBinSearchIndex(dummy);
@@ -125,8 +102,8 @@ inline PageId ClusteredBPTree<Key>::Insert(const Key& key) {
 		}
 	}
 
-
-	if (res.FreeSlots() == 0) {
+	
+	if (itr.FreeSlots() == 0) {
 		int direction = res.MoveToPageCenter();
 
 		Internal reused = Internal::MakeDummy(*res);
@@ -185,9 +162,7 @@ inline PageId ClusteredBPTree<Key>::Insert(const Key& key) {
 		if (flag_overflow) {
 			itr = bm_->GetPage<char*>(file_, root_);
 			itr.GreaterOrEqualBinSearchIndex(reused);
-			if (reused.key >= 3173.82) {
-				int cc = 0;
-			}
+
 			if (!itr.Insert(&reused, sizeof(reused))) {
 				Internal intern(reused);
 				SplitAndInsert(intern);
@@ -231,5 +206,68 @@ inline BufferManager::Iterator<Key> ClusteredBPTree<Key>::Lookup(const Key& key)
 	auto res = itr.Cast<Key>();
 	res.LessOrEqualBinSearchIndex(key);
 	return res;
+}
+
+template<typename Key>
+inline PageId ClusteredBPTree<Key>::BuildIndex(BufferManager::Iterator<Key> first) {
+	root_ = bm_->AllocatePageAfter(file_, 0, { Page::kfIsIndexPage });
+	auto itr = bm_->GetPage<char*>(file_, root_);
+	if (itr.IsEnd()) {
+		first_ = first.page_id();
+	}
+
+
+	while (!first.IsEnd())
+	{
+		Internal intern(*first, first.page_id());
+
+		itr.Insert(
+			&intern,
+			sizeof(intern)
+		);
+
+		first.MoveToPageEnd();
+		++first; //jump to next page
+	}
+
+
+	return root_;
+}
+
+template<typename Key>
+inline void ClusteredBPTree<Key>::Remove(const Key& key) {
+	std::vector<PageId> stack;
+	auto itr = bm_->GetPage<char*>(file_, root_);
+	StackedTraverseDown(key, &stack, &itr);
+
+	auto res = itr.Cast<Key>();
+	res.GreaterOrEqualBinSearchIndex(key);
+
+	if (*res != key) {
+		throw std::invalid_argument("deleting non exist key");
+	}
+
+
+
+}
+
+template<typename Key>
+inline void ClusteredBPTree<Key>::StackedTraverseDown(const Key& key, std::vector<PageId>* _stack, BufferManager::Iterator<char*>* _itr) {
+	auto& stack = *_stack;
+	auto& itr = *_itr;
+	auto dummy = Internal::MakeDummy(key);
+
+	while (itr.GetFlagOfPage(Page::kfIsIndexPage))
+	{
+		itr.LessOrEqualBinSearchIndex(dummy);
+		if (itr.IsEndPage()) {
+			--itr;
+		}
+
+		PageId next_page = itr.GetUnchecked<Internal>().page_id;
+		stack.push_back(next_page);
+
+		itr = bm_->GetPage<char*>(file_, next_page);
+	}
 }
 
