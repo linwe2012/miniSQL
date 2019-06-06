@@ -76,9 +76,14 @@ public:
 		itr.AutoInsert(attrib.column_name);
 		itr.AutoInsert(attrib.comment);
 
-		// ....
-	}
+		itr.AutoInsert(&attrib.file, sizeof(FileId));
+		itr.AutoInsert(&attrib.first_page, sizeof(PageId));
+		itr.AutoInsert(&attrib.first_index,sizeof(PageId));
 
+		itr.AutoInsert(&attrib.max_length, sizeof(int));
+		itr.AutoInsert(&attrib.nullable, sizeof(bool));
+		itr.AutoInsert(&attrib.is_primary_key, sizeof(bool));
+	}
 
 	void DeserializeMeta(BufferManager::Iterator<char*>& itr, MetaData& meta) {
 		meta.db_name = itr.Read<std::string>();
@@ -91,9 +96,9 @@ public:
 		for (size_t i = 0; i < num_attribs; ++i) {
 			DeserializeOneAttribute(itr, meta.attributes[i]);
 			meta.attributes_map[meta.attributes[i].column_name] = &meta.attributes[i];
-		}
 
-		// ...
+			if (meta.attributes[i].is_primary_key) meta.primary_keys.push_back(meta.attributes[i].id);
+		}
 
 	}
 
@@ -108,7 +113,14 @@ public:
 		attrib.column_name = itr.Read<std::string>();
 		attrib.comment = itr.Read<std::string>();
 
-		// ...
+		attrib.file = itr.Read<FileId>();
+		attrib.first_page = itr.Read<PageId>();
+		attrib.first_index = itr.Read<PageId>();
+
+		attrib.max_length = itr.Read<int>();
+		attrib.nullable = itr.Read<bool>();
+		attrib.is_primary_key = itr.Read<bool>();
+
 	}
 
 	
@@ -120,12 +132,12 @@ private:
 	PageId page_;
 	BufferManager* bm;
 
-	std::string meta2str(MetaData meta);
+	/*std::string meta2str(MetaData meta);
 	MetaData str2meta(std::string str);
 	std::string attr2str(Attribute attr);
 	Attribute str2attr(std::string str);
 	std::string itos(int num);
-	int stoi(std::string str);
+	int stoi(std::string str);*/
 };
 
 
