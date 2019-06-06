@@ -496,6 +496,9 @@ public:
 			return *(U*)(current_);
 		}
 		
+		bool IsPageEmpty() {
+			return page().header.num_records == 0;
+		}
 	private:
 #pragma warning (push)
 #pragma warning (disable: 4244)

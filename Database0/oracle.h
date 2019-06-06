@@ -119,34 +119,34 @@ public:
 
 struct BinopOracle : public IOracle {
 public:
-	BinopOracle(Operator op, IOracle* lhs, IOracle* rhs)
+	BinopOracle(int op, IOracle* lhs, IOracle* rhs)
 		: op_(op), lhs_(lhs), rhs_(rhs) {}
 
-	BinopOracle(Operator op, IOracle* lhs)
+	BinopOracle(int op, IOracle* lhs)
 		: op_(op), lhs_(lhs), rhs_(nullptr) {}
 
 	BinopOracle* AsBinopAST() { return this; }
 
 	bool IsLogical() {
-		return op_ >= Operator::kAnd && op_ <= Operator::kNot;
+		return op_ >= Token::kAnd && op_ <= Token::kNot;
 	}
 
 	bool IsComputational() {
-		return op_ >= Operator::kEqual && op_ <= Operator::kDiv;
+		return op_ >= Token::kEqual && op_ <= Token::kDiv;
 	}
 
 	IOracle* lhs() { return lhs_; }
 
 	IOracle* rhs() { return rhs_; }
 
-	Operator op() { return op_; }
+	int op() { return op_; }
 
 	bool Test(Iterators& itrs) override;
 
 	std::shared_ptr<ISQLData> Data(Iterators& itrs) override;
 
 private:
-	Operator op_;
+	int op_;
 	IOracle* lhs_;
 	IOracle* rhs_;
 };
@@ -211,10 +211,10 @@ class WhereClause {
 
 		switch (binop->op())
 		{
-		case Operator::kAnd:
+		case Token::kAnd:
 			return NormalizeAnd(binop, lhs, rhs);
-		case Operator::kOr:
-		case Operator::kNot:
+		case Token::kOr:
+		case Token::kNot:
 
 		default:
 			break;

@@ -15,41 +15,41 @@ bool BinopOracle::Test(Iterators& itrs) {
 
 	switch (op_)
 	{
-	case Operator::kAnd:  return lhs_->Test(itrs) && rhs_->Test(itrs);
-	case Operator::kOr:   return lhs_->Test(itrs) || rhs_->Test(itrs);
-	case Operator::kNot:  return !lhs_->Test(itrs);
+	case Token::kAnd:  return lhs_->Test(itrs) && rhs_->Test(itrs);
+	case Token::kOr:   return lhs_->Test(itrs) || rhs_->Test(itrs);
+	case Token::kNot:  return !lhs_->Test(itrs);
 
-	case Operator::kEqual:
+	case Token::kEqual:
 		if (lmbdFetchData()) {
 			return true;
 		}
 		return l->Compare(r.operator->()) == ISQLData::kEqual;
 
-	case Operator::kAdd:
+	case Token::kAdd:
 		break;
-	case Operator::kSub:
+	case Token::kSub:
 		break;
-	case Operator::kMul:
+	case Token::kMul:
 		break;
-	case Operator::kDiv:
+	case Token::kDiv:
 		break;
-	case Operator::kLess:
+	case Token::kLess:
 		if (lmbdFetchData()) {
 			return true;
 		}
 		return l->Compare(r.operator->()) == ISQLData::kLess;
-	case Operator::kGreater:
+	case Token::kGreater:
 		if (lmbdFetchData()) {
 			return true;
 		}
 		return l->Compare(r.operator->()) == ISQLData::kLarger;
-	case Operator::kLessEq:
+	case Token::kLessEq:
 		if (lmbdFetchData()) {
 			return true;
 		}
 		cmp = l->Compare(r.operator->());
 		return cmp == ISQLData::kLess || cmp == ISQLData::kEqual;
-	case Operator::kGreaterEq:
+	case Token::kGreaterEq:
 		if (lmbdFetchData()) {
 			return true;
 		}
@@ -76,32 +76,32 @@ std::shared_ptr<ISQLData> BinopOracle::Data(Iterators& itrs) {
 	switch (op_)
 	{
 		//TODO(L): Should I throw exception?
-	case Operator::kAnd:
+	case Token::kAnd:
 		break;
-	case Operator::kOr:
+	case Token::kOr:
 		break;
-	case Operator::kNot:
+	case Token::kNot:
 		break;
-	case Operator::kEqual:
+	case Token::kEqual:
 		break;
 
 
-	case Operator::kAdd:
+	case Token::kAdd:
 		if (!lmbdFetchData()) {
 			break;
 		}
 		return l->Add(r.operator->());
-	case Operator::kSub:
+	case Token::kSub:
 		if (!lmbdFetchData()) {
 			break;
 		}
 		return l->Sub(r.operator->());
-	case Operator::kMul:
+	case Token::kMul:
 		if (!lmbdFetchData()) {
 			break;
 		}
 		return l->Mul(r.operator->());
-	case Operator::kDiv:
+	case Token::kDiv:
 		if (!lmbdFetchData()) {
 			break;
 		}

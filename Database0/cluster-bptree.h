@@ -103,7 +103,7 @@ inline PageId ClusteredBPTree<Key>::Insert(const Key& key) {
 	}
 
 	
-	if (itr.FreeSlots() == 0) {
+	if (res.FreeSlots() == 0) {
 		int direction = res.MoveToPageCenter();
 
 		Internal reused = Internal::MakeDummy(*res);
@@ -247,8 +247,23 @@ inline void ClusteredBPTree<Key>::Remove(const Key& key) {
 		throw std::invalid_argument("deleting non exist key");
 	}
 
+	if (res.IsBeginPage()) {
+		auto next = res;
+		++next;
+		stack.pop_back(); // pop leaf page
 
+		itr = bm_->GetPage<char*>(file_, stack.back());
+		stack.pop_back();
+		itr.GreaterOrEqualBinSearchIndex(intern);
 
+	}
+
+	res.EraseInPage(1);
+
+	if (res.IsPageEmpty()) {
+		res.DeletePage();
+	}
+	
 }
 
 template<typename Key>

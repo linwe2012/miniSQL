@@ -122,8 +122,16 @@ public:
 	}
 
 	void Primary() {
-		
+		if (Token::IsOperator(tok_)) {
+
+		}
+		switch ()
+		{
+		default:
+			break;
+		}
 	}
 
+	QueryClause target;
 	std::shared_ptr<Tokenizer> tok_;
 };
