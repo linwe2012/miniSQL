@@ -496,6 +496,11 @@ public:
 			return *(U*)(current_);
 		}
 		
+		template<typename U>
+		const U& As() const {
+			return *(U*)(current_);
+		}
+
 		bool IsPageEmpty() {
 			return page().header.num_records == 0;
 		}
@@ -911,6 +916,10 @@ public:
 
 	size_t ExtraSpacePerSlot() const {
 		return sizeof(Page::DataPos);
+	}
+
+	bool IsPageEmpty() const {
+		return page().header.num_records == 0;
 	}
 
 private:

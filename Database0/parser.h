@@ -1,13 +1,11 @@
 #pragma once
 
-#include <string>
-#include <map>
-#include <set>
 #include <vector>
-#include <algorithm>
-#include <sstream>
+
 
 #include "token.h"
+#include "oracle.h"
+#include "attribute.h"
 
 struct TableClause {
 	std::string db_name;
@@ -25,87 +23,54 @@ struct TableJoinClause {
 	JoinMethod method;
 };
 
+struct UnqiueTable {
+	std::string db;
+	std::string name;
+	bool operator==(const UnqiueTable& r) const {
+
+		if (db == r.db) {
+			if (name == r.name) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	bool operator<(const UnqiueTable& r) const {
+		if (db < r.db) {
+			return true;
+		}
+		if (db > r.db) {
+			return false;
+		}
+		return name < r.name;
+	}
+
+};
+
+struct QueryColumn {
+	ColumnInfo col;
+	Attribute* attrib;
+};
 
 struct QueryClause {
-	enum struct Type {
-		Select,
-		Insert,
-		CreateTable,
-
-	};
-
+	int type;
 	std::string default_db_name;
-	std::map<std::string, TableClause*> tables_;
-	std::map < std::string, std::vector<TableJoinClause>> joins_;
+	std::vector<TableClause> vectables;
+	std::vector<ColumnName> select;
+	std::vector<ColumnInfo> create;
 	
-	TableClause* GetTableByName(std::string db, std::string tb_or_alias) {
-		if (tb_or_alias.size() == 0) {
-			return nullptr;
-		}
-		if (db.size() == 0) {
-			auto itr = tables_.find(default_db_name + "." + tb_or_alias);
-			if (itr == tables_.end()) {
-				return nullptr;
-			}
-			return itr->second;
-		}
-
-		auto itr = tables_.find(db + "." + tb_or_alias);
-		if (itr == tables_.end()) {
-			return nullptr;
-		}
-		return itr->second;
-	}
-
-
-	void AddTableClause(const TableClause& clause) {
-		auto lmbdGetFullName = [this](const std::string& db, const std::string& tb) {
-			if (db.size() == 0) {
-				return default_db_name + "." + tb;
-			}
-			return db + "." + tb;
-		};
-
-		auto itr = tables_.find(lmbdGetFullName(clause.db_name, clause.name));
-		auto aitr = tables_.find(lmbdGetFullName(clause.db_name, clause.alias));
-		
-
-		
-	}
+	std::map<UnqiueTable, TableClause*> tables;
+	std::map < std::string, std::vector<TableJoinClause>> joins;
+	
+	std::shared_ptr<IOracle> where_oracle;
+	std::vector< std::shared_ptr<VariableOracle>> variables;
+	std::vector< std::shared_ptr<FunctionOracle>> functions;
 };
 
 
-class Tokenizer {
-public:
-	Tokenizer(std::istream* is) : is_(is) {}
 
-	void NextToken();
-	
-	void Reset();
 
-	int CurTok() { return current_token_; }
-
-private:
-	void NextChar();
-
-	int NextTokenPass();
-
-	std::istream& get_is() { return *is_; }
-
-	int PreparseIdentifier();
-
-	int EatSpace();
-
-	int PreparseNumber();
-	
-	std::string identifier_;
-	std::istream* is_;
-	int line_cnt_ = 0;
-	int current_token_ = 0;
-	double double_ = 0.0;
-	int64_t bigint_ = 0ll;
-	int c = ' '; // last char
-};
 
 
 class Parser {
@@ -113,25 +78,86 @@ public:
 	void ParseExpression(std::istream& is) {
 		Tokenizer tok(&is);
 		tok_.reset(new Tokenizer(&is));
-
-	}
-
-
-	void Binop() {
-
-	}
-
-	void Primary() {
-		if (Token::IsOperator(tok_)) {
-
-		}
-		switch ()
+		NextToken();
+		int cur = CurTok();
+		switch (cur)
 		{
+		case Token::kInsert: // fall through
+		case Token::kSelect: // fall through
+		case Token::kCreate:
+			target.type = CurTok();
+			break;
+		case Token::kWhere:
+			Where();
+			break;
+		case Token::kFrom:
+			From();
 		default:
+			Error("Unexpected token");
 			break;
 		}
 	}
 
+	void From();
+	////////////////////////////////////////////////
+	///// Where clause parser & her friends    /////
+	////////////////////////////////////////////////
+
+	std::shared_ptr<IOracle> Where() {
+		return WhereTopLevel();
+	}
+
+	// :: = primary ('+' primary)
+	std::shared_ptr<IOracle> WhereTopLevel();
+
+	// :: = number
+	// :: = identifier/function
+	// :: = string
+	std::shared_ptr<IOracle> WherePrimary();
+
+	// :: = '(' toplevel ')'
+	std::shared_ptr<IOracle> WhereParen();
+
+	// :: = ('+' primary) *
+	std::shared_ptr<IOracle> WhereBinopRHS(int expr_prec, std::shared_ptr<IOracle> lhs);
+
+	// :: = '!' primary
+	std::shared_ptr<IOracle> WhereUnary();
+
+	// :: = number (0-9.)+
+	std::shared_ptr<IOracle> WhereNumber();
+
+	// :: = string (^')+
+	std::shared_ptr<IOracle> WhereString();
+
+	// :: = identifier.identifier.*         -- variable
+	// :: = identifier(primary, primary, *) -- function
+	std::shared_ptr<IOracle> WhereVariable();
+
+	////////////////////////////////////////////////
+	///// Utils                                /////
+	////////////////////////////////////////////////
+
+	int CurTok() {
+		return tok_->CurTok();
+	}
+
+	void NextToken() {
+		return tok_->NextToken();
+	}
+
+	template<typename Arg, typename... Args>
+	void Error(Arg arg, Args... args) {
+		(*error_) << arg;
+		Error(args...);
+	}
+
+	template<typename Arg>
+	void Error(Arg arg) {
+		(*error_) << arg;
+	}
+
 	QueryClause target;
 	std::shared_ptr<Tokenizer> tok_;
+	std::ostream* error_;
 };

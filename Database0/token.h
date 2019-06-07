@@ -2,6 +2,9 @@
 #include <string>
 #include <set>
 #include <map>
+#include <algorithm>
+#include <sstream>
+#include <functional>
 
 // V/D(name, literal, precedence)
 #define OPERATOR_LIST(V, D /* acceptable alias */)\
@@ -42,6 +45,12 @@ V(Where, "where", 0)     \
 V(From, "from", 0)       \
 
 
+#define KEY_BUILTIN_FUNC(V, D) \
+V(CurDate, "getdate", 0)       \
+D(CurDate, "current_date", 0)  \
+V(ToDate, "to_date", 0)        \
+
+
 class Token {
 public:
 #define DO_NOTHING(...)
@@ -56,9 +65,13 @@ public:
 
 		PUNCTUATER_LIST(ENUM_TOKENS)
 
+		KEY_BUILTIN_FUNC(ENUM_TOKENS, DO_NOTHING)
+
 		kDouble,
 		kBigInt,
+		kString,
 
+		kEof = -1,
 	};
 #undef ENUM_TOKENS
 #undef DO_NOTHING
@@ -67,6 +80,16 @@ public:
 	static bool IsOperator(int tok) {
 		return tok >= kAnd && tok <= kDiv;
 	}
+
+	static bool IsBinaryop(int tok) {
+		return IsOperator(tok) && (tok != kNot);
+	}
+
+	static bool IsUnary(int tok) {
+		return tok == kNot;
+	}
+
+	
 
 	static bool IsOperatorChar(int c) {
 		return operator_char_.count(c);
@@ -98,3 +121,55 @@ private:
 	static std::map<std::string, int> tokens_;
 	static std::map<int, int> tok_precedence_;
 };
+
+
+class Tokenizer {
+public:
+	Tokenizer(std::istream* is) : is_(is) {}
+
+	void NextToken();
+
+	void Reset();
+
+	int CurTok() { return current_token_; }
+
+	std::string identifier() {
+		return identifier_;
+	}
+
+	double num_double() {
+		return double_;
+	}
+
+	int64_t num_bigint() {
+		return bigint_;
+	}
+
+	std::string string() {
+		return string_;
+	}
+
+private:
+	void NextChar();
+
+	int NextTokenPass();
+
+	std::istream& get_is() { return *is_; }
+
+	int PreparseIdentifier();
+
+	int EatSpace();
+
+	int PreparseNumber();
+
+	std::string identifier_;
+	std::string string_;
+	std::istream* is_;
+	std::function<void(const char*)> error_;
+	int line_cnt_ = 0;
+	int current_token_ = 0;
+	double double_ = 0.0;
+	int64_t bigint_ = 0ll;
+	int c = ' '; // last char
+};
+

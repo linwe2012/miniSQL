@@ -122,13 +122,16 @@
     <ClInclude Include="attribute.h" />
     <ClInclude Include="buffer-manager.h" />
     <ClInclude Include="catalog-manager.h" />
+    <ClInclude Include="execute.h" />
     <ClInclude Include="index-manager.h" />
+    <ClInclude Include="logger.h" />
     <ClInclude Include="oracle.h" />
     <ClInclude Include="page.h" />
     <ClInclude Include="parser.h" />
     <ClInclude Include="record-manager.h" />
     <ClInclude Include="sqldata.h" />
     <ClInclude Include="cluster-bptree.h" />
+    <ClInclude Include="token.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="buffer-manager.cc" />
@@ -136,7 +139,9 @@
     <ClCompile Include="catalog-manager.cc" />
     <ClCompile Include="cluster-bptree.cc" />
     <ClCompile Include="oracle.cc" />
+    <ClCompile Include="parser.cc" />
     <ClCompile Include="test_buffm.cc" />
+    <ClCompile Include="token.cc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

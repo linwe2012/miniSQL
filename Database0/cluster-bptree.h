@@ -247,15 +247,35 @@ inline void ClusteredBPTree<Key>::Remove(const Key& key) {
 		throw std::invalid_argument("deleting non exist key");
 	}
 
+	bool del_page = res.num_records() == 1;
+
+	Key next_key((res + 1).As<Key>());
+
 	if (res.IsBeginPage()) {
-		auto next = res;
-		++next;
+		Internal intern = Internal::MakeDummy(key);
 		stack.pop_back(); // pop leaf page
+		bool flag_underflow = true;
 
-		itr = bm_->GetPage<char*>(file_, stack.back());
-		stack.pop_back();
-		itr.GreaterOrEqualBinSearchIndex(intern);
+		while (stack.size()) {
+			itr = bm_->GetPage<char*>(file_, stack.back());
+			stack.pop_back();
 
+			itr.GreaterOrEqualBinSearchIndex(intern);
+			if (!(itr.As<Key>() == key)) {
+				flag_underflow = false;
+				break;
+			}
+			
+			if()
+			itr.EraseInPage(1);
+			auto next = (itr + 1);
+			if (itr.IsPageEmpty()) {
+
+			}
+		}
+		
+		
+		
 	}
 
 	res.EraseInPage(1);

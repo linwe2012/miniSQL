@@ -1,90 +1,177 @@
 #include "parser.h"
 
-int Tokenizer::NextTokenPass() {
-	EatSpace();
+void Parser::From() {
+	while (true)
+	{
+		if (CurTok() != Token::kIdentifier) {
+			return;
+		}
 
-	if (isalpha(c)) {
-		return PreparseIdentifier();
+		std::string tb = tok_->identifier();
+		std::string alias;
+
+		std::string
+
+			NextToken();
+
+		if (CurTok() == Token::kIdentifier) {
+			alias = tok_->identifier();
+			NextToken();
+		}
+
+		target.vectables.push_back(TableClause{ "", tb, alias });
+
+		if (CurTok() != ',') {
+			break;
+		}
+
+		NextToken(); // eat ','
+	}
+}
+
+std::shared_ptr<IOracle> Parser::WhereTopLevel() {
+	auto lhs = WherePrimary();
+
+	if (!lhs) {
+		NextToken();
+		return std::make_shared<IOracle>(nullptr);
 	}
 
-	if (isdigit(c)) {
-		return PreparseNumber();
+	switch (CurTok())
+	{
+	case '(': return WhereParen();
+	case Token::kUnkown:
+		Error("Unkown token: ", tok_->identifier());
+		NextToken();
+		break;
+	default:
+		break;
+	}
+}
+
+std::shared_ptr<IOracle> Parser::WherePrimary() {
+	if (Token::IsUnary(CurTok())) {
+		return WhereUnary();
 	}
 
-	if (Token::IsOperatorChar(c)) {
-		identifier_ = c;
-		NextChar();
+	switch (CurTok())
+	{
+	case Token::kDouble: // fall through
+	case Token::kBigInt:
+		return WhereNumber();
+	case Token::kString:
+		return WhereString();
 
-		while (Token::IsOperatorChar(c))
+	default:
+		break;
+	}
+}
+
+std::shared_ptr<IOracle> Parser::WhereParen() {
+	auto top = WhereTopLevel();
+	if (CurTok() != ')') {
+		Error("Expected ')' parenthese to match '('");
+		return std::make_shared<IOracle>(nullptr);
+	}
+	return top;
+}
+
+// :: = ('+' primary) *
+
+std::shared_ptr<IOracle> Parser::WhereBinopRHS(int expr_prec, std::shared_ptr<IOracle> lhs) {
+	while (1)
+	{
+		int tok_prec = Token::Precedence(CurTok());
+
+		// If this is a binop that binds at least as tightly as the current binop,
+		// consume it, otherwise we are done.
+		if (tok_prec < expr_prec) {
+			return lhs;
+		}
+
+		int binop = CurTok();
+
+		NextToken();
+
+		auto rhs = WherePrimary();
+		if (!rhs) {
+			return std::make_shared<IOracle>(nullptr);
+		}
+
+		int next_prec = Token::Precedence(CurTok());
+
+		// lhs + (rhs * rhs...)
+		if (tok_prec < next_prec) {
+			rhs = WhereBinopRHS(tok_prec + 1, rhs);
+			if (!rhs) {
+				return std::make_shared<IOracle>(nullptr);
+			}
+		}
+
+		// (lhs + rhs) ...
+		lhs = std::make_shared<IOracle>(new BinopOracle(binop, lhs, rhs));
+	}
+}
+
+std::shared_ptr<IOracle> Parser::WhereUnary() {
+	int unary = CurTok();
+	NextToken(); // eat unary operator
+	auto lhs = WherePrimary();
+	if (!lhs) {
+		return std::make_shared<IOracle>(nullptr);
+	}
+
+	return std::make_shared<IOracle>(new BinopOracle(unary, lhs));
+}
+
+std::shared_ptr<IOracle> Parser::WhereNumber() {
+	int cur = CurTok();
+	NextToken();
+	switch (cur)
+	{
+	case Token::kDouble:
+		return std::make_shared<IOracle>(
+			new ConstantDataOracle(
+				std::make_shared<ISQLData>(new SQLDouble(tok_->num_double()))
+			)
+			);
+
+	case Token::kBigInt:
+		return std::make_shared<IOracle>(
+			new ConstantDataOracle(
+				std::make_shared<ISQLData>(new SQLBigInt(tok_->num_bigint()))
+			)
+			);
+	}
+}
+
+std::shared_ptr<IOracle> Parser::WhereString() {
+	NextToken();
+	return std::make_shared<IOracle>(
+		new ConstantDataOracle(
+			std::make_shared<ISQLData>(new SQLString(tok_->string()))
+		)
+		);
+}
+
+std::shared_ptr<IOracle> Parser::WhereVariable() {
+	std::string identifier = tok_->identifier();
+
+	NextToken();
+
+	if (CurTok() == '(') {
+		FunctionOracle::Params params;
+		NextToken();
+		while (CurTok() != ')')
 		{
-			identifier_ += c;
-			NextChar();
+			params.push_back(WherePrimary());
 		}
-		return Token::TestLiteralLower(identifier_, Token::kUnkown);
+		auto func = std::make_shared<FunctionOracle>(new FunctionOracle(identifier, params));
+		target.functions.push_back(func);
+		return func;
 	}
 
-	return c;
-}
-
-void Tokenizer::NextToken() {
-	current_token_ = NextTokenPass();
-}
-
-void Tokenizer::NextChar() {
-	std::istream& is = get_is();
-	c = is.get();
-}
-
-void Tokenizer::Reset() {
-	c = ' ';
-	identifier_.clear();
-	line_cnt_ = 0;
-}
-
-int Tokenizer::PreparseIdentifier() {
-	identifier_ = c;
-	NextChar();
-	while (isalpha(c))
-	{
-		identifier_ += c;
-		NextChar();
-	}
-	return Token::TestLiteralLower(identifier_, Token::kIdentifier);
-}
-
-int Tokenizer::EatSpace() {
-	int flag_next_line = ' ';
-	while (isspace(c))
-	{
-		if ((flag_next_line == ' ' || flag_next_line == c) && c == '\n' || c == '\r') {
-			flag_next_line = c;
-			++line_cnt_;
-		}
-		else {
-			flag_next_line = ' ';
-		}
-		NextChar();
-	}
-}
-
-int Tokenizer::PreparseNumber()
-{
-	std::stringstream ss;
-	int double_flag = (c == '.');
-	ss << c;
-	NextChar();
-	while (isdigit(c))
-	{
-		if (c == '.') {
-			double_flag = 1;
-		}
-		ss << c;
-		NextChar();
-	}
-	if (double_flag) {
-		ss >> double_;
-		return Token::kDouble;
-	}
-	ss >> bigint_;
-	return Token::kBigInt;
+	auto var = std::make_shared<VariableOracle>(new VariableOracle(identifier));
+	target.variables.push_back(var);
+	return var;
 }

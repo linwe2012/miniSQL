@@ -51,6 +51,9 @@ public:
 	int FindTable(const std::string& db_name,
 				   const std::string& table_name);
 
+	std::vector<MetaData*> ShowTables(const std::string& db_name);
+
+private:
 	void SerializeOneTable(BufferManager::Iterator<char*>& itr, const MetaData& meta) {
 		itr.AutoInsert(meta.db_name); // 如果这一页数据不够了，auto insert 能自动开一页
 		itr.AutoInsert(meta.table_name);
@@ -124,7 +127,7 @@ public:
 	}
 
 	
-private:
+
 	         // db_name           // table_name
 	std::map<std::string, std::map<std::string, MetaData>> tables_;
 	int latest_id_;

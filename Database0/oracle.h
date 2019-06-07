@@ -9,21 +9,6 @@ struct Memory {
 	size_t size;
 };
 
-class ITernaryOracle {
-public:
-	virtual bool Test(const Memory a, const Memory b, const Memory c) = 0;
-};
-
-class IBinaryOracle {
-public:
-	virtual bool Test(const Memory a, const Memory b) = 0;
-};
-
-class IUnaryOracle {
-public:
-	virtual bool Test(const Memory a) = 0;
-};
-
 class SQLEqVisitor : public IConstSQLDataVisitor {
 public:
 	bool result() {
@@ -84,22 +69,6 @@ public:
 	bool result_;
 };
 
-
-class EqualOracle : public IUnaryOracle {
-public:
-	bool Test(const Memory a) override {
-		visitor.Bind(a.data);
-		target->Accept(&visitor);
-		return visitor.result();
-	}
-
-
-	ISQLData* target;
-	SQLEqVisitor visitor;
-};
-
-
-
 class BinopOracle;
 
 class IOracle {
@@ -111,18 +80,16 @@ public:
 	virtual std::shared_ptr<ISQLData> Data(Iterators& itrs) = 0;
 	
 	virtual BinopOracle* AsBinopAST() { return nullptr; }
-	virtual bool Boolean() = 0;
-
-	
+	// virtual bool Boolean() = 0;
 };
 
 
 struct BinopOracle : public IOracle {
 public:
-	BinopOracle(int op, IOracle* lhs, IOracle* rhs)
+	BinopOracle(int op, std::shared_ptr<IOracle> lhs, std::shared_ptr<IOracle> rhs)
 		: op_(op), lhs_(lhs), rhs_(rhs) {}
 
-	BinopOracle(int op, IOracle* lhs)
+	BinopOracle(int op, std::shared_ptr<IOracle> lhs)
 		: op_(op), lhs_(lhs), rhs_(nullptr) {}
 
 	BinopOracle* AsBinopAST() { return this; }
@@ -135,9 +102,9 @@ public:
 		return op_ >= Token::kEqual && op_ <= Token::kDiv;
 	}
 
-	IOracle* lhs() { return lhs_; }
+	std::shared_ptr<IOracle> lhs() { return lhs_; }
 
-	IOracle* rhs() { return rhs_; }
+	std::shared_ptr<IOracle> rhs() { return rhs_; }
 
 	int op() { return op_; }
 
@@ -147,16 +114,21 @@ public:
 
 private:
 	int op_;
-	IOracle* lhs_;
-	IOracle* rhs_;
+	std::shared_ptr<IOracle> lhs_;
+	std::shared_ptr<IOracle> rhs_;
 };
 
 
+
 class VariableOracle : public IOracle {
+public:
 	void Bind(int id) { id_ = id; }
 	Iterator& Itr(Iterators& itrs) {
 		return itrs[id_];
 	}
+
+	VariableOracle (std::string name) 
+		: name_(name) {}
 
 	bool Test(Iterators& itrs) override {
 		if (type_ == SQLTypeID<SQLString>::value) {
@@ -167,17 +139,46 @@ class VariableOracle : public IOracle {
 
 	std::shared_ptr<ISQLData> Data(Iterators& itrs) override;
 
+	const std::string& name() { return name_; }
+
 private:
 	int id_;
 	int type_;
+	std::string name_;
+};
+
+struct FunctionPayLoad {
+	const std::vector<std::shared_ptr<IOracle>> params;
+};
+
+class FunctionOracle : public IOracle {
+public:
+	using Func   = std::function<void(FunctionPayLoad&)>;
+	using Params = std::vector<std::shared_ptr<IOracle>>;
+
+	FunctionOracle(std::string function_name, Params params)
+		: function_name_(function_name), params_(params) {}
+
+	std::shared_ptr<ISQLData> Data(Iterators& itrs) override;
+	bool Test(Iterators& itrs) override;
+
+private:
+	Func func_;
+	std::string function_name_;
+	Params params_;
 };
 
 class RangedDataOracle : public IOracle {
 };
 
 class ConstantDataOracle : public IOracle {
+public:
+	ConstantDataOracle(std::shared_ptr<ISQLData> constant)
+		: constant_(constant) {}
 
-
+	std::shared_ptr<ISQLData> Data(Iterators& itrs) override;
+	bool Test(Iterators& itrs) override;
+private:
 	std::shared_ptr<ISQLData> constant_;
 };
 
@@ -185,61 +186,3 @@ class ConstantDataOracle : public IOracle {
 
 
 
-class WhereClause {
-
-	struct ConjunctiveNF {
-		std::vector<IUnaryOracle*> unaries;
-		std::vector<IBinaryOracle*> binaries;
-		std::vector<ITernaryOracle*> ternaries;
-	};
-
-	IOracle* Normalize(IOracle* target) {
-		auto binop = target->AsBinopAST();
-		if (!binop || !binop->IsLogical()) {
-			return target;
-		}
-
-		IOracle* lhs = binop->lhs();
-		IOracle* rhs = binop->rhs();
-		if (lhs != nullptr) {
-			lhs = Normalize(binop->lhs());
-		}
-
-		if (binop->rhs() != nullptr) {
-			rhs = Normalize(binop->rhs());
-		}
-
-		switch (binop->op())
-		{
-		case Token::kAnd:
-			return NormalizeAnd(binop, lhs, rhs);
-		case Token::kOr:
-		case Token::kNot:
-
-		default:
-			break;
-		}
-	}
-
-	IOracle* NormalizeAnd(BinopOracle* target, IOracle* lhs, IOracle* rhs) {
-
-	}
-
-	void TraverseAST() {
-
-	}
-
-	
-	std::vector<ConjunctiveNF> dnf_; // disjunctive normal form
-};
-
-
-
-
-void Filter(IUnaryOracle* oracle, BufferManager::Iterator<char>begin, BufferManager::Iterator<char>end) {
-	Memory nil{ nullptr, 0 };
-	if (begin.IsNil()) {
-		oracle->Test(nil);
-	}
-
-}
