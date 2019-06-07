@@ -90,7 +90,9 @@ private:
 
 	void DeserializeMeta(BufferManager::Iterator<char*>& itr, MetaData& meta) {
 		meta.db_name = itr.Read<std::string>();
+		meta.db_name = meta.db_name.substr(0, meta.db_name.length() - 1);//string读出来会多一个空格
 		meta.table_name = itr.Read<std::string>();
+		meta.table_name = meta.table_name.substr(0, meta.table_name.length() - 1);
 
 		meta.file = itr.Read<FileId>();
 
@@ -114,7 +116,9 @@ private:
 		itr.Read<int64_t>();
 
 		attrib.column_name = itr.Read<std::string>();
+		attrib.column_name = attrib.column_name.substr(0,attrib.column_name.length() - 1);
 		attrib.comment = itr.Read<std::string>();
+		attrib.comment = attrib.comment.substr(0, attrib.comment.length() - 1);
 
 		attrib.file = itr.Read<FileId>();
 		attrib.first_page = itr.Read<PageId>();
