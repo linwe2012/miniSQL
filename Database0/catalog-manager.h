@@ -51,7 +51,7 @@ public:
 	int FindTable(const std::string& db_name,
 				   const std::string& table_name);
 
-	std::vector<MetaData*> ShowTables(const std::string& db_name);
+	std::map<std::string, MetaData>* ShowTables(const std::string& db_name);
 
 private:
 	void SerializeOneTable(BufferManager::Iterator<char*>& itr, const MetaData& meta) {
