@@ -12,14 +12,20 @@ void CatalogManager::Initialize(BufferManager* buffer_manager, FileId file, Page
 	page_ = page;
 }
 
-std::map<std::string, MetaData>* CatalogManager::ShowTables(const std::string& db_name) {
+std::vector<MetaData*> CatalogManager::ShowTables(const std::string& db_name){
 	std::map<std::string, std::map<std::string, MetaData>>::iterator iter = tables_.find(db_name);
 	if (iter == tables_.end())
 		throw std::invalid_argument("No such database");
 
-	return &(iter->second);
+	std::map<std::string, MetaData>::iterator iiter;
+	std::vector<MetaData*> tables;
+	for (iiter = (iter->second).begin(); iiter != (iter->second).end(); iiter++)
+		tables.push_back(&(iiter->second));
+		
+	return tables;
 
 }
+
 
 void CatalogManager::NewDatabase(const std::string& db_name) {
 	std::map<std::string, std::map<std::string, MetaData>>::iterator f = tables_.find(db_name);
