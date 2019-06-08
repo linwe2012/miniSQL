@@ -29,6 +29,34 @@ void Parser::From() {
 	}
 }
 
+void Parser::Select()
+{
+	NextToken();
+	while (CurTok() == Token::kIdentifier || CurTok() == Token::kMul)
+	{
+		ColumnName col;
+		if (CurTok() == Token::kMul) {
+			col.column_name = '*';
+		}
+		else {
+			col.column_name = tok_->identifier();
+		}
+		NextToken();
+
+		if (CurTok() == Token::kIdentifier) {
+			col.alias = tok_->identifier();
+			NextToken();
+		}
+
+
+		if (CurTok() != ',') {
+			break;
+		}
+
+		NextToken(); // eat ','
+	}
+}
+
 std::shared_ptr<IOracle> Parser::WhereTopLevel() {
 	auto lhs = WherePrimary();
 
@@ -73,6 +101,7 @@ std::shared_ptr<IOracle> Parser::WhereParen() {
 		Error("Expected ')' parenthese to match '('");
 		return std::make_shared<IOracle>(nullptr);
 	}
+	NextToken();
 	return top;
 }
 
@@ -168,6 +197,7 @@ std::shared_ptr<IOracle> Parser::WhereVariable() {
 		}
 		auto func = std::make_shared<FunctionOracle>(new FunctionOracle(identifier, params));
 		target.functions.push_back(func);
+		NextToken();
 		return func;
 	}
 
@@ -175,3 +205,4 @@ std::shared_ptr<IOracle> Parser::WhereVariable() {
 	target.variables.push_back(var);
 	return var;
 }
+

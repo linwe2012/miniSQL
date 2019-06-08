@@ -70,6 +70,7 @@ int Tokenizer::NextTokenPass() {
 		return PreparseNumber();
 	}
 
+	// string
 	if (c == '\'') {
 		NextChar();
 		while (c != '\'')
@@ -104,8 +105,9 @@ int Tokenizer::NextTokenPass() {
 				error_("Unexpected end of stream");
 				return Token::kEof;
 			}
-			return Token::kString;
 		}
+		NextChar(); // eat '
+		return Token::kString;
 	}
 
 	if (Token::IsOperatorChar(c)) {
@@ -185,4 +187,27 @@ int Tokenizer::PreparseNumber()
 	}
 	ss >> bigint_;
 	return Token::kBigInt;
+}
+
+std::vector<std::string> Explode(const std::string& s, char c) {
+	std::string buff{ "" };
+	std::vector<std::string> v;
+
+	for (auto n : s)
+	{
+		if (n != c)
+		{
+			buff += n;
+		}
+		else if (n == c && buff != "") {
+			v.push_back(std::move(buff));
+			buff.clear();
+		}
+	}
+	if (buff != "")
+	{
+		v.push_back(std::move(buff));
+	}
+
+	return v;
 }

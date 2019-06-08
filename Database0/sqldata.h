@@ -27,9 +27,12 @@
 
 
 struct SQLDateStruct {
-	unsigned short year;
-	unsigned short month;
-	unsigned short date;
+	SQLDateStruct() {}
+	SQLDateStruct(int i)
+		: year(i), month(i), date(i) {}
+	unsigned short year = 0;
+	unsigned short month = 0;
+	unsigned short date = 0;
 	bool operator==(const SQLDateStruct& rhs) const {
 		return year == rhs.year && month == rhs.month && date == rhs.date;
 	}
@@ -61,9 +64,12 @@ struct SQLDateStruct {
 };
 
 struct SQLTimeStruct {
-	unsigned short hour;
-	unsigned short minute;
-	unsigned short second;
+	SQLTimeStruct() {}
+	SQLTimeStruct(int i)
+		: hour(i), minute(i), second(i) {}
+	unsigned short hour = 0;
+	unsigned short minute = 0;
+	unsigned short second = 0;
 	bool operator==(const SQLTimeStruct& rhs) const {
 		return hour == rhs.hour && minute == rhs.minute && second == rhs.second;
 	}
@@ -91,9 +97,13 @@ struct SQLTimeStruct {
 };
 
 struct SQLTimeStampStruct {
+	SQLTimeStampStruct() {}
+	SQLTimeStampStruct(int i) 
+		: date(i) , time(i) {}
+
 	SQLDateStruct date;
 	SQLTimeStruct time;
-	unsigned int fraction;
+	unsigned int fraction = 0;
 	bool operator==(const SQLTimeStampStruct& rhs) const {
 		return date == rhs.date && time == rhs.time && fraction == rhs.fraction;
 	}
@@ -202,6 +212,7 @@ public:
 	virtual CompareResult Compare(const ISQLData* rhs) const = 0;
 	virtual void Accept(ISQLDataVisitor*) = 0;
 	virtual void Accept(IConstSQLDataVisitor*) const = 0;
+	virtual bool Bool() const = 0;
 
 	virtual std::shared_ptr<ISQLData> Add(const ISQLData* r) const = 0;
 	virtual std::shared_ptr<ISQLData> Sub(const ISQLData* r) const = 0;
@@ -224,6 +235,7 @@ public:
 	CompareResult Compare([[maybe_unused]]const ISQLData* rhs) const override { return kFail; }
 	~SQLNull() override {}
 	RawData GetRaw() const override { return RawData{ nullptr, 0 }; }
+	bool Bool() const override { return false; }
 	std::shared_ptr<ISQLData> Add(const ISQLData* r) const override { return std::make_shared<ISQLData>(SQLNull()); }
 	std::shared_ptr<ISQLData> Sub(const ISQLData* r) const override { return std::make_shared<ISQLData>(SQLNull()); }
 	std::shared_ptr<ISQLData> Mul(const ISQLData* r) const override { return std::make_shared<ISQLData>(SQLNull()); }
@@ -250,7 +262,8 @@ RawData GetRaw() const override { return RawData{&val_, sizeof(data_type)};} \
 std::shared_ptr<ISQLData> Add(const ISQLData* r) const override;             \
 std::shared_ptr<ISQLData> Sub(const ISQLData* r) const override;             \
 std::shared_ptr<ISQLData> Mul(const ISQLData* r) const override;             \
-std::shared_ptr<ISQLData> Div(const ISQLData* r) const override;
+std::shared_ptr<ISQLData> Div(const ISQLData* r) const override;             \
+bool Bool() const override { return val_ == 0;}
 
 
 #define CMP_HELPER(type)\
@@ -430,6 +443,8 @@ public:
 	std::shared_ptr<ISQLData> Sub(const ISQLData* r) const override { return std::make_shared<ISQLData>(SQLNull()); }
 	std::shared_ptr<ISQLData> Mul(const ISQLData* r) const override { return std::make_shared<ISQLData>(SQLNull()); }
 	std::shared_ptr<ISQLData> Div(const ISQLData* r) const override { return std::make_shared<ISQLData>(SQLNull()); }
+
+	bool Bool() const override { return val_.size(); }
 
 private:
 	std::string val_;

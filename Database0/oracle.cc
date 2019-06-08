@@ -1,5 +1,7 @@
 #include "oracle.h"
 
+#define DECL_ACCPT(o) void o::Accept(IOracleVisitor* visitor) { visitor->Visit(this); }
+
 bool BinopOracle::Test(Iterators& itrs) {
 	std::shared_ptr<ISQLData> r;
 	std::shared_ptr<ISQLData> l;
@@ -139,4 +141,38 @@ std::shared_ptr<ISQLData> VariableOracle::Data(Iterators& itrs)
 		assert(false);
 		break;
 	}
+}
+
+std::shared_ptr<ISQLData> FunctionOracle::Data(Iterators& itrs)
+{
+	FunctionPayLoad pay{
+		&itrs,
+		&params_
+	};
+
+	(*func_)(pay);
+	
+	if (pay.return_vals().size() == 0) {
+		return std::make_shared<ISQLData>(nullptr);
+	}
+
+	return pay.return_vals()[0];
+}
+
+bool TestSQLData(std::shared_ptr<ISQLData> data) {
+	if (!data) {
+		return false;
+	}
+
+	return data->Bool();
+}
+
+bool FunctionOracle::Test(Iterators& itrs)
+{
+	return TestSQLData(Data(itrs));
+}
+
+bool ConstantDataOracle::Test(Iterators& itrs)
+{
+	return TestSQLData(Data(itrs));
 }

@@ -2,6 +2,7 @@
 #include <iostream>
 #include <sstream>
 #include <functional>
+#include <exception>
 
 class Console {
 public:
@@ -62,15 +63,20 @@ public:                                             \
 		if(Severity::severity >= min_severity_) {   \
 			severity##_.End(arg);                   \
 		}                                           \
+		if (Severity::severity >= strict_) {        \
+			throw std::invalid_argument(nullptr);   \
+		}                                           \
 	}
 
 
 	
 #define SEVERITY_LIST(V)\
-	V(info)\
-	V(log)\
-	V(warn)\
-	V(error)
+	V(info)             \
+	V(log)              \
+	V(warn)             \
+	V(error)            \
+	V(fatal)            \
+	V(internal_error)
 
 	SEVERITY_LIST(DEF_LOGGER)
 #define ENUM_SEVERITY(name) name,
@@ -86,6 +92,7 @@ public:                                             \
 
 private:
 	Severity min_severity_ = Severity::log;
+	Severity strict_ = Severity::error;
 };
 
 extern Console console;

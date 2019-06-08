@@ -96,7 +96,7 @@ MetaData& CatalogManager::FetchTable(const std::string& db_name, const std::stri
 	}
 }
 
-const Attribute& CatalogManager::FetchColumn(ColumnName col_name) {
+Attribute& CatalogManager::FetchColumn(ColumnName col_name) {
 	MetaData table = FetchTable(col_name.db_name, col_name.table_name);
 	std::map<std::string, Attribute*>::iterator m_iter = table.attributes_map.find(col_name.column_name);
 	if(m_iter == table.attributes_map.end())

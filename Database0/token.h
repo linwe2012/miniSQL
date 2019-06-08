@@ -89,7 +89,9 @@ public:
 		return tok == kNot;
 	}
 
-	
+	static bool IsCompare(int tok) {
+		return tok >= kEqual && tok <= kGreaterEq;
+	}
 
 	static bool IsOperatorChar(int c) {
 		return operator_char_.count(c);
@@ -173,3 +175,4 @@ private:
 	int c = ' '; // last char
 };
 
+std::vector<std::string> Explode(const std::string& s, char c);

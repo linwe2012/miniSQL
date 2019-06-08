@@ -123,6 +123,7 @@
     <ClInclude Include="buffer-manager.h" />
     <ClInclude Include="catalog-manager.h" />
     <ClInclude Include="execute.h" />
+    <ClInclude Include="functions-manager.h" />
     <ClInclude Include="index-manager.h" />
     <ClInclude Include="logger.h" />
     <ClInclude Include="oracle.h" />
@@ -138,6 +139,9 @@
     <ClCompile Include="buffer-manager_variadic.cc" />
     <ClCompile Include="catalog-manager.cc" />
     <ClCompile Include="cluster-bptree.cc" />
+    <ClCompile Include="execute.cc" />
+    <ClCompile Include="functions-manager.cc" />
+    <ClCompile Include="logger.cc" />
     <ClCompile Include="oracle.cc" />
     <ClCompile Include="parser.cc" />
     <ClCompile Include="test_buffm.cc" />

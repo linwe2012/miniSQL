@@ -54,6 +54,9 @@
     <ClInclude Include="logger.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="functions-manager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="buffer-manager.cc">
@@ -78,6 +81,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="token.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="functions-manager.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="execute.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="logger.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

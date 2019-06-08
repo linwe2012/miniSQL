@@ -26,6 +26,7 @@ struct TableJoinClause {
 struct UnqiueTable {
 	std::string db;
 	std::string name;
+	bool is_alias;
 	bool operator==(const UnqiueTable& r) const {
 
 		if (db == r.db) {
@@ -46,11 +47,27 @@ struct UnqiueTable {
 		return name < r.name;
 	}
 
+
 };
 
 struct QueryColumn {
 	ColumnInfo col;
 	Attribute* attrib;
+};
+
+struct QueryVariable {
+	QueryVariable(Attribute* _attrib)
+		: attrib(_attrib) {}
+
+	enum IndexMethod : char {
+		kDirectIndex,
+		kPrimaryRangeIndex
+	};
+
+	Attribute* attrib;
+	IndexMethod index_method;
+	
+	std::shared_ptr<ISQLData> index_target;
 };
 
 struct QueryClause {
@@ -60,12 +77,15 @@ struct QueryClause {
 	std::vector<ColumnName> select;
 	std::vector<ColumnInfo> create;
 	
+	std::vector<QueryVariable> variable_attribs;
+
 	std::map<UnqiueTable, TableClause*> tables;
-	std::map < std::string, std::vector<TableJoinClause>> joins;
+
+	std::map <std::string, std::vector<TableJoinClause>> joins;
 	
 	std::shared_ptr<IOracle> where_oracle;
-	std::vector< std::shared_ptr<VariableOracle>> variables;
-	std::vector< std::shared_ptr<FunctionOracle>> functions;
+	std::vector<std::shared_ptr<VariableOracle>> variables;
+	std::vector<std::shared_ptr<FunctionOracle>> functions;
 };
 
 
@@ -82,8 +102,14 @@ public:
 		int cur = CurTok();
 		switch (cur)
 		{
-		case Token::kInsert: // fall through
-		case Token::kSelect: // fall through
+		case Token::kInsert:
+			target.type = CurTok();
+			//TODO
+			break;
+		case Token::kSelect: 
+			target.type = CurTok();
+			Select();
+			break;
 		case Token::kCreate:
 			target.type = CurTok();
 			break;
@@ -99,6 +125,9 @@ public:
 	}
 
 	void From();
+
+	void Select();
+
 	////////////////////////////////////////////////
 	///// Where clause parser & her friends    /////
 	////////////////////////////////////////////////

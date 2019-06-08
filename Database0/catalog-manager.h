@@ -5,6 +5,7 @@ struct ColumnName {
 	std::string db_name;
 	std::string table_name;
 	std::string column_name;
+	std::string alias;
 };
 
 struct ColumnInfo {
@@ -33,7 +34,7 @@ public:
 	MetaData& FetchTable(const std::string& db_name,
 		                 const std::string& table_name);
 
-	const Attribute& FetchColumn(ColumnName col_name);
+	Attribute& FetchColumn(ColumnName col_name);
 
 	void NewDatabase(const std::string& db_name);//塞进map
 
