@@ -3,6 +3,7 @@
 #include <cmath>
 #include <utility>
 #include <cstring>
+#include<iostream>
 
 
 void CatalogManager::Initialize(BufferManager* buffer_manager, FileId file, PageId page) {
@@ -11,31 +12,50 @@ void CatalogManager::Initialize(BufferManager* buffer_manager, FileId file, Page
 	page_ = page;
 }
 
+std::vector<MetaData*> CatalogManager::ShowTables(const std::string& db_name){
+	std::map<std::string, std::map<std::string, MetaData>>::iterator iter = tables_.find(db_name);
+	if (iter == tables_.end())
+		throw std::invalid_argument("No such database");
+
+	std::map<std::string, MetaData>::iterator iiter;
+	std::vector<MetaData*> tables;
+	for (iiter = (iter->second).begin(); iiter != (iter->second).end(); iiter++)
+		tables.push_back(&(iiter->second));
+		
+	return tables;
+
+}
+
+
 void CatalogManager::NewDatabase(const std::string& db_name) {
 	std::map<std::string, std::map<std::string, MetaData>>::iterator f = tables_.find(db_name);
 	if(f!=tables_.end())
 		throw std::invalid_argument("exsisted database!");
 
-	fs::path path("./database");
+	fs::path path(".");
 	path /= db_name;
 	FileId file = bm->NewFile(path.string().c_str());
 	tables_[db_name]; // std::map automacitally create this slot
 }
 
+
+
 void CatalogManager::NewTable(const std::string& db_name,const std::string& table_name, std::vector<ColumnInfo> columns) {
 
 	//if exsists a homonymic table
-	if (FindTable(db_name,table_name) != -1) 
+	if (FindTable(db_name,table_name)) 
 		throw std :: invalid_argument("exsisted table!");
 
 	//metadata census
 	MetaData& meta = tables_[db_name][table_name];
 	meta.db_name = db_name;
 	meta.table_name = table_name;
-	std::string file_name = "./database/" + db_name;
-	if (!fs::exists(file_name))
+	fs::path path(".");
+	path /= db_name;
+	//std::string file_name = "./database/" + db_name;
+	if (!fs::exists(path.string()))
 		throw std::invalid_argument("no such database!");
-	else meta.file = bm->OpenFile(file_name.c_str());
+	else meta.file = bm->OpenFile(path.string().c_str());
 
 	int id = 0;
 	
@@ -66,14 +86,14 @@ void CatalogManager::DropTable(const std::string& db_name, const std::string& ta
 		throw std::invalid_argument("no such table!");
 
 	auto v_meta = bm->GetPage<char*>(file_, page_);
-	for (int i = 1; i < tables_.size(); i++) {
+	for (int i = 0; i < tables_.size(); i++) {
 		MetaData meta_tmp;
 		DeserializeMeta(v_meta, meta_tmp);
 		if (db_name == meta_tmp.db_name && table_name == meta_tmp.table_name) {
 		//在page里delete这个
 			break;
 		}
-		v_meta++;
+		++v_meta;
 	}
 	std::map<std::string, std::map<std::string, MetaData>>::iterator iter;
 	iter = tables_.find(db_name);
@@ -88,11 +108,22 @@ MetaData& CatalogManager::FetchTable(const std::string& db_name, const std::stri
 
 	auto v_meta = bm->GetPage<char*>(file_, page_);
 	MetaData meta;
-	for (int i = 1; i < tables_.size(); i++) {
+	for (int i = 0; i < tables_.size(); i++) {
 		DeserializeMeta(v_meta, meta);
+		//std::cout << meta.db_name << "#" <<std::endl;
+		//std::cout << db_name << "#" << std::endl;
 		if (db_name == meta.db_name && table_name == meta.table_name)
+		{
+			/*for (int i = 0; i < meta.attributes.size(); i++) {
+				std::cout << meta.attributes[i].column_name << "#" << meta.attributes[i].comment << "#" << meta.attributes[i].id << "#" << meta.attributes[i].type << std::endl;
+			}
+			for (int i = 0; i < meta.primary_keys.size(); i++)
+				std::cout << meta.primary_keys[i];
+			std::cout << std::endl;*/
 			return meta;
-		v_meta++;
+		}
+			
+		++v_meta;
 	}
 }
 
@@ -124,7 +155,7 @@ void CatalogManager::NewColumn(ColumnInfo col_name) {
 		throw std::invalid_argument("existed column!");
 	
 	auto v_meta = bm->GetPage<char*>(file_, page_);
-	for (int i = 1; i < tables_.size(); i++) {
+	for (int i = 0; i < tables_.size(); i++) {
 		MetaData meta_tmp;
 		DeserializeMeta(v_meta, meta_tmp);
 		if (col_name.name.db_name == meta_tmp.db_name && col_name.name.table_name == meta_tmp.table_name) {
@@ -145,7 +176,7 @@ void CatalogManager::NewColumn(ColumnInfo col_name) {
 			SerializeOneTable(v_meta,meta_tmp);
 			break;
 		}
-		v_meta++;
+		++v_meta;
 	}
 
 
@@ -160,7 +191,7 @@ void CatalogManager::DropColumn(ColumnName col_name) {
 		throw std::invalid_argument("no such column!");
 
 	auto v_meta = bm->GetPage<char*>(file_, page_);
-	for (int i = 1; i < tables_.size(); i++) {
+	for (int i = 0; i < tables_.size(); i++) {
 		MetaData meta_tmp;
 		DeserializeMeta(v_meta, meta_tmp);
 		if (col_name.db_name == meta_tmp.db_name && col_name.table_name == meta_tmp.table_name) {
@@ -182,7 +213,7 @@ void CatalogManager::DropColumn(ColumnName col_name) {
 			//drop original
 			SerializeOneTable(v_meta, meta_tmp);
 		}
-		v_meta++;
+		++v_meta;
 	}
 }
 
