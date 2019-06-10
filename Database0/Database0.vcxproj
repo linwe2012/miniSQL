@@ -120,6 +120,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="attribute.h" />
+    <ClInclude Include="bptree.h" />
     <ClInclude Include="buffer-manager.h" />
     <ClInclude Include="catalog-manager.h" />
     <ClInclude Include="execute.h" />

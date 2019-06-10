@@ -43,10 +43,10 @@ PageId ClusteredBPTree<char*>::Insert(const ClusteredBPTree<char*>::KeyType& key
 			itr.LessOrEqualBinSearchIndex(dummy);
 			
 			if (key < itr.As<std::string>()) {
-				itr.EraseInPage(key);
+				//itr.EraseInPage(key);
 
 				++itr;
-				itr.As<PageId>() = key;
+				//itr.As<PageId>() = key;
 			}
 			else {
 				break;
@@ -55,7 +55,7 @@ PageId ClusteredBPTree<char*>::Insert(const ClusteredBPTree<char*>::KeyType& key
 	}
 
 
-	if (itr.FreeSlots() == 0) {
+	if (res.FreeSlots() == 0) {
 		int direction = res.MoveToPageCenter();
 
 		Internal reused = Internal::MakeDummy(*res);
@@ -101,7 +101,7 @@ PageId ClusteredBPTree<char*>::Insert(const ClusteredBPTree<char*>::KeyType& key
 			stack.pop_back();
 
 			// we still have space
-			if (itr.FreeSlots<Internal>() != 0) {
+			if (itr.FreeSlots() != 0) {
 				flag_overflow = false;
 				itr.GreaterOrEqualBinSearchIndex(intern);
 				itr.Insert(&intern, sizeof(intern));

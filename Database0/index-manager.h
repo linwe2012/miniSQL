@@ -1,6 +1,6 @@
 #pragma once
 #include "attribute.h"
-#include "BPlusTree.h"
+// #include "BPlusTree.h"
 #include "buffer-manager.h"
 
 /////////////////////////////////////
@@ -16,18 +16,18 @@ public:
 	//注意 IndexManager 能从 Cat Manager 知道Key是不是边长的，这时候应该用strcmp
 	BufferManager::Iterator<char> LookUp(Attribute&,
 		const char* key,
-		int key_size_by_bytes) {
+		[[maybe_unused]] int key_size_by_bytes) {
 		
 	}
 
 	BufferManager::Iterator<char> LookUp(Attribute& a,
-		SQLBigInt::CType key) {
-		auto pos = GetBPTree<SQLBigInt::CType>(a)->find(key);
-		if (pos.IsNil()) {
-			return BufferManager::Iterator<char>();
-		}
-
-		return bm->GetPage<SQLBigInt::CType>(a.file, pos).Cast<char>();
+		[[maybe_unused]] SQLBigInt::CType key) {
+		// auto pos = GetBPTree<SQLBigInt::CType>(a)->find(key);
+		// if (pos.IsNil()) {
+		// 	return BufferManager::Iterator<char>();
+		// }
+		// 
+		// return bm->GetPage<SQLBigInt::CType>(a.file, pos).Cast<char>();
 	}
 
 	bool IsIndexed(Attribute&);
@@ -44,10 +44,10 @@ public:
 		switch (a.type)
 		{
 		case SQLTypeID<SQLBigInt>::value:
-			auto bpt = GetBPTree<SQLBigInt::CType>(a);
-			bpt->insert(*reinterpret_cast<const SQLBigInt::CType*>(payload.data),  // key
-				         payload.target.TellPosition());
-			break;
+			//auto bpt = GetBPTree<SQLBigInt::CType>(a);
+			// bpt->insert(*reinterpret_cast<const SQLBigInt::CType*>(payload.data),  // key
+			// 	         payload.target.TellPosition());
+			// break;
 		default:
 			break;
 		}
@@ -57,11 +57,10 @@ public:
 
 	void Update(ItemPayload payload);
 
-private:
-	template<typename T>
-	BPlusTree<T>* GetBPTree(Attribute& a);
-	BufferManager* bm;
-
+	// template<typename T>
+	// BPlusTree<T>* GetBPTree(Attribute& a);
+	// BufferManager* bm;
+	// 
 };
 
 

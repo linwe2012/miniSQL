@@ -1,7 +1,10 @@
-#pragma once
+﻿#pragma once
 #include "attribute.h"
 
 struct ColumnName {
+	ColumnName() {}
+	ColumnName(std::string db, std::string tb, std::string col)
+		: db_name(db), table_name(tb), column_name(col) {}
 	std::string db_name;
 	std::string table_name;
 	std::string column_name;
@@ -39,8 +42,8 @@ public:
 	void NewDatabase(const std::string& db_name);//塞进map
 
 	void NewTable(const std::string& db_name,
-		         const std::string& table_name,
-		         std::vector<ColumnInfo> columns);//统计metadata 塞进map
+		          const std::string& table_name,
+		          std::vector<ColumnInfo> columns);//统计metadata 塞进map
 
 	void NewColumn(ColumnInfo col_name);
 
@@ -54,6 +57,7 @@ public:
 
 	std::map<std::string, MetaData>* ShowTables(const std::string& db_name);
 
+	~CatalogManager();
 private:
 	void SerializeOneTable(BufferManager::Iterator<char*>& itr, const MetaData& meta) {
 		itr.AutoInsert(meta.db_name); // 如果这一页数据不够了，auto insert 能自动开一页
@@ -98,6 +102,7 @@ private:
 		meta.file = itr.Read<FileId>();
 
 		size_t num_attribs = itr.Read<size_t>();
+		meta.attributes.resize(num_attribs);
 
 		for (size_t i = 0; i < num_attribs; ++i) {
 			DeserializeOneAttribute(itr, meta.attributes[i]);
@@ -132,7 +137,7 @@ private:
 	}
 
 	
-
+	void InsertComlumFromInfo(MetaData& meta, ColumnInfo& col);
 	         // db_name           // table_name
 	std::map<std::string, std::map<std::string, MetaData>> tables_;
 	int latest_id_;

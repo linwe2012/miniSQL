@@ -20,16 +20,16 @@ struct ExecuteContext {
 	IndexManager* index;
 	CatalogManager* cat;
 	FunctionsManager* fun;
-
+	FileId tmp_file;
+	PageId tmp_first_page;
 	int flags;
+
+	// private:
+	bool flag_get_result_;
 };
 
 
-Result Execute(ExecuteContext ec, QueryClause q) {
-	if (q.type == Token::kSelect) {
-
-	}
-}
+std::shared_ptr<Result> Execute(ExecuteContext& ec, QueryClause& q);
 
 
 

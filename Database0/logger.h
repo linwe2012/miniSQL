@@ -51,15 +51,15 @@ private:                                            \
 	LogMethod severity##_;                          \
 public:                                             \
 	template<typename Arg, typename... Args>        \
-	void severity(Arg arg, Args... args) {          \
+	void severity(const Arg& arg, Args... args) {          \
 		if(Severity::severity >= min_severity_) {   \
 			severity##_.Msg(arg);                   \
-			severity(args...)                       \
+			severity(args...);                      \
 		}                                           \
 	}                                               \
                                                     \
 	template<typename Arg>                          \
-	void severity(Arg arg) {                        \
+	void severity(const Arg& arg) {                        \
 		if(Severity::severity >= min_severity_) {   \
 			severity##_.End(arg);                   \
 		}                                           \
@@ -68,7 +68,26 @@ public:                                             \
 		}                                           \
 	}
 
-
+//private:                                            
+//	LogMethod severity_;
+//												
+//	template<typename Arg, typename... Args>        
+//	void severity(const Arg& arg, Args... args) {
+//		if (Severity::severity >= min_severity_) {
+//			severity_.Msg(arg);                  
+//			severity(args...);
+//		}                                          
+//	}                                               
+//                                                    
+//	template<typename Arg>                          
+//	void severity(const Arg& arg) {                        
+//		if(Severity::severity >= min_severity_) {   
+//			severity_.End(arg);                   
+//		}                                           
+//		if (Severity::severity >= strict_) {        
+//			throw std::invalid_argument(nullptr);   
+//		}                                           
+//	}
 	
 #define SEVERITY_LIST(V)\
 	V(info)             \
@@ -82,6 +101,7 @@ public:                                             \
 #define ENUM_SEVERITY(name) name,
 	enum struct Severity {
 		SEVERITY_LIST(ENUM_SEVERITY)
+		severity,
 	};
 #undef SEVERITY_LIST
 #undef DEF_LOGGER

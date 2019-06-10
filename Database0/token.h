@@ -37,13 +37,30 @@ V(RParen, ")", 0)          \
 V(SemiColon, ";", 0)
 
 
-#define KEY_WORD_LIST(V) \
+#define KEY_WORD_LIST(V, D) \
 V(Select, "select", 0)   \
 V(Insert, "insert", 0)   \
 V(Create, "create", 0)   \
 V(Where, "where", 0)     \
 V(From, "from", 0)       \
-
+V(Values, "values", 0)   \
+D(Values, "value", 0)    \
+V(Into, "into", 0)   \
+V(Table, "table", 0) \
+V(Comment, "comment", 0) \
+V(Null, "null", 0)\
+V(TypeVarchar, "varchar", 0)\
+V(TypeDouble, "double", 0) \
+V(TypeSingle, "single", 0) \
+V(TypeInt, "integer", 0)\
+V(TypeFloat, "float", 0)\
+D(TypeInt, "int", 0)\
+V(Primary, "primary", 0)\
+V(Key, "key", 0)\
+V(Use, "use", 0)\
+V(Index, "index", 0)\
+V(ExecFile, "execfile", 0)\
+V(Unique, "unique", 0)
 
 #define KEY_BUILTIN_FUNC(V, D) \
 V(CurDate, "getdate", 0)       \
@@ -59,7 +76,7 @@ public:
 		kUnkown = -9999,
 		kIdentifier = -1000,
 
-		KEY_WORD_LIST(ENUM_TOKENS)
+		KEY_WORD_LIST(ENUM_TOKENS, DO_NOTHING)
 
 		OPERATOR_LIST(ENUM_TOKENS, DO_NOTHING)
 
@@ -101,9 +118,9 @@ public:
 		std::string lower = ToLower(str);
 		auto is_tok = tokens_.find(lower);
 		if (is_tok == tokens_.end()) {
-			return is_tok->second;
+			return fallback;
 		}
-		return fallback;
+		return is_tok->second;
 	}
 
 	static std::string ToLower(const std::string& s);
@@ -134,6 +151,13 @@ public:
 	void Reset();
 
 	int CurTok() { return current_token_; }
+
+	void Bind(std::istream* is) {
+		if (is_ != nullptr) {
+			delete is_;
+		}
+		is_ = is;
+	}
 
 	std::string identifier() {
 		return identifier_;

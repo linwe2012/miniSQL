@@ -1,6 +1,8 @@
 #include "oracle.h"
 
 #define DECL_ACCPT(o) void o::Accept(IOracleVisitor* visitor) { visitor->Visit(this); }
+SOLID_ORACLE_LIST(DECL_ACCPT)
+#undef DECL_ACCPT
 
 bool BinopOracle::Test(Iterators& itrs) {
 	std::shared_ptr<ISQLData> r;
@@ -55,6 +57,7 @@ bool BinopOracle::Test(Iterators& itrs) {
 		if (lmbdFetchData()) {
 			return true;
 		}
+		cmp = l->Compare(r.operator->());
 		return cmp == ISQLData::kLarger || cmp == ISQLData::kEqual;
 	default:
 		break;
@@ -112,7 +115,7 @@ std::shared_ptr<ISQLData> BinopOracle::Data(Iterators& itrs) {
 		break;
 	}
 
-	return std::make_shared<ISQLData>(nullptr);
+	return std::shared_ptr<ISQLData>(nullptr);
 }
 
 std::shared_ptr<ISQLData> VariableOracle::Data(Iterators& itrs)
@@ -120,7 +123,7 @@ std::shared_ptr<ISQLData> VariableOracle::Data(Iterators& itrs)
 	using Ptr = std::shared_ptr<ISQLData>;
 	auto& itr = Itr(itrs);
 
-	if (!Test(itrs)) {
+	if (itr.IsNil()) {
 		return Ptr(new SQLNull());
 	}
 
@@ -129,12 +132,13 @@ std::shared_ptr<ISQLData> VariableOracle::Data(Iterators& itrs)
 	case SQLTypeID<SQLBigInt>::value:
 		return Ptr(new SQLBigInt(itr.As<SQLBigInt::CType>()));
 	case SQLTypeID<SQLDouble>::value:
-		return Ptr(new SQLBigInt(itr.As<SQLDouble::CType>()));
+		return Ptr(new SQLDouble(itr.As<SQLDouble::CType>()));
 	case SQLTypeID<SQLTimeStamp>::value:
 		return Ptr(new SQLTimeStamp(itr.As<SQLTimeStamp::CType>()));
 	case SQLTypeID<SQLString>::value:
 		return Ptr(new SQLString(
-			std::move(itr.Cast<char*>().As<std::string>())
+			itr.Cast<VarCharFixed256>().As<VarCharFixed256>().data
+			// std::move(itr.Cast<char*>().As<std::string>())
 		));
 	default:
 		// should never come to here!!
@@ -153,7 +157,7 @@ std::shared_ptr<ISQLData> FunctionOracle::Data(Iterators& itrs)
 	(*func_)(pay);
 	
 	if (pay.return_vals().size() == 0) {
-		return std::make_shared<ISQLData>(nullptr);
+		return std::shared_ptr<ISQLData>(nullptr);
 	}
 
 	return pay.return_vals()[0];

@@ -126,6 +126,9 @@ public:
 			throw std::ios_base::failure("Read failed");
 		}
 	}
+
+#pragma warning (push)
+#pragma warning (disable: 4267)
 	void SeekPut(size_t _pos, int way) {
 
 		auto res = lseek(fd, _pos, SEEK_SET);
@@ -136,14 +139,15 @@ public:
 		}
 	}
 
-	void SeekGet(size_t pos, int way) {
-		auto res = lseek(fd, pos, SEEK_SET);
+	void SeekGet(size_t _pos, int way) {
+		auto res = lseek(fd, _pos, SEEK_SET);
 		if (way == std::ios::beg) {
-			if (res != pos) {
+			if (res != _pos) {
 				throw std::ios_base::failure("Fail to seek");
 			}
 		}
 	}
+#pragma warning (pop)
 
 	void Flush() {
 
@@ -349,6 +353,7 @@ BufferManager::~BufferManager()
 
 	
 	for (auto finfo : file_infos_) {
+		FlushFileHeaderToDisk(finfo.id);
 		delete &GetStream(finfo);
 		finfo.fd = nullptr;
 	}

@@ -7,6 +7,7 @@
 
 #include "sqldata.h"
 #include "buffer-manager.h"
+#include <chrono>
 
 template <typename T>
 class Maybe {
@@ -113,11 +114,11 @@ struct ReportMsg {
 
 struct Result {
 	std::vector<ReportMsg> report_msg;
-
 	bool ok;
 	int64_t num_rows_affected;
-
-	const std::shared_ptr<MetaData> meta;
+	std::vector<const Attribute*> attribs;
+	std::vector<std::vector<std::shared_ptr<ISQLData>>> requested;
+	std::chrono::milliseconds span;
 };
 
 

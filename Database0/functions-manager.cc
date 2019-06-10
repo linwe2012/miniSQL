@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include "functions-manager.h"
 #include <chrono>
 #include <ctime>
@@ -12,7 +13,7 @@ FunctionsManager::FunctionInfo* FunctionsManager::Get(const std::string& functio
 }
 
 void FunctionsManager::Register(std::string name, std::function<void(FunctionPayLoad&)> funcs, bool precompute, int num_params) {
-	if (Get(name) == nullptr) {
+	if (Get(name) != nullptr) {
 		console.warn("duplicate function: ", name);
 	}
 	funcs_[std::move(name)] = FunctionInfo{ std::move(funcs), precompute, num_params };
@@ -34,7 +35,7 @@ void CurrentTime(FunctionPayLoad& pay) {
 	time.time.second = t->tm_sec;
 	time.fraction = 0;
 
-	pay.return_vals().push_back(std::make_shared<SQLTimeStamp>(new SQLTimeStamp(time)));
+	pay.return_vals().push_back(std::shared_ptr<SQLTimeStamp>(new SQLTimeStamp(time)));
 }
 
 
@@ -43,12 +44,12 @@ void CurrentTime(FunctionPayLoad& pay) {
 // '2019-8-31 12:20:21:100'
 void ToTimeStamp(FunctionPayLoad& pay) {
 	SQLTimeStampStruct time;
-	auto ptr = pay.params()[1]->Data(*pay.itrs);
+	auto ptr = pay.params()[1]->Data(pay.itrs());
 	if (!ptr) {
 		return;
 	}
 
-	auto str = ptr->AsString();
+	SQLString* str = ptr->AsString();
 	if (str == nullptr) {
 		console.error("totimestamp: unable to parse none string");
 		return;

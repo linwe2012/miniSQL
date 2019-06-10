@@ -10,20 +10,42 @@ void CatalogManager::Initialize(BufferManager* buffer_manager, FileId file, Page
 	bm = buffer_manager;
 	file_ = file;
 	page_ = page;
+
+	auto itr = bm->GetPage<char *>(file, page);
+
+	while (!itr.IsEnd())
+	{
+		MetaData meta;
+		DeserializeMeta(itr, meta);
+		tables_[meta.db_name][meta.table_name] = std::move(meta);
+	}
 }
 
-std::vector<MetaData*> CatalogManager::ShowTables(const std::string& db_name){
+std::map<std::string, MetaData>* CatalogManager::ShowTables(const std::string& db_name) {
 	std::map<std::string, std::map<std::string, MetaData>>::iterator iter = tables_.find(db_name);
 	if (iter == tables_.end())
-		throw std::invalid_argument("No such database");
+		return nullptr;
+	return &iter->second;
+}
 
-	std::map<std::string, MetaData>::iterator iiter;
-	std::vector<MetaData*> tables;
-	for (iiter = (iter->second).begin(); iiter != (iter->second).end(); iiter++)
-		tables.push_back(&(iiter->second));
-		
-	return tables;
-
+CatalogManager::~CatalogManager()
+{
+	auto itr = bm->GetPage<char*>(file_, page_);
+	itr.ClearInPage();
+	itr.MoveToPageEnd();
+	while (!itr.IsEnd())
+	{
+		++itr;
+		itr.MoveToPageEnd();
+		itr.ClearInPage();
+	}
+	
+	itr = bm->GetPage<char*>(file_, page_);
+	for (auto& db : tables_) {
+		for (auto& tb : db.second) {
+			SerializeOneTable(itr, tb.second);
+		}
+	}
 }
 
 
@@ -32,12 +54,29 @@ void CatalogManager::NewDatabase(const std::string& db_name) {
 	if(f!=tables_.end())
 		throw std::invalid_argument("exsisted database!");
 
-	fs::path path(".");
-	path /= db_name;
-	FileId file = bm->NewFile(path.string().c_str());
 	tables_[db_name]; // std::map automacitally create this slot
 }
 
+
+void CatalogManager::InsertComlumFromInfo(MetaData& meta, ColumnInfo& col) {
+	int id = 0;
+	Attribute attrib;
+	attrib.id = id++;
+	attrib.type = col.type;
+	attrib.column_name = col.name.column_name;
+	attrib.comment = col.comment;
+	attrib.file = meta.file;
+	attrib.first_page = bm->AllocatePageAfter(meta.file, 0);
+	attrib.max_length = col.max_length;
+	attrib.is_primary_key = col.is_primary_key;
+	attrib.nullable = col.nullable;
+	meta.attributes.push_back(attrib);
+	meta.attributes_map[attrib.column_name] = &meta.attributes[meta.attributes.size() - 1];
+	if (attrib.is_primary_key) {
+		meta.primary_keys.push_back(meta.attributes.size() - 1);
+	}
+
+}
 
 
 void CatalogManager::NewTable(const std::string& db_name,const std::string& table_name, std::vector<ColumnInfo> columns) {
@@ -47,38 +86,16 @@ void CatalogManager::NewTable(const std::string& db_name,const std::string& tabl
 		throw std :: invalid_argument("exsisted table!");
 
 	//metadata census
+	tables_[db_name][table_name] = MetaData();
+
 	MetaData& meta = tables_[db_name][table_name];
 	meta.db_name = db_name;
 	meta.table_name = table_name;
-	fs::path path(".");
-	path /= db_name;
-	//std::string file_name = "./database/" + db_name;
-	if (!fs::exists(path.string()))
-		throw std::invalid_argument("no such database!");
-	else meta.file = bm->OpenFile(path.string().c_str());
-
-	int id = 0;
-	
-	std::vector<ColumnInfo>::iterator iter;
-	for (auto& iter:columns) {
-		Attribute attr_tmp;
-		attr_tmp.id = id++;
-		attr_tmp.type = iter.type;
-		attr_tmp.column_name = iter.name.column_name;
-		attr_tmp.comment = iter.comment;
-		attr_tmp.file = meta.file;
-		attr_tmp.first_page = bm->AllocatePageAfter(meta.file, 0);//属性从哪里开始分配？
-		// attr_tmp.first_index = bm->AllocatePageAfter(meta.file, 1);
-		attr_tmp.max_length = iter.max_length;
-		attr_tmp.is_primary_key = iter.is_primary_key;
-		attr_tmp.nullable = iter.nullable;
-		meta.attributes.push_back(attr_tmp);
-		meta.attributes_map.insert(std::pair<std::string, Attribute*>(attr_tmp.column_name, &attr_tmp));
-		if (attr_tmp.is_primary_key) meta.primary_keys.push_back(id);
+	meta.file = file_;
+	meta.attributes.reserve(columns.size());
+	for (auto& iter : columns) {
+		InsertComlumFromInfo(meta, iter);
 	}
-
-	auto v_meta = bm->GetPage<char*>(file_, page_);
-	SerializeOneTable(v_meta, meta);
 }
 
 void CatalogManager::DropTable(const std::string& db_name, const std::string& table_name) {
@@ -103,118 +120,60 @@ void CatalogManager::DropTable(const std::string& db_name, const std::string& ta
 }
 
 MetaData& CatalogManager::FetchTable(const std::string& db_name, const std::string& table_name) {
-	if (!FindTable(db_name, table_name))
-		throw std::invalid_argument("no such table!");
-
-	auto v_meta = bm->GetPage<char*>(file_, page_);
-	MetaData meta;
-	for (int i = 0; i < tables_.size(); i++) {
-		DeserializeMeta(v_meta, meta);
-		//std::cout << meta.db_name << "#" <<std::endl;
-		//std::cout << db_name << "#" << std::endl;
-		if (db_name == meta.db_name && table_name == meta.table_name)
-		{
-			/*for (int i = 0; i < meta.attributes.size(); i++) {
-				std::cout << meta.attributes[i].column_name << "#" << meta.attributes[i].comment << "#" << meta.attributes[i].id << "#" << meta.attributes[i].type << std::endl;
-			}
-			for (int i = 0; i < meta.primary_keys.size(); i++)
-				std::cout << meta.primary_keys[i];
-			std::cout << std::endl;*/
-			return meta;
-		}
-			
-		++v_meta;
+	auto iter = tables_.find(db_name);
+	if (iter == tables_.end()) {
+		throw std::invalid_argument("database not found");
 	}
+	
+	auto& db = iter->second;
+	auto tb_itr = db.find(table_name);
+	if (tb_itr == db.end()) {
+		throw std::invalid_argument("table not found");
+	}
+
+	return tb_itr->second;
 }
 
 Attribute& CatalogManager::FetchColumn(ColumnName col_name) {
-	MetaData table = FetchTable(col_name.db_name, col_name.table_name);
-	std::map<std::string, Attribute*>::iterator m_iter = table.attributes_map.find(col_name.column_name);
-	if(m_iter == table.attributes_map.end())
+	MetaData& table = FetchTable(col_name.db_name, col_name.table_name);
+	auto itr = table.attributes_map.find(col_name.column_name);
+	if (itr == table.attributes_map.end()) {
 		throw std::invalid_argument("no such column!");
-	return *(m_iter->second);
+	}
+	return *(itr->second);
 }
 
 int CatalogManager::FindTable(const std::string& db_name, const std::string& table_name) {
-	std::map<std::string, std::map<std::string, MetaData>>::iterator iter = tables_.find(db_name);
+	auto iter = tables_.find(db_name);
 	if (iter == tables_.end())
 		return 0;
-	std::map<std::string, MetaData>::iterator iiter;
-	iiter = (iter->second).find(table_name);
-	if (iiter == (iter->second).end())
+
+	auto& tbs = iter->second;
+	if (tbs.find(table_name) == tbs.end())
 		return 0;
 	return 1;
 }
 
 void CatalogManager::NewColumn(ColumnInfo col_name) {
-	if(!FindTable(col_name.name.db_name,col_name.name.table_name))
-		throw std::invalid_argument("no such table!");
-	MetaData table = FetchTable(col_name.name.db_name, col_name.name.table_name);
-	std::map<std::string, Attribute*>::iterator m_iter = table.attributes_map.find(col_name.name.column_name);
-	if (m_iter != table.attributes_map.end())
+	auto& meta = FetchTable(col_name.name.db_name, col_name.name.table_name);
+	if (meta.attributes_map.find(col_name.name.column_name) == meta.attributes_map.end()) {
 		throw std::invalid_argument("existed column!");
-	
-	auto v_meta = bm->GetPage<char*>(file_, page_);
-	for (int i = 0; i < tables_.size(); i++) {
-		MetaData meta_tmp;
-		DeserializeMeta(v_meta, meta_tmp);
-		if (col_name.name.db_name == meta_tmp.db_name && col_name.name.table_name == meta_tmp.table_name) {
-			Attribute attr_tmp;
-			attr_tmp.id = meta_tmp.attributes.size()+ 1;
-			attr_tmp.type = col_name.type;
-			attr_tmp.column_name = col_name.name.column_name;
-			attr_tmp.comment = col_name.comment;
-			attr_tmp.file = meta_tmp.file;
-			attr_tmp.first_page = bm->AllocatePageAfter(meta_tmp.file, 0);//属性从哪里开始分配？
-			attr_tmp.max_length = col_name.max_length;
-			attr_tmp.is_primary_key = col_name.is_primary_key;
-			attr_tmp.nullable = col_name.nullable;
-			meta_tmp.attributes.push_back(attr_tmp);
-			meta_tmp.attributes_map.insert(std::pair<std::string, Attribute*>(attr_tmp.column_name, &attr_tmp));
-			if (attr_tmp.is_primary_key) meta_tmp.primary_keys.push_back(attr_tmp.id);
-			//drop original
-			SerializeOneTable(v_meta,meta_tmp);
-			break;
-		}
-		++v_meta;
 	}
 
-
+	InsertComlumFromInfo(meta, col_name);
 }
 
-void CatalogManager::DropColumn(ColumnName col_name) {
-	if (!FindTable(col_name.db_name, col_name.table_name))
-		throw std::invalid_argument("no such table!");
-	MetaData table = FetchTable(col_name.db_name, col_name.table_name);
-	std::map<std::string, Attribute*>::iterator m_iter = table.attributes_map.find(col_name.column_name);
-	if (m_iter == table.attributes_map.end())
-		throw std::invalid_argument("no such column!");
-
-	auto v_meta = bm->GetPage<char*>(file_, page_);
-	for (int i = 0; i < tables_.size(); i++) {
-		MetaData meta_tmp;
-		DeserializeMeta(v_meta, meta_tmp);
-		if (col_name.db_name == meta_tmp.db_name && col_name.table_name == meta_tmp.table_name) {
-			std::vector<Attribute> ::iterator iter;
-			for (iter = meta_tmp.attributes.begin(); iter < meta_tmp.attributes.end(); iter++) {
-				if (iter->column_name == col_name.column_name)
-					break;
-			}
-			meta_tmp.attributes.erase(iter,iter+1);
-			std::string del_col(col_name.column_name);
-			meta_tmp.attributes_map.erase(del_col);
-			std::vector<int> ::iterator i_iter;
-			for (i_iter = meta_tmp.primary_keys.begin(); i_iter < meta_tmp.primary_keys.end(); i_iter++) {
-				if (*i_iter == iter->id)
-					break;
-			}
-			if (i_iter != meta_tmp.primary_keys.end()) meta_tmp.primary_keys.erase(i_iter,i_iter + 1);
-			break;
-			//drop original
-			SerializeOneTable(v_meta, meta_tmp);
-		}
-		++v_meta;
+void CatalogManager::DropColumn(ColumnName name) {
+	auto& meta = FetchTable(name.db_name, name.table_name);
+	auto itr = meta.attributes_map.find(name.column_name);
+	if (itr == meta.attributes_map.end()) {
+		throw std::invalid_argument("dropping column not exit!!!");
 	}
+
+	//TODO(L): Here we use a trick to do this, is there any other way?
+	size_t offset = itr->second - meta.attributes.begin().operator->();
+	meta.attributes.erase(meta.attributes.begin() + offset);
+	meta.attributes_map.erase(itr);
 }
 
 

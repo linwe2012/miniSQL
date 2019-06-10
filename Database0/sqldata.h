@@ -30,9 +30,9 @@ struct SQLDateStruct {
 	SQLDateStruct() {}
 	SQLDateStruct(int i)
 		: year(i), month(i), date(i) {}
-	unsigned short year = 0;
-	unsigned short month = 0;
-	unsigned short date = 0;
+	int year = 0;
+	int month = 0;
+	int date = 0;
 	bool operator==(const SQLDateStruct& rhs) const {
 		return year == rhs.year && month == rhs.month && date == rhs.date;
 	}
@@ -67,9 +67,9 @@ struct SQLTimeStruct {
 	SQLTimeStruct() {}
 	SQLTimeStruct(int i)
 		: hour(i), minute(i), second(i) {}
-	unsigned short hour = 0;
-	unsigned short minute = 0;
-	unsigned short second = 0;
+	int hour = 0;
+	int minute = 0;
+	int second = 0;
 	bool operator==(const SQLTimeStruct& rhs) const {
 		return hour == rhs.hour && minute == rhs.minute && second == rhs.second;
 	}
@@ -98,7 +98,7 @@ struct SQLTimeStruct {
 
 struct SQLTimeStampStruct {
 	SQLTimeStampStruct() {}
-	SQLTimeStampStruct(int i) 
+	SQLTimeStampStruct(unsigned short i)
 		: date(i) , time(i) {}
 
 	SQLDateStruct date;
@@ -230,16 +230,17 @@ public:
 	SQLNull() {}
 	bool IsNull() const override { return true; }
 	SQLNull* AsNull() override { return this; }
+	const SQLNull* AsNull() const override { return this; }
 	void Accept(ISQLDataVisitor*) override;
 	void Accept(IConstSQLDataVisitor*) const override;
 	CompareResult Compare([[maybe_unused]]const ISQLData* rhs) const override { return kFail; }
 	~SQLNull() override {}
 	RawData GetRaw() const override { return RawData{ nullptr, 0 }; }
 	bool Bool() const override { return false; }
-	std::shared_ptr<ISQLData> Add(const ISQLData* r) const override { return std::make_shared<ISQLData>(SQLNull()); }
-	std::shared_ptr<ISQLData> Sub(const ISQLData* r) const override { return std::make_shared<ISQLData>(SQLNull()); }
-	std::shared_ptr<ISQLData> Mul(const ISQLData* r) const override { return std::make_shared<ISQLData>(SQLNull()); }
-	std::shared_ptr<ISQLData> Div(const ISQLData* r) const override { return std::make_shared<ISQLData>(SQLNull()); }
+	std::shared_ptr<ISQLData> Add([[maybe_unused]]const ISQLData* r) const override { return std::make_shared<SQLNull>(); }
+	std::shared_ptr<ISQLData> Sub([[maybe_unused]]const ISQLData* r) const override { return std::make_shared<SQLNull>(); }
+	std::shared_ptr<ISQLData> Mul([[maybe_unused]]const ISQLData* r) const override { return std::make_shared<SQLNull>(); }
+	std::shared_ptr<ISQLData> Div([[maybe_unused]]const ISQLData* r) const override { return std::make_shared<SQLNull>(); }
 };
 
 class ISQLNumber : public ISQLData {
@@ -337,14 +338,14 @@ inline ISQLData::CompareResult SQLBigInt::Compare(const ISQLData* rhs) const {
 inline std::shared_ptr<ISQLData> _type__::_name__(const ISQLData* r) const {    \
 	auto ri = r->AsBigInt();                                                    \
 	if (ri != nullptr) {                                                        \
-		return std::make_shared<ISQLData>(new SQLBigInt(Value() _op__ ri->Value()));   \
+		return std::shared_ptr<ISQLData>(new SQLBigInt(static_cast<int64_t>(Value() _op__ ri->Value())));    \
 	}                                                                                  \
 	                                                                                   \
 	auto rd = r->AsDouble();                                                           \
 	if (rd != nullptr) {                                                               \
-		return std::make_shared<ISQLData>(new SQLDouble(Value() _op__ ri->Value()));   \
+		return std::shared_ptr<ISQLData>(new SQLDouble(static_cast<double>(Value() _op__ ri->Value())));    \
 	}                                                                                  \
-	return std::make_shared<ISQLData>(SQLNull());                                      \
+	return std::make_shared<SQLNull>();                                                \
 }
 
 #define OP_TYPE_LIST(V)\
@@ -420,11 +421,22 @@ public:
 	const std::string& String() const { return val_; }
 
 	CompareResult Compare(const ISQLData* rhs) const override {
-		CMP_HELPER(String);
-		return kFail;
+		auto rs = rhs->AsString();
+		if (!rs) {
+			return kFail;
+		}
+		if (rs->val_ == val_) {
+			return kEqual;
+		}
+		if (rs->val_ > val_) {
+			return kLess;
+		}
+		return kLarger;
 	}
 
-	SQLString* AsString() { return this; }
+	SQLString* AsString() override { return this; }
+	const SQLString* AsString() const override  { return this; }
+
 	~SQLString() override {}
 
 	RawData GetRaw() const override {
@@ -436,13 +448,13 @@ public:
 	std::shared_ptr<ISQLData> Add(const ISQLData* r) const override {
 		auto rs = r->AsString();
 		if (rs != nullptr) {
-			return std::make_shared<ISQLData>(String() + rs->String());
+			return std::make_shared<SQLString >(String() + rs->String());
 		}
-		return std::make_shared<ISQLData>(SQLNull());
+		return std::make_shared<SQLNull>();
 	}
-	std::shared_ptr<ISQLData> Sub(const ISQLData* r) const override { return std::make_shared<ISQLData>(SQLNull()); }
-	std::shared_ptr<ISQLData> Mul(const ISQLData* r) const override { return std::make_shared<ISQLData>(SQLNull()); }
-	std::shared_ptr<ISQLData> Div(const ISQLData* r) const override { return std::make_shared<ISQLData>(SQLNull()); }
+	std::shared_ptr<ISQLData> Sub([[maybe_unused]]const ISQLData* r) const override { return std::make_shared<SQLNull>(); }
+	std::shared_ptr<ISQLData> Mul([[maybe_unused]]const ISQLData* r) const override { return std::make_shared<SQLNull>(); }
+	std::shared_ptr<ISQLData> Div([[maybe_unused]]const ISQLData* r) const override { return std::make_shared<SQLNull>(); }
 
 	bool Bool() const override { return val_.size(); }
 
@@ -479,16 +491,17 @@ public:
 	
 	CompareResult Compare(const ISQLData* rhs) const override {
 		CMP_HELPER(TimeStamp);
+		return kFail;
 	}
 private:
 	SQLTimeStampStruct val_;
 };
 
 //TODO(L) implement them
-inline std::shared_ptr<ISQLData> SQLTimeStamp::Add(const ISQLData* r) const { return std::make_shared<ISQLData>(SQLNull()); };
-inline std::shared_ptr<ISQLData> SQLTimeStamp::Sub(const ISQLData* r) const { return std::make_shared<ISQLData>(SQLNull()); };
-inline std::shared_ptr<ISQLData> SQLTimeStamp::Mul(const ISQLData* r) const { return std::make_shared<ISQLData>(SQLNull()); };
-inline std::shared_ptr<ISQLData> SQLTimeStamp::Div(const ISQLData* r) const { return std::make_shared<ISQLData>(SQLNull()); };
+inline std::shared_ptr<ISQLData> SQLTimeStamp::Add([[maybe_unused]]const ISQLData* r) const { return std::make_shared<SQLNull>(); };
+inline std::shared_ptr<ISQLData> SQLTimeStamp::Sub([[maybe_unused]]const ISQLData* r) const { return std::make_shared<SQLNull>(); };
+inline std::shared_ptr<ISQLData> SQLTimeStamp::Mul([[maybe_unused]]const ISQLData* r) const { return std::make_shared<SQLNull>(); };
+inline std::shared_ptr<ISQLData> SQLTimeStamp::Div([[maybe_unused]]const ISQLData* r) const { return std::make_shared<SQLNull>(); };
 
 template <typename T>
 struct SQLTypeID {

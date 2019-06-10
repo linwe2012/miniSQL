@@ -1,22 +1,20 @@
 #pragma once
-// clustered indexing
 #include "buffer-manager.h"
-#include <tuple>
 
-template <typename Key>
-class ClusteredBPTree {
+template <typename Key, typename Prim>
+class BPTree {
 public:
 	using KeyType = Key;
 
-	ClusteredBPTree(BufferManager* bm, FileId file, PageId root)
+	BPTree(BufferManager* bm, FileId file, PageId root)
 		:root_(root), file_(file), bm_(bm) {}
 
-	ClusteredBPTree(BufferManager* bm, FileId file, PageId root, PageId first)
+	BPTree(BufferManager* bm, FileId file, PageId root, PageId first)
 		:root_(root), file_(file), bm_(bm), first_(first) {}
 
 	struct Internal {
 		Internal(const Key& _key) : key(_key) {}
-		Internal(const Key& _key, const PageId _page_id) 
+		Internal(const Key& _key, const PageId _page_id)
 			: key(_key), page_id(_page_id) {}
 
 		static Internal MakeDummy(const Key& _key) { return Internal{ _key }; }
@@ -32,11 +30,23 @@ public:
 		PageId page_id;
 	};
 
-	PageId Insert(const Key& key);
+	struct Leaf {
+		Key key;
+		Prim prim;
 
-	BufferManager::Iterator<Key> Lookup(const Key& key);
+		bool operator <(const  Leaf& rhs) const { return key < rhs.key; }
+		bool operator >(const  Leaf& rhs) const { return key > rhs.key; }
+		bool operator ==(const Leaf& rhs) const { return key == rhs.key; }
+		bool operator <=(const Leaf& rhs) const { return key <= rhs.key; }
+		bool operator >=(const Leaf& rhs) const { return key >= rhs.key; }
+		bool operator !=(const Leaf& rhs) const { return key != rhs.key; }
+	};
 
-	PageId BuildIndex(BufferManager::Iterator<Key> first);
+	PageId Insert(const Key& key, const Prim& prim);
+
+	BufferManager::Iterator<Leaf> Lookup(const Key& key);
+
+	PageId BuildIndex(BufferManager::Iterator<Key> first, BufferManager::Iterator<Prim> prim);
 
 	void Compact();
 
@@ -44,7 +54,7 @@ public:
 		auto itr = Lookup(key);
 		auto s_itr = bm_->GetPage<char*>(file_, first);
 		uint64_t num_row = 0;
-		while (s_itr.page_id() != itr.page_id())
+		while (first != itr.page_id())
 		{
 			num_row += s_itr.num_records();
 			s_itr.MoveToPageEnd();
@@ -57,16 +67,16 @@ public:
 
 	void Remove(const Key& key);
 
-	template<typename U>
-	ClusteredBPTree<U> Cast() {
-		return ClusteredBPTree<U>(
+	template<typename U, typename V>
+	BPTree<U, V> Cast() {
+		return BPTree<U, V>(
 			bm_,
 			file_,
 			root_,
 			first_
 			);
 	}
-	
+
 private:
 	void StackedTraverseDown(const Key& key, std::vector<PageId>* _stack, BufferManager::Iterator<char*>* _itr);
 
@@ -77,17 +87,17 @@ private:
 	BufferManager* bm_;
 };
 
-template<>
-PageId ClusteredBPTree<char*>::Insert(const ClusteredBPTree<char*>::KeyType& key);
 
-
-
-template<typename Key>
-inline PageId ClusteredBPTree<Key>::Insert(const Key& key) {
+template<typename Key, typename Prim>
+inline PageId BPTree<Key, Prim>::Insert(const Key& key, const Prim& prim) {
 	if (root_.IsNil()) {
 		throw std::logic_error("Page is not indexed!");
 	}
 
+	Leaf leaf{
+		key,
+		prim
+	};
 	std::vector<PageId> stack;
 	auto itr = bm_->GetPage<char*>(file_, root_);
 	auto dummy = Internal::MakeDummy(key);
@@ -97,7 +107,7 @@ inline PageId ClusteredBPTree<Key>::Insert(const Key& key) {
 			throw std::logic_error("Page is not indexed!");
 		}
 		dummy.page_id = first_;
-		
+
 		itr.Insert(&dummy, sizeof(dummy));
 
 		auto res = bm_->GetPage<Key>(file_, first_);
@@ -109,14 +119,14 @@ inline PageId ClusteredBPTree<Key>::Insert(const Key& key) {
 
 	StackedTraverseDown(key, &stack, &itr);
 
-	auto res = itr.Cast<Key>();
-	res.GreaterOrEqualBinSearchIndex(key);
-	
-	if (!res.IsEndPage()  && res.As<Key>() == key) {
+	auto res = itr.Cast<Leaf>();
+	res.GreaterOrEqualBinSearchIndex(leaf);
+
+	if (!res.IsEndPage() && res.As<Leaf>() == leaf) {
 		throw std::invalid_argument("duplicated primary key");
 	}
 
-	if (res.IsBeginPage() && res.As<Key>() < key) {
+	if (res.IsBeginPage() && res.As<Leaf>() < leaf) {
 		for (auto i = stack.rbegin(); i != stack.rend(); ++i) {
 			itr = bm_->GetPage<char*>(file_, *i);
 			itr.LessOrEqualBinSearchIndex(dummy);
@@ -129,11 +139,11 @@ inline PageId ClusteredBPTree<Key>::Insert(const Key& key) {
 		}
 	}
 
-	
+
 	if (res.FreeSlots() == 0) {
 		int direction = res.MoveToPageCenter();
 
-		Internal reused = Internal::MakeDummy(*res);
+		Internal reused = Internal::MakeDummy((*res).key);
 
 		PageId new_page = res.SplitPage();
 
@@ -142,10 +152,10 @@ inline PageId ClusteredBPTree<Key>::Insert(const Key& key) {
 		// move to next page if the data is at next page 
 		// as is indicated by direction
 		if (direction < 0) {
-			++res; 
+			++res;
 		}
 
-		res.GreaterOrEqualBinSearchIndex(key);
+		res.GreaterOrEqualBinSearchIndex(leaf);
 
 		stack.pop_back(); // pop out leaf page
 
@@ -156,7 +166,7 @@ inline PageId ClusteredBPTree<Key>::Insert(const Key& key) {
 
 			reused = itr.As<Internal>(); // we get first item of next page
 
-			PageId new_page = itr.SplitPage({Page::kfIsIndexPage});
+			PageId new_page = itr.SplitPage({ Page::kfIsIndexPage });
 
 			if (direction < 0) {
 				++itr;
@@ -210,12 +220,12 @@ inline PageId ClusteredBPTree<Key>::Insert(const Key& key) {
 	}
 
 	// ++res; // move to first larger
-	res.Insert(key);
+	res.Insert(leaf);
 	return root_;
 }
 
-template<typename Key>
-inline BufferManager::Iterator<Key> ClusteredBPTree<Key>::Lookup(const Key& key) {
+template<typename Key, typename Prim>
+inline BufferManager::Iterator<typename BPTree<Key, Prim>::Leaf> BPTree<Key, Prim>::Lookup(const Key& key) {
 	auto itr = bm_->GetPage<char*>(file_, root_);
 	auto dummy = Internal::MakeDummy(key);
 
@@ -230,39 +240,55 @@ inline BufferManager::Iterator<Key> ClusteredBPTree<Key>::Lookup(const Key& key)
 		itr = bm_->GetPage<char*>(file_, next_page);
 	}
 
-	auto res = itr.Cast<Key>();
-	res.LessOrEqualBinSearchIndex(key);
+	Leaf leaf{
+		key,
+		Prim()
+	};
+	auto res = itr.Cast<Leaf>();
+	res.LessOrEqualBinSearchIndex(leaf);
 	return res;
 }
 
-template<typename Key>
-inline PageId ClusteredBPTree<Key>::BuildIndex(BufferManager::Iterator<Key> first) {
+template<typename Key, typename Prim>
+inline PageId BPTree<Key, Prim>::BuildIndex(BufferManager::Iterator<Key> first, BufferManager::Iterator<Prim> prim) {
 	root_ = bm_->AllocatePageAfter(file_, 0, { Page::kfIsIndexPage });
+	auto leaf_page = bm_->AllocatePageAfter(file_, 0);
 	auto itr = bm_->GetPage<char*>(file_, root_);
 	if (itr.IsEnd()) {
 		first_ = first.page_id();
 	}
 
-
+	Leaf leaf{
+		*first,
+		*prim
+	};
+	Internal intern{
+		*first,
+		leaf_page
+	};
+	++first;
+	++prim;
+	itr.Insert(&intern, sizeof(intern));
+	auto cc = bm_->GetPage<Leaf>(file_, leaf_page);
+	cc.Insert(leaf);
 	while (!first.IsEnd())
 	{
-		Internal intern(*first, first.page_id());
-
-		itr.Insert(
-			&intern,
-			sizeof(intern)
-		);
-
-		first.MoveToPageEnd();
-		++first; //jump to next page
+		Insert(*first, *prim);
+		++first, ++prim;
+		if (first.IsEndPage()) {
+			++first;
+		}
+		if (prim.IsEndPage()) {
+			++prim;
+		}
 	}
 
 
 	return root_;
 }
 
-template<typename Key>
-inline void ClusteredBPTree<Key>::Remove(const Key& key) {
+template<typename Key, typename Prim>
+inline void BPTree<Key, Prim>::Remove(const Key& key) {
 	std::vector<PageId> stack;
 	auto itr = bm_->GetPage<char*>(file_, root_);
 	StackedTraverseDown(key, &stack, &itr);
@@ -292,8 +318,8 @@ inline void ClusteredBPTree<Key>::Remove(const Key& key) {
 				flag_underflow = false;
 				break;
 			}
-			
-			
+
+
 			itr.EraseInPage(1);
 			auto next = (itr + 1);
 			if (itr.IsPageEmpty()) {
@@ -307,11 +333,11 @@ inline void ClusteredBPTree<Key>::Remove(const Key& key) {
 	if (res.IsPageEmpty()) {
 		res.DeletePage();
 	}
-	
+
 }
 
-template<typename Key>
-inline void ClusteredBPTree<Key>::StackedTraverseDown(const Key& key, std::vector<PageId>* _stack, BufferManager::Iterator<char*>* _itr) {
+template<typename Key, typename Prim>
+inline void BPTree<Key, Prim>::StackedTraverseDown(const Key& key, std::vector<PageId>* _stack, BufferManager::Iterator<char*>* _itr) {
 	auto& stack = *_stack;
 	auto& itr = *_itr;
 	auto dummy = Internal::MakeDummy(key);
@@ -329,4 +355,3 @@ inline void ClusteredBPTree<Key>::StackedTraverseDown(const Key& key, std::vecto
 		itr = bm_->GetPage<char*>(file_, next_page);
 	}
 }
-

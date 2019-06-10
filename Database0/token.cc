@@ -23,12 +23,12 @@ std::map<std::string, int> Token::operator_tokens_{
 };
 
 std::map<std::string, int> Token::keywords_{
-	KEY_WORD_LIST(MAP_TOKENS)
+	KEY_WORD_LIST(MAP_TOKENS, MAP_TOKENS)
 };
 
 std::map<std::string, int> Token::tokens_{
 	OPERATOR_LIST(MAP_TOKENS, MAP_TOKENS)
-	KEY_WORD_LIST(MAP_TOKENS)
+	KEY_WORD_LIST(MAP_TOKENS, MAP_TOKENS)
 	PUNCTUATER_LIST(MAP_TOKENS)
 };
 #undef MAP_TOKENS
@@ -38,7 +38,7 @@ std::map<std::string, int> Token::tokens_{
 #define DO_NOTHING(...) 
 std::map<int, int> Token::tok_precedence_{
 	OPERATOR_LIST(MAP_PREC, DO_NOTHING)
-	KEY_WORD_LIST(MAP_PREC)
+	KEY_WORD_LIST(MAP_PREC, DO_NOTHING)
 	PUNCTUATER_LIST(MAP_PREC)
 };
 #undef MAP_PREC
@@ -46,8 +46,8 @@ std::map<int, int> Token::tok_precedence_{
 
 
 std::string Token::ToLower(const std::string& s) {
-	std::string res;
-	std::transform(s.begin(), s.end(), res, [](const char a) -> char {
+	std::string res(s);
+	std::transform(s.begin(), s.end(), res.begin(), [](const char a) -> char {
 		return static_cast<char>(tolower(a));
 	});
 	return res;
@@ -84,21 +84,21 @@ int Tokenizer::NextTokenPass() {
 				}
 				switch (c)
 				{
-				case '\'': identifier_ += '\'';	 break;
-				case 'n': identifier_ += '\n';	 break;
-				case 'r': identifier_ += '\r';	 break;
-				case 't': identifier_ += '\t';	 break;
-				case '\\': identifier_ += '\\';	 break;
-				case '"': identifier_ += '"'; break;
+				case '\'': string_ += '\'';	 break;
+				case 'n': string_ += '\n';	 break;
+				case 'r': string_ += '\r';	 break;
+				case 't': string_ += '\t';	 break;
+				case '\\': string_ += '\\';	 break;
+				case '"': string_ += '"'; break;
 				default:
-					identifier_ += '\\';
-					identifier_ += c;
+					string_ += '\\';
+					string_ += c;
 					error_("Unkown escape in string");
 					break;
 				}
 			}
 			else {
-				identifier_ += c;
+				string_ += c;
 			}
 			NextChar();
 			if (c == -1) {
@@ -122,8 +122,9 @@ int Tokenizer::NextTokenPass() {
 		return Token::TestLiteralLower(identifier_, Token::kUnkown);
 	}
 
-
-	return c;
+	int res = c;
+	NextChar();
+	return res;
 }
 
 void Tokenizer::NextToken() {
@@ -144,7 +145,7 @@ void Tokenizer::Reset() {
 int Tokenizer::PreparseIdentifier() {
 	identifier_ = c;
 	NextChar();
-	while (isalpha(c) || c == '_' || c == '.')
+	while (isalnum(c) || c == '_' || c == '.')
 	{
 		identifier_ += c;
 		NextChar();
@@ -165,20 +166,21 @@ int Tokenizer::EatSpace() {
 		}
 		NextChar();
 	}
+	return 0;
 }
 
 int Tokenizer::PreparseNumber()
 {
 	std::stringstream ss;
 	int double_flag = (c == '.');
-	ss << c;
+	ss << (char)c;
 	NextChar();
-	while (isdigit(c))
+	while (isdigit(c) || c == '.')
 	{
 		if (c == '.') {
 			double_flag = 1;
 		}
-		ss << c;
+		ss << (char)c;
 		NextChar();
 	}
 	if (double_flag) {

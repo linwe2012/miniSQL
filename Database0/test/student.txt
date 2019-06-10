@@ -1,0 +1,31 @@
+create table ZJU.student2(id int primary key,name varchar unique,score float);
+use ZJU
+
+execfile test/instruction0.txt;
+
+
+execfile test/instruction1.txt;
+
+
+execfile test/instruction2.txt;
+
+
+execfile test/instruction3.txt;
+
+
+execfile test/instruction4.txt;
+
+
+execfile test/instruction5.txt;
+
+
+execfile test/instruction6.txt;
+
+
+execfile test/instruction7.txt;
+
+
+execfile test/instruction8.txt;
+
+
+execfile test/instruction9.txt;

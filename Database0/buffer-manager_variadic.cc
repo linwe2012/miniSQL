@@ -43,6 +43,8 @@ bool BufferManager::Iterator<char*>::Insert(const char* first, const char* last)
 	return true;
 }
 
+#pragma warning (push)
+#pragma warning(disable: 4244)
 bool BufferManager::Iterator<char*>::InsertNil(int n) {
 	if (FreeBytes() / sizeof(Page::DataPos) < n) {
 		return false;
@@ -56,7 +58,7 @@ bool BufferManager::Iterator<char*>::InsertNil(int n) {
 	page_->is_dirty = true;
 	return true;
 }
-
+#pragma warning (pop)
 
 /**
 * if data exceeds free space in current page,
@@ -322,13 +324,13 @@ PageId BufferManager::Iterator<char*>::page_id() const
 	return piggy->page_id;
 }
 
-const BufferManager::Iterator<char*> BufferManager::Iterator<char*>::operator-(int offset) const {
+BufferManager::Iterator<char*> BufferManager::Iterator<char*>::operator-(int offset) const {
 	Iterator i(*this);
 	i -= offset;
 	return i;
 }
 
-const BufferManager::Iterator<char*> BufferManager::Iterator<char*>::operator+(int offset) const {
+BufferManager::Iterator<char*> BufferManager::Iterator<char*>::operator+(int offset) const {
 	Iterator i(*this);
 	i += offset;
 	return i;

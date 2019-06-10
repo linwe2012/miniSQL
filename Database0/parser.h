@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-
+#include <iostream>
 
 #include "token.h"
 #include "oracle.h"
@@ -11,6 +11,8 @@ struct TableClause {
 	std::string db_name;
 	std::string name;
 	std::string alias;
+	std::map<std::string, int> column_bindings;
+	std::vector<uint64_t>rows;
 };
 
 struct TableJoinClause {
@@ -70,19 +72,28 @@ struct QueryVariable {
 	std::shared_ptr<ISQLData> index_target;
 };
 
+
 struct QueryClause {
 	int type;
+	int type_spec;
 	std::string default_db_name;
 	std::vector<TableClause> vectables;
+	std::string insert_table;
+	std::string create_table;
+	std::string create_index;
+	ColumnName index;
+	std::vector<ColumnName> insert_col;
+	std::vector<std::shared_ptr<ISQLData>> insert_data;
 	std::vector<ColumnName> select;
 	std::vector<ColumnInfo> create;
 	
 	std::vector<QueryVariable> variable_attribs;
+	std::vector<int> select_result;
 
 	std::map<UnqiueTable, TableClause*> tables;
 
 	std::map <std::string, std::vector<TableJoinClause>> joins;
-	
+
 	std::shared_ptr<IOracle> where_oracle;
 	std::vector<std::shared_ptr<VariableOracle>> variables;
 	std::vector<std::shared_ptr<FunctionOracle>> functions;
@@ -95,46 +106,31 @@ struct QueryClause {
 
 class Parser {
 public:
-	void ParseExpression(std::istream& is) {
-		Tokenizer tok(&is);
-		tok_.reset(new Tokenizer(&is));
-		NextToken();
-		int cur = CurTok();
-		switch (cur)
-		{
-		case Token::kInsert:
-			target.type = CurTok();
-			//TODO
-			break;
-		case Token::kSelect: 
-			target.type = CurTok();
-			Select();
-			break;
-		case Token::kCreate:
-			target.type = CurTok();
-			break;
-		case Token::kWhere:
-			Where();
-			break;
-		case Token::kFrom:
-			From();
-		default:
-			Error("Unexpected token");
-			break;
-		}
+	void ParseExpression(const char* txt) {
+		std::stringstream ss;
+		ss << txt;
+		ParseExpression(ss);
 	}
+
+	void ParseExpression(std::istream& is);
 
 	void From();
 
 	void Select();
 
+	void Insert();
+
+	void Create();
+
+	void Use();
+
+	bool complete() { return complete_; }
+
+	std::shared_ptr<IOracle> Where();
+
 	////////////////////////////////////////////////
 	///// Where clause parser & her friends    /////
 	////////////////////////////////////////////////
-
-	std::shared_ptr<IOracle> Where() {
-		return WhereTopLevel();
-	}
 
 	// :: = primary ('+' primary)
 	std::shared_ptr<IOracle> WhereTopLevel();
@@ -189,4 +185,5 @@ public:
 	QueryClause target;
 	std::shared_ptr<Tokenizer> tok_;
 	std::ostream* error_;
+	bool complete_ = false;
 };

@@ -4,6 +4,20 @@
 #include "catalog-manager.h"
 #include "token.h"
 
+struct VarCharFixed256 {
+	char data[12];
+	std::string_view str() const {
+		return std::string_view(data);
+	}
+
+	bool operator <(const  VarCharFixed256& rhs) const { return (str()) < rhs.str(); }
+	bool operator >(const  VarCharFixed256& rhs) const { return (str()) > rhs.str(); }
+	bool operator ==(const VarCharFixed256& rhs) const { return (str()) == rhs.str(); }
+	bool operator <=(const VarCharFixed256& rhs) const { return (str()) <= rhs.str(); }
+	bool operator >=(const VarCharFixed256& rhs) const { return (str()) >= rhs.str(); }
+	bool operator !=(const VarCharFixed256& rhs) const { return (str()) != rhs.str(); }
+};
+
 #define SOLID_ORACLE_LIST(V)\
 V(BinopOracle)\
 V(VariableOracle) \
@@ -36,7 +50,7 @@ public:
 };
 
 
-struct BinopOracle : public IOracle {
+class BinopOracle : public IOracle {
 public:
 	ORACLE_IMPL(BinopOracle)
 
@@ -111,7 +125,7 @@ private:
 
 struct FunctionPayLoad {
 	FunctionPayLoad(IOracle::Iterators* itrs, std::vector<std::shared_ptr<IOracle>>* _params)
-		: params_(_params) {}
+		: itrs_(itrs), params_(_params) {}
 
 	const std::vector<std::shared_ptr<IOracle>>& params() {
 		return *params_;
@@ -144,7 +158,7 @@ public:
 	std::shared_ptr<ISQLData> Data(Iterators& itrs) override;
 	bool Test(Iterators& itrs) override;
 
-	bool Bind(Func* func, bool precomute) {
+	void Bind(Func* func, bool precomute) {
 		func_ = func;
 		precomute_ = precomute;
 	}
@@ -168,7 +182,7 @@ private:
 	Func* func_;
 	std::string function_name_;
 	Params params_;
-	bool precomute_;
+	bool precomute_ = false;
 };
 
 class RangedDataOracle : public IOracle {
@@ -181,7 +195,7 @@ public:
 	ConstantDataOracle(std::shared_ptr<ISQLData> constant)
 		: constant_(constant) {}
 
-	std::shared_ptr<ISQLData> Data(Iterators& itrs) override {
+	std::shared_ptr<ISQLData> Data([[maybe_unused]]Iterators& itrs) override {
 		return constant_;
 	}
 

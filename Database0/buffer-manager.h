@@ -118,7 +118,9 @@ public:
 		*/
 		const Iterator& operator-=(int offset);
 
-		const Iterator operator+(int offset) const;
+		Iterator operator+(int offset) const;
+
+		Iterator operator+(int offset);
 
 		const Iterator operator-(int offset) const;
 
@@ -378,13 +380,13 @@ public:
 		* @note use it only when it `IsBegin() = true`
 		*/
 		template<typename U>
-		Iterator<U> Cast() {
-			return Iterator<U>(reinterpret_cast<U*>(current_), page_, boss_, record_in_page_, row_);
-		}
+		Iterator<U> Cast();
 
 		uint64_t row() const { return row_; }
 
 		uint16_t num_records() const;
+
+		uint16_t record_in_page() const { return record_in_page_; }
 
 		T* PeekNext() {
 			return (current_ + step_);
@@ -644,6 +646,8 @@ public:
 	Iterator(char* current, Page* page_id, BufferManager* boss, uint16_t record_in_page)
 		:current_(current), page_(page_id), boss_(boss), record_in_page_(record_in_page) {}
 
+	Iterator(char* current, Page* page_id, BufferManager* boss, uint16_t record_in_page, size_t row)
+		:current_(current), page_(page_id), boss_(boss), record_in_page_(record_in_page), row_(row) {}
 	bool IsNil() const {
 		return GetDataPos().offset == Page::kInValidOffset;
 	}
@@ -687,9 +691,9 @@ public:
 	// use template version
 	const Iterator& operator-=(int offset);
 
-	const Iterator operator+(int offset) const;
+	Iterator operator+(int offset) const;
 										  
-	const Iterator operator-(int offset) const;
+	Iterator operator-(int offset) const;
 
 
 	const Page& page() const { return *page_; }
@@ -714,9 +718,9 @@ public:
 		return page_->SpaceLeftByByteVariadicSize();
 	}
 
-	template<typename T>
+	
 	size_t FreeSlots() const {
-		return FreeBytes() / (sizeof(T) + sizeof(Page::DataPos));
+		return FreeBytes() / (sizeof(char*) + sizeof(Page::DataPos));
 	}
 
 	size_t ExtraSpacePerSlot() const {
@@ -729,6 +733,14 @@ public:
 	}
 
 	bool InsertNil(int n);
+
+	void ClearInPage() {
+		page_->header.num_records = 0;
+		page_->header.free_offset = 0;
+		current_ = page_->space;
+		record_in_page_ = 0;
+		row_ = 0;
+	}
 
 	/**
 	* if data exceeds free space in current page,
@@ -905,18 +917,21 @@ public:
 		return *reinterpret_cast<T*>(current_);
 	}
 
+	
+	
 	template<typename T>
-	const T& As() const {
+	T As() const {
 		return *reinterpret_cast<T*>(current_);
 	}
+	template<>
+	std::string As<std::string>() const {
+		return std::string(current_, GetDataPos().length);
+	}
 
+	/*
 	const std::string As<char*>() const {
 		return AsString();
-	}
-
-	size_t ExtraSpacePerSlot() const {
-		return sizeof(Page::DataPos);
-	}
+	}*/
 
 	bool IsPageEmpty() const {
 		return page().header.num_records == 0;
@@ -952,7 +967,7 @@ inline BufferManager::Iterator<T>& BufferManager::Iterator<T>::operator++() {
 
 	if (record_in_page_ < page_->header.num_records) {
 		if (!IsNil()) {
-			++current_;
+			current_ += step_;
 		}
 		++record_in_page_;
 		if (record_in_page_ != page_->header.num_records) {
@@ -966,7 +981,12 @@ inline BufferManager::Iterator<T>& BufferManager::Iterator<T>::operator++() {
 		return *this;
 	}
 
+	auto step = step_;
+	auto row = row_;
+
 	boss_->IteratorNextPage(this);
+	step_ = step;
+	row_ = row;
 	++row_;
 	return *this;
 }
@@ -993,7 +1013,7 @@ inline BufferManager::Iterator<T>& BufferManager::Iterator<T>::operator--()
 
 	--record_in_page_;
 	if (!IsNil()) {
-		--current_;
+		current_ -= step_;
 	}
 	--row_;
 }
@@ -1052,11 +1072,14 @@ inline const BufferManager::Iterator<T>& BufferManager::Iterator<T>::operator+=(
 			return *this;
 		}
 
-		cpage.id += page_->header.next;
+		auto step = step_;
+		auto row = row_;
 		*this = boss_->GetPage<T>(piggy->finfo->id, cpage);
 
 		last_offset = offset;
 		
+		row_ = row;
+		step_ = step;
 		offset -= page_->header.num_records;
 		row_ += page_->header.num_records;
 	}
@@ -1118,12 +1141,16 @@ inline const BufferManager::Iterator<T> BufferManager::Iterator<T>::operator-(in
 }
 
 template<typename T>
-inline const BufferManager::Iterator<T> BufferManager::Iterator<T>::operator+(int offset) const {
+inline BufferManager::Iterator<T> BufferManager::Iterator<T>::operator+(int offset) const {
 	Iterator i(*this);
 	i += offset;
 	return i;
 }
 
+template<typename T>
+inline BufferManager::Iterator<T> BufferManager::Iterator<T>::operator+(int offset) {
+	return const_cast<const BufferManager::Iterator<T>*>(this)->operator+(offset);
+}
 
 
 template<typename T>
@@ -1191,7 +1218,16 @@ inline PageId BufferManager::IteratorInsertPageAfter(Iterator<T>* target)
 
 
 
-
+//TODO(L): assert if uncastable (i.e. misaligned data)
+/**
+* enforce cast into another type of pointer,
+* @note use it only when it `IsBegin() = true`
+*/
+template<typename T>
+template<typename U>
+inline BufferManager::Iterator<U> BufferManager::Iterator<T>::Cast() {
+	return Iterator<U>(reinterpret_cast<typename Iterator<U>::pointer>(current_), page_, boss_, record_in_page_, row_);
+}
 
 
 
@@ -1224,3 +1260,5 @@ inline PageId BufferManager::IteratorInsertPageAfter(Iterator<T>* target)
 		}
 	}
 #endif
+
+	
