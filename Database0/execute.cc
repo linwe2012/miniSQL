@@ -23,6 +23,9 @@ void ExplodeNamesToColumnInfo(ExecuteContext& e, ColumnName* pcol, const std::st
 	col.column_name = names.back(); names.pop_back();
 
 	if (names.size()) {
+		if (col.table_name.size()) {
+			console.warn("Column is named with '.', which may be misinterpreted");
+		}
 		col.table_name = names.back(); names.pop_back();
 	}
 
@@ -101,6 +104,7 @@ int DeduceColumnTableName(ExecuteContext& e, QueryClause& q, ColumnName* pcol) {
 }
 
 void DeduceColumnInfo(ExecuteContext& e, QueryClause& q) {
+	// check if table exists & if they are dubbed causing naming collision
 	for (auto& table : q.vectables) {
 		if (table.db_name.size() == 0) {
 			table.db_name = e.db;
@@ -121,10 +125,13 @@ void DeduceColumnInfo(ExecuteContext& e, QueryClause& q) {
 			}
 
 			e.cat->FetchTable(table.db_name, table.name);
-			q.tables[UnqiueTable{ table.db_name, table.alias, true }] = &table;
+			if (table.alias.size()) {
+				q.tables[UnqiueTable{ table.db_name, table.alias, true }] = &table;
+			}
 		};
 	}
 
+	// deduce variables i.e. WHERE database.table.columnname or (just) columname
 	for (auto var : q.variables) {
 		ColumnName col; // "dabase.table.columnname"
 		ExplodeNamesToColumnInfo(e, &col, var->name());
@@ -138,12 +145,38 @@ void DeduceColumnInfo(ExecuteContext& e, QueryClause& q) {
 		var->Bind(static_cast<int>(id), q.variable_attribs[id].attrib->type);
 	}
 
+	if (q.select.size() == 0) {
+		console.error("Nothing is selected");
+	}
+
+	// handle SELECT *
+	for (auto col : q.select) {
+		if (col.column_name == "*") {
+			if (q.select.size() > 1) {
+				console.warn("Exra columns when asterisk present, which will be obscured");
+			}
+			q.select.clear();
+			for (auto table : q.vectables) {
+				auto& meta = e.cat->FetchTable(table.db_name, table.name);
+				for (auto attrib : meta.attributes) {
+					q.select.push_back(ColumnName{
+						meta.db_name,
+						meta.table_name,
+						attrib.column_name
+						});
+				}
+			}
+		}
+	}
+
+	// deduce SELECT column
 	for (auto col : q.select) {
 		ExplodeNamesToColumnInfo(e, &col, col.column_name);
 		int id = DeduceColumnTableName(e, q, &col);
 		q.select_result.push_back(id);
 	}
 
+	// check if table decalred in FROM but never used
 	for (auto table : q.vectables) {
 		if (table.column_bindings.size() == 0) {
 			std::string alias;
@@ -308,11 +341,11 @@ public:
 
 		auto constant = c->lhs()->AsConstantDataOracle();
 		auto var = c->rhs()->AsVariableOracle();
-		if (!(constant || var)) {
+		if (!constant || !var) {
 			constant = c->rhs()->AsConstantDataOracle();
 			var = c->lhs()->AsVariableOracle();
 		}
-		if (!(constant || var)) {
+		if (!constant || !var) {
 			return;
 		}
 
@@ -720,7 +753,10 @@ void ExecuteInsert(ExecuteContext& e, QueryClause& q, Result& r) {
 				GetVal(binding[i]);
 				if (!c.Insert(INTDOU)) {
 					c.SplitPage();
-					c.Insert(INTDOU);
+					if (!c.Insert(INTDOU)) {
+						++c;
+						c.Insert(INTDOU);
+					}
 				}
 			}
 			if (!attrib.first_index.IsNil()) {

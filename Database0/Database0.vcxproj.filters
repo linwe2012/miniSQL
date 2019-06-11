@@ -60,6 +60,9 @@
     <ClInclude Include="bptree.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="pretty-print.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="buffer-manager.cc">

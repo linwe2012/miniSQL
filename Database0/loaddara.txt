@@ -1,0 +1,7 @@
+execfile test/student_modified.txt
+
+@echo select * from student2 
+
+
+
+create index idx on student2 (name)

@@ -388,10 +388,10 @@ PageId BufferManager::AllocatePageAfter(FileId fid, PageId prev, std::vector<int
 					PageId(prev + next),
 					fid
 					});
-				next_page->header.prev = current - next;
+				next_page->header.prev = current - (prev + next);
 				next_page->is_dirty = true;
 
-				next_offset = next - current;
+				next_offset = (prev + next) - current;
 			}
 			page = GetEmptyPage(prev - current, next_offset);
 		}

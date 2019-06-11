@@ -17,12 +17,17 @@ bool BinopOracle::Test(Iterators& itrs) {
 		return false;
 	};
 
+
 	switch (op_)
 	{
 	case Token::kAnd:  return lhs_->Test(itrs) && rhs_->Test(itrs);
 	case Token::kOr:   return lhs_->Test(itrs) || rhs_->Test(itrs);
 	case Token::kNot:  return !lhs_->Test(itrs);
-
+	case Token::kNotEqual: 
+		if (lmbdFetchData()) {
+			return true;
+		}
+		return !l->Compare(r.operator->()) == ISQLData::kEqual;
 	case Token::kEqual:
 		if (lmbdFetchData()) {
 			return true;
@@ -80,16 +85,16 @@ std::shared_ptr<ISQLData> BinopOracle::Data(Iterators& itrs) {
 
 	switch (op_)
 	{
-		//TODO(L): Should I throw exception?
-	case Token::kAnd:
-		break;
-	case Token::kOr:
-		break;
-	case Token::kNot:
-		break;
-	case Token::kEqual:
-		break;
-
+	// returns boolean
+	case Token::kAnd:      // fall through
+	case Token::kOr:  	   // fall through
+	case Token::kNot:	   // fall through
+	case Token::kEqual:	   // fall through
+	case Token::kNotEqual:
+		if (Test(itrs)) {
+			return std::make_shared<SQLBigInt>(1);
+		}
+		return std::make_shared<SQLBigInt>(0);
 
 	case Token::kAdd:
 		if (!lmbdFetchData()) {

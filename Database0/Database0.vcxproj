@@ -130,6 +130,7 @@
     <ClInclude Include="oracle.h" />
     <ClInclude Include="page.h" />
     <ClInclude Include="parser.h" />
+    <ClInclude Include="pretty-print.h" />
     <ClInclude Include="record-manager.h" />
     <ClInclude Include="sqldata.h" />
     <ClInclude Include="cluster-bptree.h" />

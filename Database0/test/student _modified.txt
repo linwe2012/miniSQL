@@ -30,6 +30,3 @@ execfile test/instruction8.txt;
 
 execfile test/instruction9.txt;
 
-create index idx on student2 (name)
-
-select A.id, B.id, A.score, B.score from student2 A, student2 B where A.id > B.id and A.score > B.score and B.score > 90

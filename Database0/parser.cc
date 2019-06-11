@@ -436,13 +436,14 @@ std::shared_ptr<IOracle> Parser::WhereNumber() {
 				std::shared_ptr<ISQLData>(new SQLDouble(tok_->num_double()))
 			)
 			);
-
+		break;
 	case Token::kBigInt:
 		res = std::shared_ptr<IOracle>(
 			new ConstantDataOracle(
 				std::shared_ptr<ISQLData>(new SQLBigInt(tok_->num_bigint()))
 			)
 			);
+		break;
 	}
 	NextToken();
 	return res;
