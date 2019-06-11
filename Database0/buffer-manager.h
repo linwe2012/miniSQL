@@ -503,6 +503,14 @@ public:
 			return *(U*)(current_);
 		}
 
+		void MarkDeleted() {
+			page_->ReverseWrite<char>(record_in_page_, 2);
+		}
+
+		bool IsDeleted() {
+			return page_->ReverseRead<char>(record_in_page_) == 2;
+		}
+
 		bool IsPageEmpty() {
 			return page().header.num_records == 0;
 		}

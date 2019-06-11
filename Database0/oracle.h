@@ -5,7 +5,7 @@
 #include "token.h"
 
 struct VarCharFixed256 {
-	char data[12];
+	char data[16];
 	std::string_view str() const {
 		return std::string_view(data);
 	}
@@ -105,10 +105,10 @@ public:
 	}
 
 	bool Test(Iterators& itrs) override {
-		if (type_ == SQLTypeID<SQLString>::value) {
-			return Itr(itrs).Cast<char*>().IsNil();
-		}
-		return Itr(itrs).IsNil();
+		//if (type_ == SQLTypeID<SQLString>::value) {
+		//	return Itr(itrs).Cast<VarCharFixed256>().IsNil();
+		//}
+		return !Itr(itrs).IsNil() && !Itr(itrs).IsDeleted();
 	}
 
 	std::shared_ptr<ISQLData> Data(Iterators& itrs) override;

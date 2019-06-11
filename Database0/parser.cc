@@ -34,12 +34,20 @@ void Parser::ParseExpression(std::istream& is) {
 			target.type = CurTok();
 			Use();
 			break;
+		case Token::kDrop:
+			target.type = CurTok();
+			Drop();
+			break;
 		case Token::kEof:
 			break;
 		case Token::kExecFile:
 			target.type = CurTok();
 			NextToken();
 			return;
+		case Token::kDelete:
+			target.type = CurTok();
+			Delete();
+			break;
 		case ';':
 			complete_ = true;
 			return;
@@ -292,7 +300,7 @@ void Parser::Create()
 		}
 		NextToken();
 		if (CurTok() != Token::kIdentifier) {
-			Error("Expected Identifier as table name");
+			Error("Expected Identifier as column");
 			return;
 		}
 		target.index.table_name = tok_->identifier();
@@ -326,6 +334,38 @@ void Parser::Use()
 
 	target.default_db_name = tok_->identifier();
 	NextToken();
+}
+
+void Parser::Drop()
+{
+	NextToken();
+	if (CurTok() == Token::kIdentifier) {
+		NextToken();
+		if (CurTok() == Token::kIndex) {
+			target.type_spec = Token::kIndex;
+			NextToken();
+
+			if (CurTok() != Token::kIdentifier) {
+				Error("Expected identifier");
+			}
+
+			target.create_index = tok_->identifier();
+
+			NextToken();
+		}
+		if (Token::ToLower(tok_->identifier()) == "column") {
+			NextToken();
+
+		}
+	}
+}
+
+void Parser::Delete()
+{
+	NextToken();
+	if (CurTok() != Token::kFrom) {
+		Error("Expected keyword from");
+	}
 }
 
 std::shared_ptr<IOracle> Parser::Where() {

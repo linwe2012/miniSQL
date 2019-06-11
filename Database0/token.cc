@@ -62,6 +62,8 @@ std::string Token::ToLower(const std::string& s) {
 int Tokenizer::NextTokenPass() {
 	EatSpace();
 
+	last_char_cnt_ = char_cnt_;
+
 	if (isalpha(c)) {
 		return PreparseIdentifier();
 	}
@@ -134,6 +136,7 @@ void Tokenizer::NextToken() {
 void Tokenizer::NextChar() {
 	std::istream& is = get_is();
 	c = is.get();
+	++char_cnt_;
 }
 
 void Tokenizer::Reset() {

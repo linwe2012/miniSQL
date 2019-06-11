@@ -161,6 +161,11 @@ struct Page {
 		return *(reinterpret_cast<T*>(end()) - offset - 1);
 	}
 
+	template<typename T>
+	void ReverseWrite(size_t offset, T data) {
+		*(reinterpret_cast<T*>(end()) - offset - 1) = data;
+	}
+
 	[[deprecated("Ues specified verison")]]
 	size_t SpaceLeftByByte() const {
 		if (header.flag(kfIsVariadic)) {

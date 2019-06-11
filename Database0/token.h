@@ -60,7 +60,10 @@ V(Key, "key", 0)\
 V(Use, "use", 0)\
 V(Index, "index", 0)\
 V(ExecFile, "execfile", 0)\
-V(Unique, "unique", 0)
+V(Unique, "unique", 0)\
+V(Drop, "drop", 0) \
+V(Column, "column", 0)\
+V(Delete, "delete", 0)
 
 #define KEY_BUILTIN_FUNC(V, D) \
 V(CurDate, "getdate", 0)       \
@@ -175,6 +178,12 @@ public:
 		return string_;
 	}
 
+	int line_cnt() { return line_cnt_; }
+
+	int char_cnt() { return char_cnt_; }
+
+	int last_char_cnt() { return last_char_cnt_; }
+
 private:
 	void NextChar();
 
@@ -193,6 +202,8 @@ private:
 	std::istream* is_;
 	std::function<void(const char*)> error_;
 	int line_cnt_ = 0;
+	int char_cnt_ = 0;
+	int last_char_cnt_ = 0;
 	int current_token_ = 0;
 	double double_ = 0.0;
 	int64_t bigint_ = 0ll;

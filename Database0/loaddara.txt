@@ -1,7 +1,20 @@
 execfile test/student_modified.txt
 
-@echo select * from student2 
+@echo select * from student2 where id=1080100978
 
+select * from student2 where id=1080100978
 
+select * from student2 where score=50.5
+
+select * from student2 where name='name255'
+
+select * from student2 where id <>13888888
+
+select * from student2 where name='name255'
 
 create index idx on student2 (name)
+
+
+drop index student2.idx
+
+delete from student2 where name='name255'

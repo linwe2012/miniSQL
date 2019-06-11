@@ -71,6 +71,8 @@ struct Attribute {
 	int type;
 	std::string column_name;
 
+	std::string index_name;
+
 	std::string comment;
 
 	Authorization authorization;

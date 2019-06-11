@@ -515,6 +515,13 @@ void FilterRoll(ExecuteContext& e, QueryClause& q, IOracle::Iterators& itrs, int
 		}
 		if (flag_oneshot) {
 			itrs[id] += offset;
+			while (itrs[id].IsDeleted())
+			{
+				++itrs[id];
+				if (itrs[id].IsEnd()) {
+					break;
+				}
+			}
 		}
 	}
 
@@ -524,8 +531,15 @@ void FilterRoll(ExecuteContext& e, QueryClause& q, IOracle::Iterators& itrs, int
 		FilterRoll(e, q, itrs, table_id + 1, r);
 		if (table_id == q.vectables.size() - 1) {
 			if (q.where_oracle->Test(itrs)) {
-				table.rows.push_back(itrs[first].row());
-				PipeData(q, itrs, r);
+				if (q.type != Token::kDelete) {
+					table.rows.push_back(itrs[first].row());
+					PipeData(q, itrs, r);
+				}
+				if (q.type == Token::kDelete) {
+					for (auto& itr : itrs) {
+						itr.MarkDeleted();
+					}
+				}
 			}
 		}
 		
@@ -542,9 +556,16 @@ void FilterRoll(ExecuteContext& e, QueryClause& q, IOracle::Iterators& itrs, int
 			//else
 			//{
 				++itrs[id];
-				if (itrs[id].IsEndPage()) {
+				while (itrs[id].IsEndPage() || itrs[id].IsDeleted())
+				{
 					++itrs[id];
+					if (itrs[id].IsEnd()) {
+						break;
+					}
 				}
+				// if (itrs[id].IsEndPage()) {
+				// 	++itrs[id];
+				// }
 			//}
 			
 			
@@ -903,7 +924,7 @@ void ExecuteCreateIndex(ExecuteContext& e, QueryClause& q, Result& r) {
 	auto& meta = e.cat->FetchTable(q.index.db_name, q.index.table_name);
 	auto& prim = meta.attributes[meta.primary_keys[0]];
 	BPTree<char, char> bp(e.bm, attrib.file, attrib.first_index);
-	
+	attrib.index_name = q.create_index;
 	switch (attrib.type)
 	{
 	case SQLTypeID<SQLBigInt>::value:
@@ -1047,6 +1068,42 @@ void ExecuteCreateIndex(ExecuteContext& e, QueryClause& q, Result& r) {
 	}
 }
 
+void ExecuteDropIndex(ExecuteContext& e, QueryClause& q, Result& r) {
+	ExplodeNamesToColumnInfo(e, &q.index, q.create_index);
+	//TODO: Deduce table name
+	auto& meta = e.cat->FetchTable(q.index.db_name, q.index.table_name);
+	for (auto attrib : meta.attributes) {
+		if (attrib.index_name == q.index.column_name) {
+			attrib.first_index = 0;
+			attrib.index_name = "";
+			break;
+		}
+	}
+}
+
+void ExecuteDelete(ExecuteContext& e, QueryClause& q, Result& r) {
+	auto vec = Explode(q.vectables[0].name, '.');
+	std::string tb = vec.back(); vec.pop_back();
+	std::string db;
+	if (vec.size()) {
+		db = vec.back();
+	}
+	else {
+		db = e.db;
+	}
+	auto& meta = e.cat->FetchTable(db, tb);
+	for (auto attrib : meta.attributes) {
+		q.select.push_back(ColumnName{
+			db,
+			tb,
+			attrib.column_name });
+	}
+	DeduceColumnInfo(e, q);
+	
+	Filter(e, q, r);
+}
+
+
 struct ImpossibleError__Dummy {
 
 };
@@ -1075,6 +1132,12 @@ std::shared_ptr<Result> Execute(ExecuteContext& ec, QueryClause& q) {
 			break;
 		case Token::kUse:
 			ec.db = q.default_db_name;
+			break;
+		case Token::kDrop:
+			ExecuteDropIndex(ec, q, *(res.operator->()));
+			break;
+		case Token::kDelete:
+			ExecuteDelete(ec, q, *(res.operator->()));
 			break;
 		default:
 			break;

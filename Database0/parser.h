@@ -57,6 +57,12 @@ struct QueryColumn {
 	Attribute* attrib;
 };
 
+struct SyntaxError {
+	int line_cnt;
+	int last_char_cnt;
+	int char_cnt;
+};
+
 struct QueryVariable {
 	QueryVariable(Attribute* _attrib)
 		: attrib(_attrib) {}
@@ -81,6 +87,7 @@ struct QueryClause {
 	std::string insert_table;
 	std::string create_table;
 	std::string create_index;
+	std::string delete_target_table;
 	ColumnName index;
 	std::vector<ColumnName> insert_col;
 	std::vector<std::shared_ptr<ISQLData>> insert_data;
@@ -123,6 +130,10 @@ public:
 	void Create();
 
 	void Use();
+
+	void Drop();
+
+	void Delete();
 
 	bool complete() { return complete_; }
 
@@ -179,7 +190,12 @@ public:
 
 	template<typename Arg>
 	void Error(Arg arg) {
-		(*error_) << arg;
+		(*error_) << arg << std::endl;
+		throw SyntaxError{
+			tok_->line_cnt(),
+			tok_->last_char_cnt(),
+			tok_->char_cnt(),
+		};
 	}
 
 	QueryClause target;
