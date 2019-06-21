@@ -264,6 +264,18 @@ void Parser::Create()
 					break;
 				}
 				NextToken();
+				if (CurTok() == '(') {
+					NextToken();
+					if (CurTok() != Token::kBigInt) {
+						Error("Expected bigint as numeric constrant");
+					}
+					info.max_length = tok_->num_bigint();
+					NextToken();
+					if (CurTok() != ')') {
+						Error("Expected ')' to close parenthese");
+					}
+					NextToken();
+				}
 			}
 			if (info.type < 0) {
 				info.type = SQLTypeID<SQLBigInt>::value;
@@ -352,6 +364,7 @@ void Parser::Drop()
 			target.create_index = tok_->identifier();
 
 			NextToken();
+			return;
 		}
 		if (Token::ToLower(tok_->identifier()) == "column") {
 			NextToken();

@@ -344,9 +344,36 @@ void BufferManager::UnloadPage(UniquePage unipage)
 
 	pages_.erase(itr);
 }
+#include <future>
+
+struct BufferManager::Data {
+	bool close = false;
+	std::future<void> flusher;
+};
+
+
+BufferManager::BufferManager()
+{
+	data = new Data;
+
+	data->flusher = 
+	std::async([this] {
+		while (!data->close)
+		{
+			for (auto& page : pages_) {
+				FlushPageToDisk(page.second, page.first.page_id);
+			}
+			std::this_thread::sleep_for(std::chrono::milliseconds(16));
+		}
+	});
+}
 
 BufferManager::~BufferManager()
 {
+	data->close = true;
+	data->flusher.wait();
+	delete data;
+
 	for (auto itr = pages_.begin(); itr != pages_.end(); ) {
 		UnloadPage((itr++)->first);
 	}

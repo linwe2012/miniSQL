@@ -626,6 +626,7 @@ public:
 
 	Page::Header GetPageHeader(FileId fid, PageId psid);
 
+	BufferManager();
 	~BufferManager();
 
 private:
@@ -640,6 +641,9 @@ private:
 	int num_allocate_disk_page_ = 4;
 
 	Page* empty_page_ = nullptr;
+	bool closed_ = false;
+	struct Data;
+	Data* data;
 };
 
 

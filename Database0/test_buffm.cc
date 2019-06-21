@@ -71,8 +71,16 @@ int main()
 				parser.ParseExpression(str.c_str());
 			}
 			catch (SyntaxError& s) {
-				(*os) << "[Syntax]: ";
-
+				(*os) << "[Syntax]: " << str << std::endl;
+				(*os) << "          ";
+				int i = 0;
+				for (; i < s.last_char_cnt; ++i) {
+					(*os) << " ";
+				}
+				for (; i < s.char_cnt; ++i) {
+					(*os) << "~";
+				}
+				
 				(*os) << std::endl;
 				continue;
 			}

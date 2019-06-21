@@ -1,6 +1,7 @@
 #include "execute.h"
 #include "bptree.h"
 #include "cluster-bptree.h"
+#define RELEASE
 
 void DeduceColumnInfo(ExecuteContext& e, QueryClause& q);
 
@@ -1149,7 +1150,7 @@ std::shared_ptr<Result> Execute(ExecuteContext& ec, QueryClause& q) {
 	catch (std::exception& e) {
 		res->ok = false;
 		if (e.what() == nullptr) {
-			return;
+			return res;
 		}
 		try {
 			console.fatal(e.what());
