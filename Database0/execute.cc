@@ -443,38 +443,48 @@ void FilterRoll(ExecuteContext& e, QueryClause& q, IOracle::Iterators& itrs, int
 		return;
 	}
 	bool flag_oneshot = false;
+	int64_t int_val;
+	double dou_val;
+	bool is_int;
+	auto GetVal = [&int_val, &dou_val, &is_int](std::shared_ptr<ISQLData> d) {
+		if (d->AsBigInt()) {
+			is_int = true;
+			int_val = d->AsBigInt()->Value();
+		}
+		else if (d->AsDouble()) {
+			dou_val = d->AsDouble()->Value();
+			is_int = false;
+		}
+	};
+#define INTDOU is_int ? int_val : dou_val
 	int64_t offset = -1;
 	for (auto& id_itr : table.column_bindings) {
 
 		int id = id_itr.second;
 		auto attrib = q.variable_attribs[id].attrib;
+		
 		if (q.variable_attribs[id].index_method == QueryVariable::kDirectIndex) {
 			auto& meta = e.cat->FetchTable(table.db_name, table.name);
 			auto& prim = meta.attributes[meta.primary_keys[0]];
-			switch (q.variable_attribs[id].attrib->type)
-			{
-			case SQLTypeID<SQLBigInt>::value:
-			case SQLTypeID<SQLDouble>::value:
 
-			case SQLTypeID<SQLTimeStamp>::value:
-				break;
-			case SQLTypeID<SQLString>::value:
+			if (attrib->is_primary_key == true) {
 				switch (prim.type)
 				{
 				case SQLTypeID<SQLBigInt>::value:
 				{
-					BPTree<VarCharFixed256, SQLBigInt::CType> bp(e.bm, attrib->file, attrib->first_index);
-					VarCharFixed256 fixed;
-					memcpy(fixed.data, q.variable_attribs[id].index_target->AsString()->String().c_str(),
-						q.variable_attribs[id].index_target->AsString()->String().size() + 1);
-					auto pair = bp.Lookup(fixed);
 					ClusteredBPTree<SQLBigInt::CType> cbp(e.bm, prim.file, prim.first_index);
-					offset = cbp.ComputeOffset((*pair).prim, prim.first_page);
+					GetVal(q.variable_attribs[id].index_target);
+					offset = cbp.ComputeOffset(INTDOU, prim.first_page);
 					flag_oneshot = true;
 				}
 				break;
 				case SQLTypeID<SQLDouble>::value:
-
+				{
+					ClusteredBPTree<SQLDouble::CType> cbp(e.bm, prim.file, prim.first_index);
+					GetVal(q.variable_attribs[id].index_target);
+					offset = cbp.ComputeOffset(INTDOU, prim.first_page);
+					flag_oneshot = true;
+				}
 				case SQLTypeID<SQLTimeStamp>::value:
 					break;
 				case SQLTypeID<SQLString>::value:
@@ -482,11 +492,48 @@ void FilterRoll(ExecuteContext& e, QueryClause& q, IOracle::Iterators& itrs, int
 				default:
 					break;
 				}
-				break;
-			default:
-				break;
 			}
-		}
+#undef INTDOU
+			else
+			{
+				switch (q.variable_attribs[id].attrib->type)
+				{
+				case SQLTypeID<SQLBigInt>::value:
+				case SQLTypeID<SQLDouble>::value:
+
+				case SQLTypeID<SQLTimeStamp>::value:
+					break;
+				case SQLTypeID<SQLString>::value:
+					switch (prim.type)
+					{
+					case SQLTypeID<SQLBigInt>::value:
+					{
+						BPTree<VarCharFixed256, SQLBigInt::CType> bp(e.bm, attrib->file, attrib->first_index);
+						VarCharFixed256 fixed;
+						memcpy(fixed.data, q.variable_attribs[id].index_target->AsString()->String().c_str(),
+							q.variable_attribs[id].index_target->AsString()->String().size() + 1);
+						auto pair = bp.Lookup(fixed);
+						ClusteredBPTree<SQLBigInt::CType> cbp(e.bm, prim.file, prim.first_index);
+						offset = cbp.ComputeOffset((*pair).prim, prim.first_page);
+						flag_oneshot = true;
+					}
+					break;
+					case SQLTypeID<SQLDouble>::value:
+
+					case SQLTypeID<SQLTimeStamp>::value:
+						break;
+					case SQLTypeID<SQLString>::value:
+						break;
+					default:
+						break;
+					}
+					break;
+				default:
+					break;
+				}
+			}
+			}
+			
 		if (flag_oneshot) {
 			break;
 		}
